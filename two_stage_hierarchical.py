@@ -1,28 +1,17 @@
 import numpy as np
 
-def sim_2stage():
-    pool_size = 32
-    p = 0.001
-    # x is a vector that
-    x = np.random.rand(pool_size) < p
+def sim_2stage(pool_size = 32, prevalence = 0.001):
+    # INPUTS
+    # pool_size: number of people tested in the pool
+    # prevalence: fraction of the population that is infected
+    # RETURNS: number of tests per person, in one simulation
+
+    # x is a vector that represents infection status
+    # An entry is positive if that individual is infected
+    x = np.random.rand(pool_size) < prevalence
 
     n_tests = 1
     positive = x[1:pool_size].max()
     if positive:
         n_tests += pool_size
-    return n_tests
-
-
-m = int(1e4) # MC reps
-y = [0]*m
-for i in range(m):
-    y[i] = sim_2stage()
-
-exp_n_tests = np.mean(y)
-print(exp_n_tests)
-print(np.std(y)/np.sqrt(m))
-
-
-#print(n_tests)
-
-#print(sum(x)/(1.0*n))
+    return n_tests / pool_size

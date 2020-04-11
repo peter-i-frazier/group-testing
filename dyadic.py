@@ -62,15 +62,3 @@ def sim_dyadic(n = 10000, pools_per_person = 4, people_per_pool = 256, prevalenc
             n_tests += 1
 
     return(n_tests / n)
-
-
-verbose = True
-reps = 100 # Number of Monte Carlo replications
-n_tests = [0] * reps
-for m in range(reps):
-    n_tests[m] = sim_dyadic()
-    if verbose:
-        print('Simulation {}, Result {}'.format(m,n_tests[m]))
-
-print("Expected number of tests per person is {:g} +/- {:g}".format(np.mean(n_tests), np.std(n_tests)/np.sqrt(reps)))
-print("People per test is {:g}".format(1/np.mean(n_tests)))
