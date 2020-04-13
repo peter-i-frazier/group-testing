@@ -22,8 +22,10 @@ def gollier(n=10000, starting_prevalence=0.001, alpha=np.exp(0.13), p_decline_ra
 
     screening_freq = 7  # do a screening every 7 days; a tunable parameter
 
-    infection_status = np.random.rand(n) < prevalence[0]
+    infection_status = np.random.rand(n) < prevalence[0] # 0 if uninfected; 1 if infected
     quarantine_status = np.zeros(n)  # 0 if quarantined; 1 if released
+
+    # NEXT TO DO: instead of individuals, keep a vector of households
 
     for t in range(T):
 
@@ -32,6 +34,8 @@ def gollier(n=10000, starting_prevalence=0.001, alpha=np.exp(0.13), p_decline_ra
             if infection_status[i] == 0:
                 if np.random.binomial(1, np.log(alpha) * prevalence[t]) == 1:
                     infection_status[i] = 1
+
+        # NEXT TO DO: consider intra-/inter-household correlations
 
         # screenings are carried out every (screening_freq) days
         if np.mod(t, screening_freq) == 0:
@@ -51,12 +55,17 @@ def gollier(n=10000, starting_prevalence=0.001, alpha=np.exp(0.13), p_decline_ra
                 pool_assignment[g, i] = 1
                 pool_counts[g] += 1
 
-            # look at the number of infected individuals in each pool: g-dim vector given by pool_assignment * infection_status
+            # The number of infected individuals in each pool is a g-dim vector given by pool_assignment * infection_status
             pool_infected_counts = np.matmul(pool_assignment, infection_status)
+
+            # Pools without any infected individuals test negative (assuming 100% test accuracy)
             neg_pools = np.sum(pool_infected_counts == np.zeros(n_pools))
+
+            # NEXT TO DO: consider false-negatives
+
+            # Release people in negative groups from quarantine
             for g in range(len(pool_infected_counts)):
                 if pool_infected_counts[g] == 0:
-                    neg_pools += 1
                     for i in np.nonzero(pool_assignment[g, :]):
                         quarantine_status[i] = 1
 
