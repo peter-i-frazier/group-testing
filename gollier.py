@@ -26,10 +26,14 @@ def gollier(n=10000, starting_prevalence=0.001, alpha=np.exp(0.13), p_decline_ra
     quarantine_status = np.zeros(n)  # 0 if quarantined; 1 if released
 
     # NEXT TO DO: instead of individuals, keep a vector of households
+    # [4/14 YZ] This will be done in the population class
 
     for t in range(T):
 
+
         # every day, each uninfected individual has chance ln(alpha)*(current prevalence) of becoming infected
+        # [4/14 YZ] This is not exact. Only the unquarantined individuals could become infected
+        #           The infection dynamics in households need to be determined
         for i in range(n):
             if infection_status[i] == 0:
                 if np.random.binomial(1, np.log(alpha) * prevalence[t]) == 1:
@@ -70,6 +74,8 @@ def gollier(n=10000, starting_prevalence=0.001, alpha=np.exp(0.13), p_decline_ra
                         quarantine_status[i] = 1
 
         # update prevalence and number of deconfined individuals
+        # (4/14 YZ) This is not exact. Prevalence calculation is based on unquarantined people only, i.e.
+        # prevalence at time t = (number of unquarantined infected individuals) / (number of unquarantined individuals)
         prevalence[t + 1] = np.sum(infection_status) / n
         print('prevalence on day ' + str(t + 1) + ': ' + str(prevalence[t + 1] / n))
         deconfined[t + 1] = np.sum(quarantine_status)
