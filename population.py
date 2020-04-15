@@ -16,7 +16,7 @@ class Population:
         # True if susceptible to the disease, i.e., has not died or developed immunity, and not currently infected
         self.susceptible = ~self.infectious
 
-    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0):
+    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
         # household_size_dist:  a numpy array that should sum to 1, where household_size_dist[i] gives the fraction of
@@ -36,6 +36,11 @@ class Population:
         self.R0 = R0
         self.d0 = d0
         self.SAR = SAR
+        self.fatality_pct = fatality_pct
+
+        self.remaining_days_infected = {}
+        self.deaths = set([])
+        self.recoveries = set([])
 
         self.total_pop = 0
 
@@ -59,6 +64,26 @@ class Population:
             self.susceptible.append(np.array(susceptible))
             self.infectious.append(np.array(infectious))
             self.quarantined.append(np.array(quarantined))
+
+        self.update_infection_days()
+
+    def update_infection_days(self):
+        for i in range(self.n_households):
+            for j in range(len(self.infectious[i])):
+                if self.infectious[i][j]:
+                    if (i,j) not in self.remaining_days_infected:
+                        self.remaining_days_infected[(i,j)] = self.d0
+                    elif self.remaining_days_infected[(i,j)] > 0:
+                        self.remaining_days_infected[(i,j)] -= 1
+                        if self.remaining_days_infected[(i,j)] == 0:
+                            if np.random.uniform() < self.fatality_pct:
+                                self.deaths.add((i,j))
+                            else:
+                                self.recoveries.add((i,j))
+                            self.susceptible[i][j] = False
+                            self.quarantined[i][j] = False
+                            self.infectious[i][j] = False
+
 
 
     def __check_indices(self,x):
@@ -103,6 +128,8 @@ class Population:
                     primary_prob = np.log(self.R0) * prevalence / self.d0
                     new_primary = np.random.uniform() < primary_prob
                     self.infectous[i][j] = new_primary or new_secondary
+
+        self.update_infection_days()
 
 
     def quarantine(self, x):
