@@ -16,7 +16,7 @@ class Population:
         # True if susceptible to the disease, i.e., has not died or developed immunity, and not currently infected
         self.susceptible = ~self.infectious
 
-    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct):
+    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct, initial_quarantine):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
         # household_size_dist:  a numpy array that should sum to 1, where household_size_dist[i] gives the fraction of
@@ -28,9 +28,8 @@ class Population:
         #
         assert np.isclose(np.sum(household_size_dist), 1.)
 
-        self.infectious = []
-        self.quarantined = []
-        self.susceptible = []
+        self.infectious = {}
+        self.susceptible = {}
         self.prevalence = prevalence
         self.n_households = n_households
         self.R0 = R0
@@ -38,11 +37,12 @@ class Population:
         self.SAR = SAR
         self.fatality_pct = fatality_pct
 
-        self.household_risk_status = [True] * self.n_households
-
         self.remaining_days_infected = {}
         self.deaths = set([])
         self.recoveries = set([])
+        self.active_cases = set([])
+        self.quarantined_households = set([])
+        self.quarantined_individuals = set()
 
         self.total_pop = 0
 
@@ -54,18 +54,17 @@ class Population:
             # compute primary case probability = p*h/(1+SAR*(h-1))
             prob_prim = prevalence*h/(1+SAR*(h-1))
             infectious = [np.random.uniform() < prob_prim]
-            quarantined = [True]        
             if h > 1:
                 # if there are >1 members in the household, and there is a primary case,
                 # generate secondary cases from Bin(h-1, SAR); otherwise, set everyone to be uninfected
                 infectious.extend(np.random.binomial(1, SAR, h-1) * infectious[0] == True)
-                quarantined.extend([True]*(h-1))
+            if initial_quarantine:
+                self.quarantine_household(i)
             
             susceptible = [not infected for infected in infectious]
             
-            self.susceptible.append(np.array(susceptible))
-            self.infectious.append(np.array(infectious))
-            self.quarantined.append(np.array(quarantined))
+            self.susceptible[i]=(np.array(susceptible))
+            self.infectious[i] =(np.array(infectious))
 
         self.update_infection_days()
 
@@ -75,6 +74,7 @@ class Population:
                 if self.infectious[i][j]:
                     if (i,j) not in self.remaining_days_infected:
                         self.remaining_days_infected[(i,j)] = self.d0
+                        self.active_cases.add((i,j))
                     elif self.remaining_days_infected[(i,j)] > 0:
                         self.remaining_days_infected[(i,j)] -= 1
                         if self.remaining_days_infected[(i,j)] == 0:
@@ -82,8 +82,8 @@ class Population:
                                 self.deaths.add((i,j))
                             else:
                                 self.recoveries.add((i,j))
+                            self.active_cases.discard((i,j))
                             self.susceptible[i][j] = False
-                            self.quarantined[i][j] = False
                             self.infectious[i][j] = False
 
 
@@ -102,16 +102,13 @@ class Population:
 
     def get_prevalence(self):
         # Get current prevalence = (number of infectious unquarantined) / (number of unquarantined)
-        infected_counts = 0
-        unquarantined_counts = 0
+        infectious_unquarantined = len(self.active_cases - self.quarantined_individuals)
+        total_unquarantined = self.total_pop - len(self.quarantined_individuals)
 
-        for i in range(self.n_households):
-            infected_counts += np.sum(self.infectious[i] & ~self.quarantined[i])
-            unquarantined_counts += np.sum(~self.quarantined[i])
-        if unquarantined_counts == 0:
+        if total_unquarantined == 0:
             return 0
         else:
-            return infected_counts / unquarantined_counts
+            return infectious_unquarantined / total_unquarantined
 
     def step(self):
         # Simulate one step forward in time
@@ -120,20 +117,20 @@ class Population:
         prevalence = self.get_prevalence()
         for i in range(self.n_households):
             household_infected = any(self.infectious[i])
-            for j in range(len(self.quarantined[i])):
-                if household_infected:
+            for j in range(len(self.infectious[i])):
+                if household_infected and self.susceptible[i][j]:
                     secondary_prob = self.SAR # maybe should depend on total # of infected in household, but this is a start
                     new_secondary = np.random.uniform() < secondary_prob
                 else:
                     new_secondary = False
 
-                if ~self.quarantined[i][j] and self.susceptible[i][j] and (not self.infectious[i][j]):
+                if not (i,j) in self.quarantined_individuals and self.susceptible[i][j]:
                     primary_prob = np.log(self.R0) * prevalence / self.d0
                     new_primary = np.random.uniform() < primary_prob
                 else:
                     new_primary = False
 
-                self.infectious[i][j] = new_primary or new_secondary
+                self.infectious[i][j] = new_primary or new_secondary or self.infectious[i][j]
 
         self.update_infection_days()
 
@@ -157,21 +154,30 @@ class Population:
     def update_quarantine_status(self, test_results, groups):
         # unquarantine all confirmed negative results who do not also have
         # an infected family member
-        self.household_risk_status = [False] * self.n_households
+        household_risk_status = [False] * self.n_households
         for group_idx, result in test_results.items():
             # for any positive group, set all household risk statuses to True
             # within that group
             if result:
                 for i,_ in groups[group_idx]:
-                    self.household_risk_status[i] = True
+                    household_risk_status[i] = True
 
         # unquarantine all households with negative risk status
-        for i, risk_status in enumerate(self.household_risk_status):
-            for j in range(len(self.quarantined[i])):
-                if risk_status:
-                    self.quarantine(i,j)
-                else:
-                    self.unquarantine(i,j)
+        for i, risk_status in enumerate(household_risk_status):
+            if risk_status:
+                self.quarantine_household(i)
+            else:
+                self.unquarantine_household(i)
+
+    def quarantine_household(self, i):
+        for j in range(len(self.infectious[i])):
+            self.quarantined_individuals.add((i,j))
+        self.quarantined_households.add(i)
+
+    def unquarantine_household(self, i):
+        for j in range(len(self.infectious[i])):
+            self.quarantined_individuals.discard((i,j))
+        self.quarantined_households.discard(i)
 
 
     def quarantine(self, i, j):
@@ -184,10 +190,7 @@ class Population:
         self.quarantined[i][j] = False
 
     def get_num_infected(self):
-        infected_counts = 0
-        for i in range(self.n_households):
-            infected_counts += np.sum(self.infectious[i])
-        return infected_counts
+        return len(self.active_cases)
 
     def get_total_dead(self):
         return len(self.deaths)
@@ -196,16 +199,9 @@ class Population:
         return len(self.recoveries)
 
     def get_num_quarantined(self):
-        quarantined_counts = 0
-        for i in range(self.n_households):
-            quarantined_counts += np.sum(self.quarantined[i])
-        return quarantined_counts
+        return len(self.quarantined_individuals)
     
     def get_num_households_quarantined(self):
-        quarantined_counts = 0
-        for i in range(self.n_households):
-            if any(self.quarantined[i]):
-                quarantined_counts += 1
-        return quarantined_counts
+        return len(self.quarantined_households)
     #def num_recovered_dead(self):
     # for now we haven't taken into consideration the duration of infection and recovery yet

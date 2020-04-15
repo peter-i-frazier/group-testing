@@ -2,6 +2,17 @@ from math import ceil
 from random import shuffle
 import numpy as np
 
+class EmptyTest:
+    def __init__(self, infection_pct_blf=0.01):
+        pass
+    def test(self, population):
+        grp_test_data = {'num_grps': 0,
+                        'grp_size': 0,
+                        'num_negative_grps': 0}
+        test_results = {}
+        groups = {}
+        return test_results, groups, grp_test_data
+
 class GollierGroupTest:
     def __init__(self, infection_pct_blf=0.01, FNR=0):
         self.infection_pct_blf = infection_pct_blf

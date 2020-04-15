@@ -6,6 +6,7 @@ class Simulation:
         self.test_freq = test_freq
         self.current_day = 0
         self.last_test_day = 0
+        self.recorded_data = {}
 
     def step(self):
         if self.current_day == 0 or self.current_day - self.last_test_day >= self.test_freq:
@@ -15,7 +16,6 @@ class Simulation:
         else:
             grp_test_data = None
 
-        self.current_day += 1
         self.population.step()
 
         sim_data = {
@@ -26,6 +26,10 @@ class Simulation:
                 'total_recovered': self.population.get_total_recovered(),
                 'grp_test_data': grp_test_data,
             }
+
+        self.recorded_data[self.current_day] = sim_data
+
+        self.current_day += 1
 
         return sim_data
 
