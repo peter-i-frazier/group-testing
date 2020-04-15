@@ -1,34 +1,38 @@
 from math import ceil
 from random import shuffle
+import numpy as np
 
-class GroupTesting:
-    def __init__(self, pop_sample, infection_pct=0.01):
-        self.pop_sample = pop_sample
-        self.infection_pct = infection_pct
-        self.sample_size = len(self.pop_sample)
+class GollierGroupTest:
+    def __init__(self, infection_pct_blf=0.01, FNR=0):
+        self.infection_pct_blf = infection_pct_blf
 
-    def gollier_exact(self):
-        grp_size = 1 / self.infection_pct
+    def test(self, population):
+        # TODO: need to update infection_pct_blf each round
+        pop_size = population.get_population_size()
+        grp_size_individuals = -1 / np.log(1-self.infection_pct_blf)
 
-        num_grps = int(ceil(self.sample_size / float(grp_size)))
+        # for now ignore household correlation
+        # grp_size_households = 
+
+        num_grps = int(ceil(pop_size / grp_size))
         
         groups = {}
         for grp_num in range(num_grps):
             groups[grp_num] = []
 
-        individuals = self.pop_sample.keys()
+        individuals = list(population.iter_individuals())
         shuffle(individuals)
 
-        for idx, counter in zip(individuals, range(len(individuals))):
+
+        for individual, counter in zip(individuals, range(len(individuals))):
             grp = counter % num_grps
-            groups[grp].append(idx)
+            groups[grp].append(individual)
 
         test_results = {}
-        for grp_idxs in groups.values():
-            result = any([self.pop_sample[idx] for idx in grp_idxs])
-            for idx in grp_idxs:
-                test_results[idx] = result
+        for group_idx, grp_individuals in groups.iteritems():
+            result = population.any_infectious(grp_individuals)
+            test_results[group_idx] = result
         
-        return test_results, num_grps
+        return test_results, groups 
 
 

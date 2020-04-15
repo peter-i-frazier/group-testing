@@ -38,6 +38,8 @@ class Population:
         self.SAR = SAR
         self.fatality_pct = fatality_pct
 
+        self.household_risk_status = [True] * self.n_households
+
         self.remaining_days_infected = {}
         self.deaths = set([])
         self.recoveries = set([])
@@ -130,6 +132,40 @@ class Population:
                     self.infectous[i][j] = new_primary or new_secondary
 
         self.update_infection_days()
+
+    def get_population_size(self):
+        return sum([len(household) for household in self.infectious])
+    
+    def get_num_households(self):
+        return self.n_households
+
+    def get_avg_household_size(self):
+        return np.mean([len(household) for household in self.infectious])
+    
+    def iter_individuals(self):
+        for i in range(self.n_households):
+            for j in range(len(self.infectious[i])):
+                yield (i,j)
+
+    def any_infectious(self, grp_individuals):
+        return any([self.infectious[i][j] for (i,j) in grp_individuals])
+
+    def update_qurantine_status(self, test_results, groups):
+        # unquarantine all confirmed negative results who do not also have
+        # an infected family member
+        self.household_risk_status = [False] * self.n_households
+        for group_idx, result in test_results.iteritems():
+            # for any positive group, set all household risk statuses to True
+            # within that group
+            if result:
+                for i,_ in groups[group_idx]:
+                    self.household_risk_status[i] = True
+
+        # unquarantine all households with negative risk status
+        for i, risk_status in enumerate(self.household_risk_status):
+            if not risk_status:
+                for j in range(len(self.quarantined[i])):
+                    self.quarantined[i][j] = False
 
 
     def quarantine(self, x):
