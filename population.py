@@ -1,6 +1,6 @@
 import numpy as np
 
-class population:
+class Population:
 
     """ This class describes a population of people and their infection status, optionally including information about their
     household organization and the ability to simulate infection status in an correlated way across households.
@@ -28,8 +28,9 @@ class population:
         #
         assert np.isclose(np.sum(household_size_dist), 1.)
 
-        self.infectious = np.zeros(n_households)
-        self.quarantined = [False] * n_households
+        self.infectious = []
+        self.quarantined = []
+        self.susceptible = []
         self.prevalence = prevalence
         self.n_households = n_households
         self.R0 = R0
@@ -43,14 +44,20 @@ class population:
             self.total_pop += h
             # compute primary case probability = p*h/(1+SAR*(h-1))
             prob_prim = prevalence*h/(1+SAR*(h-1))
-            self.infectious[i] = np.random.rand(1) < prob_prim
+            infectious = [np.random.uniform() < prob_prim]
+            quarantined = [True]        
             if h > 1:
                 # if there are >1 members in the household, and there is a primary case,
                 # generate secondary cases from Bin(h-1, SAR); otherwise, set everyone to be uninfected
-                self.infectious[i].extend(np.random.binomial(1, SAR, h-1) * self.infectious[i]==1)
-                self.quarantined[i].extend([False]*(h-1))
+                infectious.extend(np.random.binomial(1, SAR, h-1) * infectious[0] == True)
+                quarantined.extend([True]*(h-1))
+            
+            susceptible = [not infected for infected in infectious]
+            
+            self.susceptible.append(np.array(susceptible))
+            self.infectious.append(np.array(infectious))
+            self.quarantined.append(np.array(quarantined))
 
-        self.susceptible = ~self.infectious
 
     def __check_indices(self,x):
         # Make sure that a passed set of individual array indices are valid for our population
@@ -81,7 +88,7 @@ class population:
         for i in range(self.n_households):
             for j in range(len(self.quarantined[i])):
                 if ~self.quarantined[i][j] and self.susceptible[i][j]:
-                    self.infectious[i][j] = np.random.rand(1) < self.R0**(1/self.d0) * self.get_prevalence
+                    self.infectious[i][j] = np.random.uniform() < self.R0**(1/self.d0) * self.get_prevalence
 
 
     def quarantine(self, x):
