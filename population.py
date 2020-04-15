@@ -16,7 +16,7 @@ class Population:
         # True if susceptible to the disease, i.e., has not died or developed immunity, and not currently infected
         self.susceptible = ~self.infectious
 
-    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct, initial_quarantine):
+    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct, initial_quarantine, FNR=0):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
         # household_size_dist:  a numpy array that should sum to 1, where household_size_dist[i] gives the fraction of
@@ -36,6 +36,8 @@ class Population:
         self.d0 = d0
         self.SAR = SAR
         self.fatality_pct = fatality_pct
+
+        self.FNR= FNR
 
         self.remaining_days_infected = {}
         self.deaths = set([])
@@ -67,6 +69,9 @@ class Population:
             self.infectious[i] =(np.array(infectious))
 
         self.update_infection_days()
+
+    def set_FNR(self, FNR):
+        self.FNR=FNR
 
     def update_infection_days(self):
         for i in range(self.n_households):
@@ -135,18 +140,37 @@ class Population:
         self.update_infection_days()
 
     def get_population_size(self):
-        return sum([len(household) for household in self.infectious])
+        return self.total_pop
     
     def get_num_households(self):
         return self.n_households
 
     def get_avg_household_size(self):
-        return np.mean([len(household) for household in self.infectious])
+        return np.mean([len(household) for household in self.infectious.values()])
     
     def iter_individuals(self):
         for i in range(self.n_households):
             for j in range(len(self.infectious[i])):
                 yield (i,j)
+
+    def iter_households(self):
+        for i in range(self.n_households):
+            yield i
+
+    def iter_household_individuals(self, household):
+        for j in range(len(self.infectious[household])):
+            yield (household, j)
+
+    def test_group(self, grp_individuals):
+        infected_subgrp = self.active_cases.intersection(set(grp_individuals))
+        if len(infected_subgrp) == 0:
+            return False
+        else:
+            false_neg_prob = self.FNR ** len(infected_subgrp)
+            if np.random.uniform() < false_neg_prob:
+                return False
+            else:
+                return True
 
     def any_infectious(self, grp_individuals):
         return any([self.infectious[i][j] for (i,j) in grp_individuals])
