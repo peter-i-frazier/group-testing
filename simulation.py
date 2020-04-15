@@ -22,6 +22,8 @@ class Simulation:
                 'total_infected': self.population.get_num_infected(),
                 'individuals_quarantined': self.population.get_num_quarantined(),
                 'households_quarantined': self.population.get_num_households_quarantined(),
+                'total_dead': self.population.get_total_dead(),
+                'total_recovered': self.population.get_total_recovered(),
                 'grp_test_data': grp_test_data,
             }
 

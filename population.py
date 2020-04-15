@@ -167,26 +167,33 @@ class Population:
 
         # unquarantine all households with negative risk status
         for i, risk_status in enumerate(self.household_risk_status):
-            if not risk_status:
-                for j in range(len(self.quarantined[i])):
-                    self.quarantined[i][j] = False
+            for j in range(len(self.quarantined[i])):
+                if risk_status:
+                    self.quarantine(i,j)
+                else:
+                    self.unquarantine(i,j)
 
 
-    def quarantine(self, x):
+    def quarantine(self, i, j):
         # Put into quarantine all individuals whose indices are in the list x
-        self.__check_indices(x)
-        self.quarantined[x] = True
+        if (i,j) not in self.deaths:
+            self.quarantined[i][j] = True
 
-    def unquarantine(self, x):
+    def unquarantine(self, i, j):
         # Remove from quarantine all individuals whose indices are in the list x
-        self.__check_indices(x)
-        self.quarantined[x] = False
+        self.quarantined[i][j] = False
 
     def get_num_infected(self):
         infected_counts = 0
         for i in range(self.n_households):
             infected_counts += np.sum(self.infectious[i])
         return infected_counts
+
+    def get_total_dead(self):
+        return len(self.deaths)
+
+    def get_total_recovered(self):
+        return len(self.recoveries)
 
     def get_num_quarantined(self):
         quarantined_counts = 0
