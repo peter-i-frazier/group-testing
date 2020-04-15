@@ -182,11 +182,23 @@ class Population:
         self.__check_indices(x)
         self.quarantined[x] = False
 
-    def num_infected(self):
+    def get_num_infected(self):
         infected_counts = 0
         for i in range(self.n_households):
-            infected_counts += np.sum(self.infectious[i] and ~self.quarantined[i])
+            infected_counts += np.sum(self.infectious[i])
         return infected_counts
 
+    def get_num_quarantined(self):
+        quarantined_counts = 0
+        for i in range(self.n_households):
+            quarantined_counts += np.sum(self.quarantined[i])
+        return quarantined_counts
+    
+    def get_num_households_quarantined(self):
+        quarantined_counts = 0
+        for i in range(self.n_households):
+            if any(self.quarantined[i]):
+                quarantined_counts += 1
+        return quarantined_counts
     #def num_recovered_dead(self):
     # for now we haven't taken into consideration the duration of infection and recovery yet

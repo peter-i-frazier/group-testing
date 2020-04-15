@@ -29,10 +29,16 @@ class GollierGroupTest:
             groups[grp].append(individual)
 
         test_results = {}
+        num_negative_grps = 0
         for group_idx, grp_individuals in groups.items():
             result = population.any_infectious(grp_individuals)
             test_results[group_idx] = result
+            if not result:
+                num_negative_grps += 1
+
+        grp_test_data = {'num_grps':num_grps, 'grp_size': grp_size,
+                        'num_negative_grps': num_negative_grps}
         
-        return test_results, groups 
+        return test_results, groups, grp_test_data 
 
 
