@@ -77,18 +77,22 @@ class Population:
         unquarantined_counts = 0
 
         for i in range(self.n_households):
-            infected_counts += np.sum(self.infectious[i] and ~self.quarantined[i])
-            unquarantined_counts += np.sum(~self.quarantine[i])
-        return infected_counts / unquarantined_counts
+            infected_counts += np.sum(self.infectious[i] & ~self.quarantined[i])
+            unquarantined_counts += np.sum(~self.quarantined[i])
+        if unquarantined_counts == 0:
+            return 0
+        else:
+            return infected_counts / unquarantined_counts
 
     def step(self):
         # Simulate one step forward in time
         # Simulate how infectious individuals infect each other
         # Unquarantined susceptible people become infected w/ probability = alpha*current prevalence
+        prevalence = self.get_prevalence()
         for i in range(self.n_households):
             for j in range(len(self.quarantined[i])):
-                if ~self.quarantined[i][j] and self.susceptible[i][j]:
-                    self.infectious[i][j] = np.random.uniform() < self.R0**(1/self.d0) * self.get_prevalence
+                if ~self.quarantined[i][j] and self.susceptible[i][j] and (not self.infectious[i][j]):
+                    self.infectious[i][j] = np.random.uniform() < self.R0**(1/self.d0) * prevalence
 
 
     def quarantine(self, x):
