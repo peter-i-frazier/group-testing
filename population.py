@@ -35,8 +35,10 @@ class Population:
         self.n_households = n_households
         self.R0 = R0
         self.d0 = d0
+        self.SAR = SAR
 
         self.total_pop = 0
+
 
         for i in range(n_households):
             # generate household size h from household_size_dist
@@ -90,9 +92,17 @@ class Population:
         # Unquarantined susceptible people become infected w/ probability = alpha*current prevalence
         prevalence = self.get_prevalence()
         for i in range(self.n_households):
+            household_infected = any(self.infectious[i])
             for j in range(len(self.quarantined[i])):
                 if ~self.quarantined[i][j] and self.susceptible[i][j] and (not self.infectious[i][j]):
-                    self.infectious[i][j] = np.random.uniform() < self.R0**(1/self.d0) * prevalence
+                    if household_infected:
+                        secondary_prob = self.SAR # maybe should depend on total # of infected in household, but this is a start
+                        new_secondary = np.random.uniform() < secondary_prob
+                    else:
+                        new_secondary = False
+                    primary_prob = np.log(self.R0) * prevalence / self.d0
+                    new_primary = np.random.uniform() < primary_prob
+                    self.infectous[i][j] = new_primary or new_secondary
 
 
     def quarantine(self, x):
