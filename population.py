@@ -26,7 +26,7 @@ class population:
         #                       forward in time; SAR is defined as the probability that an infection occurs among
         #                       susceptible people within a household related to a confirmed case
         #
-        assert np.isclose(np.sum(household_size_dist),1.)
+        assert np.isclose(np.sum(household_size_dist), 1.)
 
         self.infectious = np.zeros(n_households)
         self.quarantined = [False] * n_households
@@ -36,7 +36,6 @@ class population:
         self.d0 = d0
 
         self.total_pop = 0
-        infected_counts = 0
 
         for i in range(n_households):
             # generate household size h from household_size_dist
@@ -44,8 +43,8 @@ class population:
             self.total_pop += h
             # compute primary case probability = p*h/(1+SAR*(h-1))
             prob_prim = prevalence*h/(1+SAR*(h-1))
-            self.infectious[i] = np.random.rand(1)< prob_prim
-            if h>1:
+            self.infectious[i] = np.random.rand(1) < prob_prim
+            if h > 1:
                 # if there are >1 members in the household, and there is a primary case,
                 # generate secondary cases from Bin(h-1, SAR); otherwise, set everyone to be uninfected
                 self.infectious[i].extend(np.random.binomial(1, SAR, h-1) * self.infectious[i]==1)
@@ -65,22 +64,20 @@ class population:
         self.__check_indices(x)
         return self.infectious[x]
 
-
     def get_prevalence(self):
         # Get current prevalence = (number of infectious unquarantined) / (number of unquarantined)
         infected_counts = 0
-        unquarantine_counts = 0
+        unquarantined_counts = 0
 
         for i in range(self.n_households):
             infected_counts += np.sum(self.infectious[i] and ~self.quarantined[i])
-            unquarantine_counts += np.sum(~self.quarantine[i])
-        return infected_counts / unquarantine_counts
+            unquarantined_counts += np.sum(~self.quarantine[i])
+        return infected_counts / unquarantined_counts
 
     def step(self):
         # Simulate one step forward in time
         # Simulate how infectious individuals infect each other
-
-        # unquarantined susceptible people become infected w/ probability = alpha*current prevalence
+        # Unquarantined susceptible people become infected w/ probability = alpha*current prevalence
         for i in range(self.n_households):
             for j in range(len(self.quarantined[i])):
                 if ~self.quarantined[i][j] and self.susceptible[i][j]:
