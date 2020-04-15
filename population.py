@@ -121,15 +121,19 @@ class Population:
         for i in range(self.n_households):
             household_infected = any(self.infectious[i])
             for j in range(len(self.quarantined[i])):
+                if household_infected:
+                    secondary_prob = self.SAR # maybe should depend on total # of infected in household, but this is a start
+                    new_secondary = np.random.uniform() < secondary_prob
+                else:
+                    new_secondary = False
+
                 if ~self.quarantined[i][j] and self.susceptible[i][j] and (not self.infectious[i][j]):
-                    if household_infected:
-                        secondary_prob = self.SAR # maybe should depend on total # of infected in household, but this is a start
-                        new_secondary = np.random.uniform() < secondary_prob
-                    else:
-                        new_secondary = False
                     primary_prob = np.log(self.R0) * prevalence / self.d0
                     new_primary = np.random.uniform() < primary_prob
-                    self.infectous[i][j] = new_primary or new_secondary
+                else:
+                    new_primary = False
+
+                self.infectious[i][j] = new_primary or new_secondary
 
         self.update_infection_days()
 
@@ -150,11 +154,11 @@ class Population:
     def any_infectious(self, grp_individuals):
         return any([self.infectious[i][j] for (i,j) in grp_individuals])
 
-    def update_qurantine_status(self, test_results, groups):
+    def update_quarantine_status(self, test_results, groups):
         # unquarantine all confirmed negative results who do not also have
         # an infected family member
         self.household_risk_status = [False] * self.n_households
-        for group_idx, result in test_results.iteritems():
+        for group_idx, result in test_results.items():
             # for any positive group, set all household risk statuses to True
             # within that group
             if result:

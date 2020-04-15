@@ -9,7 +9,7 @@ class GollierGroupTest:
     def test(self, population):
         # TODO: need to update infection_pct_blf each round
         pop_size = population.get_population_size()
-        grp_size_individuals = -1 / np.log(1-self.infection_pct_blf)
+        grp_size = -1 / np.log(1-self.infection_pct_blf)
 
         # for now ignore household correlation
         # grp_size_households = 
@@ -29,7 +29,7 @@ class GollierGroupTest:
             groups[grp].append(individual)
 
         test_results = {}
-        for group_idx, grp_individuals in groups.iteritems():
+        for group_idx, grp_individuals in groups.items():
             result = population.any_infectious(grp_individuals)
             test_results[group_idx] = result
         
