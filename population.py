@@ -51,7 +51,11 @@ class Population:
 
         for i in range(n_households):
             # generate household size h from household_size_dist
-            h = int(np.random.choice(np.arange(1, len(household_size_dist)+1), 1, p=household_size_dist))
+            randomizer = np.random.uniform()
+            h = 0
+            while randomizer >= 0:
+                randomizer -= household_size_dist[h]
+                h += 1
             self.total_pop += h
             # compute primary case probability = p*h/(1+SAR*(h-1))
             prob_prim = prevalence*h/(1+SAR*(h-1))
