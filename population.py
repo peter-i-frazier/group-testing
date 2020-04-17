@@ -16,7 +16,7 @@ class Population:
         # True if susceptible to the disease, i.e., has not died or developed immunity, and not currently infected
         self.susceptible = ~self.infectious
 
-    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, d0, fatality_pct, initial_quarantine, FNR=0):
+    def __init__(self, n_households, household_size_dist, prevalence, SAR, R0, R0_social_dist, d0, fatality_pct, FNR=0):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
         # household_size_dist:  a numpy array that should sum to 1, where household_size_dist[i] gives the fraction of
@@ -33,6 +33,7 @@ class Population:
         self.prevalence = prevalence
         self.n_households = n_households
         self.R0 = R0
+        self.R0_social_dist = R0_social_dist
         self.d0 = d0
         self.SAR = SAR
         self.fatality_pct = fatality_pct
@@ -45,6 +46,9 @@ class Population:
         self.active_cases = set([])
         self.quarantined_households = set([])
         self.quarantined_individuals = set()
+
+        self.socially_distant_households = set()
+        self.socially_distant_individuals = set()
 
         self.total_pop = 0
 
@@ -64,8 +68,6 @@ class Population:
                 # if there are >1 members in the household, and there is a primary case,
                 # generate secondary cases from Bin(h-1, SAR); otherwise, set everyone to be uninfected
                 infectious.extend(np.random.binomial(1, SAR, h-1) * infectious[0] == True)
-            if initial_quarantine:
-                self.quarantine_household(i)
             
             susceptible = [not infected for infected in infectious]
             
@@ -73,6 +75,35 @@ class Population:
             self.infectious[i] =(np.array(infectious))
 
         self.update_infection_days()
+
+    def begin_social_distancing(self):
+        for i in range(self.n_households):
+            self.socially_distant_households.add(i)
+            for j in range(len(self.infectious[i])):
+                self.socially_distant_individuals.add((i,j))
+
+    def end_social_distancing(self):
+        for i in range(self.n_households):
+            self.socially_distant_households.discard(i)
+            for j in range(len(self.infectious[i])):
+                self.socially_distant_individuals.discard((i,j))
+
+    def un_distance_household(self, i):
+        self.socially_distant_households.discard(i)
+        for j in range(len(self.infectious[i])):
+            self.socially_distant_individuals.discard((i,j))
+
+    def distance_household(self, i):
+        self.socially_distant_households.discard(i)
+        for j in range(len(self.infectious[i])):
+            self.socially_distant_individuals.discard((i,j))
+    
+    def get_num_social_dist_households(self):
+        return len(self.socially_distant_households)
+
+    def get_num_social_dist(self):
+        return len(self.socially_distant_individuals)
+
 
     def set_FNR(self, FNR):
         self.FNR=FNR
@@ -126,6 +157,8 @@ class Population:
         prevalence = self.get_prevalence()
         for i in range(self.n_households):
             household_infected = any(self.infectious[i])
+            household_socially_distant = (i in self.socially_distant_households)
+
             for j in range(len(self.infectious[i])):
                 if household_infected and self.susceptible[i][j]:
                     secondary_prob = self.SAR # maybe should depend on total # of infected in household, but this is a start
@@ -134,7 +167,10 @@ class Population:
                     new_secondary = False
 
                 if not (i,j) in self.quarantined_individuals and self.susceptible[i][j]:
-                    primary_prob = np.log(self.R0) * prevalence / self.d0
+                    if household_socially_distant:
+                        primary_prob = np.log(self.R0) * prevalence / self.d0
+                    else:
+                        primary_prob = np.log(self.R0) * prevalence / self.d0
                     new_primary = np.random.uniform() < primary_prob
                 else:
                     new_primary = False
@@ -179,7 +215,7 @@ class Population:
     def any_infectious(self, grp_individuals):
         return any([self.infectious[i][j] for (i,j) in grp_individuals])
 
-    def update_quarantine_status(self, test_results, groups):
+    def react_to_test(self, test_results, groups):
         # unquarantine all confirmed negative results who do not also have
         # an infected family member
         household_risk_status = [False] * self.n_households
