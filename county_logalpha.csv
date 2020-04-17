@@ -1,4 +1,4 @@
-,county name,pop_density,mean ln(alpha),sd of ln(alpha)
+,county name,pop_density,mean_PRE,sd_PRE
 0,"Autauga, Alabama, US",91.8,0.0,0.0
 1,"Baldwin, Alabama, US",114.6,0.0,0.0
 2,"Barbour, Alabama, US",31.0,0.0,0.0
