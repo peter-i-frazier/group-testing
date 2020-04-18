@@ -2,7 +2,8 @@ class Simulation:
 
     def __init__(self, population, 
                         group_test, 
-                        test_frequency):
+                        test_frequency,
+                        test_latency):
         self.population = population
         self.group_test = group_test
         self.test_frequency = test_frequency
@@ -13,26 +14,40 @@ class Simulation:
         self.recorded_data = {}
 
         self.cumulative_tests_to_date = 0
+        self.test_latency = test_latency
+        self.has_recent_test_been_reported = False
+        self.test_results = None
+
+    def report_test(self):
+        assert(self.test_results != None and not self.has_recent_test_been_reported)
+        self.has_recent_test_been_reported = True
+
+         # enact test results. first unquarantine all negative households
+        for (i,j), test_detected_presence in self.test_results.items():
+            if not test_detected_presence:
+                self.population.unquarantine_household(i)
+
+        # next quarantine all positive homes (quarantine takes precedence)
+        for (i,j), test_detected_presence in self.test_results.items():
+            if test_detected_presence:
+                self.population.quarantine_household(i)
 
     def step(self):
         if self.current_day == 0 or self.current_day - self.last_test_day >= self.test_frequency:
 
 
-            test_results, number_of_tests = self.group_test.test(self.population)
+            self.test_results, number_of_tests = self.group_test.test(self.population)
+            self.has_recent_test_been_reported = False
+
 
             self.last_test_day = self.current_day
 
-            # enact test results. first unquarantine all negative households
-            for (i,j), test_detected_presence in test_results.items():
-                if not test_detected_presence:
-                    self.population.unquarantine_household(i)
-
-            # next quarantine all positive homes (quarantine takes precedence)
-            for (i,j), test_detected_presence in test_results.items():
-                if test_detected_presence:
-                    self.population.quarantine_household(i)
         else:
             number_of_tests  = 0
+
+        if self.current_day - self.last_test_day >= self.test_latency and not self.has_recent_test_been_reported:
+            self.report_test()
+            self.has_recent_test_been_reported = True
 
         self.cumulative_tests_to_date += number_of_tests
 
