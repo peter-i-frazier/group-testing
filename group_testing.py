@@ -2,6 +2,59 @@ from math import ceil
 import random
 import numpy as np
 
+class ThreeStageHierarchicalTest:
+
+    def __init__(self,
+            large_group_size,
+            small_group_size,
+            group_test_participation_rate,
+            outer_false_negative_rate,
+            inner_false_negative_rate):
+        self.large_group_size = large_group_size
+        self.small_group_size = small_group_size
+        self.group_test_participation_rate = group_test_participation_rate
+        self.inner_false_negative_rate = inner_false_negative_rate
+
+        self.outer_group_test = HouseholdGroupTest(large_group_size,
+                                                    group_test_participation_rate,
+                                                    outer_false_negative_rate)
+        self.inner_group_test = HouseholdGroupTest(small_group_size,
+                                                    group_test_participation_rate,
+                                                    inner_false_negative_rate)
+                                                    
+
+    def test(self, population):
+
+        outer_test_results, num_outer_tests = self.outer_group_test.test(population)
+        positive_outer_individuals = set([(i,j) for (i,j) in outer_test_results if outer_test_results[(i,j)]])
+        
+        inner_test_results, num_inner_tests = self.inner_group_test.test(population, 
+                                                                test_individuals=positive_outer_individuals)
+
+        positive_inner_individuals = set([(i,j) for (i,j) in inner_test_results if inner_test_results[(i,j)]])
+        
+        positive_individuals = set()
+        num_individual_tests = 0
+
+        if self.small_group_size > 1:
+            for (i,j) in positive_inner_individuals:
+                num_individual_tests += 1
+
+                if (i,j) in population.infected_individuals:
+
+                    if random.random() >  self.inner_false_negative_rate:
+                        positive_individuals.add((i,j))
+        else:
+            positive_individuals = positive_inner_individuals
+
+        total_tests = num_outer_tests + num_inner_tests + num_individual_tests
+        test_results = {(i,j):False for (i,j) in outer_test_results}
+        for (i,j) in positive_individuals:
+            test_results[(i,j)] = True
+
+        return test_results, total_tests
+
+
 class HouseholdGroupTest:
     def __init__(self, 
             group_test_size,
@@ -11,15 +64,16 @@ class HouseholdGroupTest:
         self.group_test_participation_rate = group_test_participation_rate
         self.false_negative_rate = false_negative_rate
 
-    def test(self, population):
+    def test(self, population, test_individuals=None):
 
         # Make the test groups
+        
+        if test_individuals == None:
+            test_individuals = set()
 
-        test_individuals = set()
-
-        for (i,j) in population.population - population.fatality_individuals:
-            if (i,j) in population.quarantined_individuals or random.random() < self.group_test_participation_rate:
-                test_individuals.add((i,j))
+            for (i,j) in population.population - population.fatality_individuals:
+                if (i,j) in population.quarantined_individuals or random.random() < self.group_test_participation_rate:
+                    test_individuals.add((i,j))
 
         number_of_groups = int(ceil(len(test_individuals) / self.group_test_size))
         ordered_test_individuals = list(test_individuals)
