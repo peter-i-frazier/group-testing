@@ -14,7 +14,8 @@ class Population:
                     disease_length,
                     non_quarantine_alpha,
                     daily_secondary_attack_rate,
-                    fatality_pct
+                    fatality_pct,
+                    daily_outside_infection_pct
                    ):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
@@ -33,6 +34,7 @@ class Population:
         self.non_quarantine_alpha = non_quarantine_alpha
         self.disease_length = disease_length
         self.fatality_pct = fatality_pct
+        self.daily_outside_infection_pct = daily_outside_infection_pct
 
         self.population = set([(i,j) for i in range(n_households) for j in range(household_size)]) 
         self.households = set([i for i in range(n_households)])
@@ -70,7 +72,7 @@ class Population:
 
         for (i,j) in self.unquarantined_individuals:
             if (i,j) not in self.cumulative_infected_individuals:
-                if random.random() < probability_new_infection:
+                if random.random() < probability_new_infection or random.random() < self.daily_outside_infection_pct:
                     self.infected_individuals.add((i,j))
                     self.cumulative_infected_individuals.add((i,j))
 
