@@ -1,33 +1,52 @@
 class Simulation:
 
-    def __init__(self, population, grptest, test_freq):
+    def __init__(self, population, 
+                        group_test, 
+                        test_frequency):
         self.population = population
-        self.grptest = grptest
-        self.test_freq = test_freq
+        self.group_test = group_test
+        self.test_frequency = test_frequency
+
         self.current_day = 0
         self.last_test_day = 0
+
         self.recorded_data = {}
 
+        self.cumulative_tests_to_date = 0
+
     def step(self):
-        if self.current_day == 0 or self.current_day - self.last_test_day >= self.test_freq:
-            test_results, groups, grp_test_data = self.grptest.test(self.population)
-            self.population.react_to_test(test_results, groups)
+        if self.current_day == 0 or self.current_day - self.last_test_day >= self.test_frequency:
+
+
+            test_results, number_of_tests = self.group_test.test(self.population)
+
             self.last_test_day = self.current_day
+
+            # enact test results. first unquarantine all negative households
+            for (i,j), test_detected_presence in test_results.items():
+                if not test_detected_presence:
+                    self.population.unquarantine_household(i)
+
+            # next quarantine all positive homes (quarantine takes precedence)
+            for (i,j), test_detected_presence in test_results.items():
+                if test_detected_presence:
+                    self.population.quarantine_household(i)
         else:
-            grp_test_data = None
+            number_of_tests  = 0
+
+        self.cumulative_tests_to_date += number_of_tests
 
         self.population.step()
 
+        population_size = len(self.population.population)
+
         sim_data = {
-                'total_infected': self.population.get_num_infected(),
-                'individuals_quarantined': self.population.get_num_quarantined(),
-                'households_quarantined': self.population.get_num_households_quarantined(),
-                'households_socially_distant': self.population.get_num_social_dist_households(),
-                'individuals_socially_distant': self.population.get_num_social_dist(),
-                'total_dead': self.population.get_total_dead(),
-                'total_recovered': self.population.get_total_recovered(),
-                'grp_test_data': grp_test_data,
-            }
+                'in_quarantine_fraction': len(self.population.quarantined_individuals) / population_size,
+                'fatality_fraction': len(self.population.fatality_individuals) / population_size,
+                'cumulative_infected_fraction': len(self.population.cumulative_infected_individuals) / 
+                                                                                    population_size,
+                'cumulative_tests_to_date': self.cumulative_tests_to_date
+        }
 
         self.recorded_data[self.current_day] = sim_data
 
