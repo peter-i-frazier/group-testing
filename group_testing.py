@@ -33,8 +33,7 @@ class ThreeStageHierarchicalTest:
             small_group_size,
             group_test_participation_rate,
             outer_false_negative_rate,
-            inner_false_negative_rate,
-            only_test_symptomatic_individuals):
+            inner_false_negative_rate):
         self.large_group_size = large_group_size
         self.small_group_size = small_group_size
         assert(self.small_group_size > 1)
