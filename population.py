@@ -12,10 +12,12 @@ class Population:
                     household_size, 
                     initial_prevalence, 
                     disease_length,
+                    time_until_symptomatic,
                     non_quarantine_alpha,
                     daily_secondary_attack_rate,
                     fatality_pct,
-                    daily_outside_infection_pct
+                    daily_outside_infection_pct,
+                    outside_symptomatic_prob
                    ):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
@@ -33,8 +35,10 @@ class Population:
         self.daily_secondary_attack_rate = daily_secondary_attack_rate
         self.non_quarantine_alpha = non_quarantine_alpha
         self.disease_length = disease_length
+        self.time_until_symptomatic = time_until_symptomatic
         self.fatality_pct = fatality_pct
         self.daily_outside_infection_pct = daily_outside_infection_pct
+        self.outside_symptomatic_prob = outside_symptomatic_prob
 
         self.population = set([(i,j) for i in range(n_households) for j in range(household_size)]) 
         self.households = set([i for i in range(n_households)])
@@ -68,6 +72,13 @@ class Population:
 
     def resume_operations(self):
         self.currently_operating = True
+
+    def is_symptomatic(self, individual):
+        return self.days_infected_so_far[individual] >= self.time_until_symptomatic or random.random() < self.outside_symptomatic_prob
+
+    def get_symptomatic_individuals(self):
+        symptomatic = set([(i,j) for (i,j) in self.population if self.is_symptomatic((i,j))])
+        return symptomatic
 
     def step(self):
         # Simulate one step forward in time

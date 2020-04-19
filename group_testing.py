@@ -2,6 +2,30 @@ from math import ceil
 import random
 import numpy as np
 
+
+class SymptomaticIndividualTest:
+
+    def __init__(self, false_negative_rate):
+        self.false_negative_rate = false_negative_rate
+
+    def test(self, population):
+        symptomatic_individuals = population.get_symptomatic_individuals()
+        quarantined_individuals = population.quarantined_individuals
+
+        test_individuals = symptomatic_individuals.union(quarantined_individuals)
+
+        test_results = {}
+        num_tests = len(test_individuals)
+        for (i,j) in test_individuals:
+            if (i,j) not in population.infected_individuals:
+                test_results[(i,j)] = False
+            elif random.random() < self.false_negative_rate:
+                test_results[(i,j)] = False
+            else:
+                test_results[(i,j)] = True
+
+        return test_results, num_tests
+
 class ThreeStageHierarchicalTest:
 
     def __init__(self,
@@ -9,7 +33,8 @@ class ThreeStageHierarchicalTest:
             small_group_size,
             group_test_participation_rate,
             outer_false_negative_rate,
-            inner_false_negative_rate):
+            inner_false_negative_rate,
+            only_test_symptomatic_individuals):
         self.large_group_size = large_group_size
         self.small_group_size = small_group_size
         assert(self.small_group_size > 1)
@@ -24,7 +49,7 @@ class ThreeStageHierarchicalTest:
                                                     inner_false_negative_rate)
 
         self.previous_positive_individuals = set()
-                                                    
+
 
     def test(self, population):
 
