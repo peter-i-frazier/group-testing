@@ -17,7 +17,8 @@ class Population:
                     daily_secondary_attack_rate,
                     fatality_pct,
                     daily_outside_infection_pct,
-                    outside_symptomatic_prob
+                    outside_symptomatic_prob,
+                    initial_quarantine
                    ):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
@@ -44,9 +45,12 @@ class Population:
         self.households = set([i for i in range(n_households)])
 
 
-
-        self.quarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
-        self.unquarantined_individuals = set()
+        if initial_quarantine:
+            self.quarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
+            self.unquarantined_individuals = set()
+        else:
+            self.unquarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
+            self.quarantined_individuals = set()
 
         self.fatality_individuals = set()
         self.recovered_individuals = set()
