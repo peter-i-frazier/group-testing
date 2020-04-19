@@ -70,6 +70,7 @@ class Simulation:
 
         sim_data = {
                 'in_quarantine_fraction': len(self.population.quarantined_individuals) / population_size,
+                'infected_fraction': len(self.population.infected_individuals) / population_size,
                 'fatality_fraction': len(self.population.fatality_individuals) / population_size,
                 'cumulative_infected_fraction': len(self.population.cumulative_infected_individuals) / 
                                                                                     population_size,
