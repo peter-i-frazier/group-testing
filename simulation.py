@@ -3,7 +3,8 @@ class Simulation:
     def __init__(self, population, 
                         group_test, 
                         test_frequency,
-                        test_latency):
+                        test_latency,
+                        halt_operations_if_case_detected):
         self.population = population
         self.group_test = group_test
         self.test_frequency = test_frequency
@@ -17,10 +18,22 @@ class Simulation:
         self.test_latency = test_latency
         self.has_recent_test_been_reported = False
         self.test_results = None
+        self.halt_operations_if_case_detected = halt_operations_if_case_detected
 
     def report_test(self):
         assert(self.test_results != None and not self.has_recent_test_been_reported)
         self.has_recent_test_been_reported = True
+
+        if self.halt_operations_if_case_detected:
+            any_detected = False
+            for (i,j) in self.test_results:
+                if (i,j) in self.population.unquarantined_individuals:
+                    if self.test_results[(i,j)]:
+                        any_detected = True
+            if any_detected:
+                self.population.halt_operations()
+            else:
+                self.population.resume_operations()
 
          # enact test results. first unquarantine all negative households
         for (i,j), test_detected_presence in self.test_results.items():
@@ -62,7 +75,8 @@ class Simulation:
                                                                                     population_size,
                 'within_population_infection_pct': self.population.infections_from_inside / 
                                                         len(self.population.cumulative_infected_individuals),
-                'cumulative_tests_to_date': self.cumulative_tests_to_date
+                'cumulative_tests_to_date': self.cumulative_tests_to_date,
+                'cumulative_days_halted': self.population.days_halted
         }
 
         self.recorded_data[self.current_day] = sim_data

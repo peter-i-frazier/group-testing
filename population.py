@@ -53,12 +53,21 @@ class Population:
         self.cumulative_infected_individuals = set()
         self.infections_from_inside = 0
 
+        self.days_halted = 0
+        self.currently_operating = True
+
 
         # infect initial population
         for (i,j) in self.population:
             if random.random() < self.initial_prevalence:
                 self.infected_individuals.add((i,j))
                 self.cumulative_infected_individuals.add((i,j))
+
+    def halt_operations(self):
+        self.currently_operating = False
+
+    def resume_operations(self):
+        self.currently_operating = True
 
     def step(self):
         # Simulate one step forward in time
@@ -68,8 +77,12 @@ class Population:
 
         # First simulate new primary cases
         current_prevalence = self.get_current_prevalence()
-        
-        probability_new_infection = log(self.non_quarantine_alpha) * current_prevalence
+
+        if self.currently_operating:
+            probability_new_infection = log(self.non_quarantine_alpha) * current_prevalence
+        else:
+            probability_new_infection = 0
+            self.days_halted += 1
 
         for (i,j) in self.unquarantined_individuals:
             if (i,j) not in self.cumulative_infected_individuals:
