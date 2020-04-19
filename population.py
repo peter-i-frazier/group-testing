@@ -51,6 +51,7 @@ class Population:
         self.infected_individuals = set([])
 
         self.cumulative_infected_individuals = set()
+        self.infections_from_inside = 0
 
 
         # infect initial population
@@ -72,7 +73,12 @@ class Population:
 
         for (i,j) in self.unquarantined_individuals:
             if (i,j) not in self.cumulative_infected_individuals:
-                if random.random() < probability_new_infection or random.random() < self.daily_outside_infection_pct:
+                if random.random() < probability_new_infection:
+                    self.infections_from_inside += 1
+                    self.infected_individuals.add((i,j))
+                    self.cumulative_infected_individuals.add((i,j))
+
+                elif random.random() < self.daily_outside_infection_pct:
                     self.infected_individuals.add((i,j))
                     self.cumulative_infected_individuals.add((i,j))
 

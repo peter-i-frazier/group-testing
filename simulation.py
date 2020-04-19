@@ -60,6 +60,8 @@ class Simulation:
                 'fatality_fraction': len(self.population.fatality_individuals) / population_size,
                 'cumulative_infected_fraction': len(self.population.cumulative_infected_individuals) / 
                                                                                     population_size,
+                'within_population_infection_pct': self.population.infections_from_inside / 
+                                                        len(self.population.cumulative_infected_individuals),
                 'cumulative_tests_to_date': self.cumulative_tests_to_date
         }
 
