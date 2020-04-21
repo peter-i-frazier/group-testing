@@ -49,6 +49,12 @@ class ThreeStageHierarchicalTest:
 
         self.previous_positive_individuals = set()
 
+    def get_group_size(self):
+        return self.large_group_size
+
+    def set_group_size(self, group_size):
+        self.large_group_size = group_size
+
 
     def test(self, population):
 
@@ -91,6 +97,12 @@ class HouseholdGroupTest:
         self.group_test_size = group_test_size
         self.group_test_participation_rate = group_test_participation_rate
         self.false_negative_rate = false_negative_rate
+
+    def get_group_size(self):
+        return self.group_test_size
+
+    def set_group_size(self, group_size):
+        self.group_test_size = group_size
 
     def test(self, population, test_individuals=None, non_participating_individuals=None):
 
@@ -165,15 +177,22 @@ class EmptyTest:
 class GollierGroupTest:
     def __init__(self, infection_pct_blf=0.01):
         self.infection_pct_blf = infection_pct_blf
+        self.grp_size = -1 / np.log(1-self.infection_pct_blf)
+
+    def set_group_size(self, group_size):
+        self.grp_size = group_size
+
+    def get_group_size(self):
+        return self.grp_size
 
     def update_infection_blf(self, infection_blf):
         self.infection_pct_blf = infection_blf
+        self.grp_size = -1 / np.log(1-self.infection_pct_blf)
 
     def test(self, population):
         # TODO: need to update infection_pct_blf each round
         pop_size = population.get_population_size()
-        grp_size = -1 / np.log(1-self.infection_pct_blf)
-
+        grp_size = self.grp_size
         # for now ignore household correlation
         # grp_size_households = 
 
