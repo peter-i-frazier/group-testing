@@ -11,7 +11,7 @@ class Population:
     
     def __init__(self, n_households, 
                     household_size_dist, 
-                    initial_prevalence, 
+                    target_prevalence, 
                     disease_length,
                     time_until_symptomatic,
                     non_quarantine_alpha,
@@ -20,6 +20,8 @@ class Population:
                     daily_outside_infection_pct,
                     outside_symptomatic_prob,
                     initial_quarantine,
+                    initial_prevalence=None,
+                    eps = 0.01
                    ):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
@@ -33,7 +35,7 @@ class Population:
 
         self.n_households = n_households
         self.household_size_dist = household_size_dist
-        self.initial_prevalence = initial_prevalence
+        self.target_prevalence = target_prevalence
         self.daily_secondary_attack_rate = daily_secondary_attack_rate
         self.non_quarantine_alpha = non_quarantine_alpha
         self.disease_length = disease_length
@@ -44,10 +46,75 @@ class Population:
         self.initial_quarantine = initial_quarantine
 
         assert(np.isclose(sum(self.household_size_dist), 1))
+        
+        if initial_prevalence == None:
+            self._compute_initial_infection_probability()
+        else:
+            self.initial_prevalence = initial_prevalence
+            prevalences = []
+            for _ in range(100):
+                self.reset()
+                prevalences.append(self.get_num_infected() / float(self.get_num_individuals()))
+            if abs(np.mean(prevalences)-self.target_prevalence) > eps:
+                print("Warning: Monte-carlo estimate of gap between desired target_prevalence and \
+                        Expected target prevalence is large: {}".format(
+                            abs(np.mean(prevalences)-self.target_prevalence) ))
 
         # Reset the population and create an initial infection
         self.reset()
+    
+    def _evaluate_r_monte_carlo(self, r, nreps=100):
+        prevalences = []
+        self.initial_prevalence = r
+        for _ in range(nreps):
+            self.reset()
+            prevalences.append(self.get_num_infected() / float(self.get_num_individuals()))
+        return np.mean(prevalences)
 
+    def _evaluate_r_analytic(self, r):
+
+        expected_infections = 0
+        expected_population = 0
+        SAR = self.daily_secondary_attack_rate
+        for i in range(len(self.household_size_dist)):
+            house_size = i+1
+            prob = self.household_size_dist[i]
+            expected_infections = house_size * (r + (1 - r) * SAR - SAR * (1 - r) ** house_size)
+
+            n_houses_of_size = prob * self.n_households
+            expected_infections += n_houses_of_size * expected_infections
+
+            expected_population += n_houses_of_size * house_size
+
+        return expected_infections / expected_population
+
+
+
+    def _compute_initial_infection_probability(self, eps=0.01):
+        # Find initial infection probability r under which E[infection prevalence(r,SAR)] = target_prevalence
+        # do binary search over r using Monte Carlo estimates of E[infection prevalence(r,SAR)]
+        # nreps: number of samples to use for Monte Carlo estimates
+        # eps: return r lying in range r* +/- eps
+        r_min = 0
+        r_max = self.target_prevalence
+
+        r_prev = 0
+        r = 0.5 * (r_min + r_max)
+        while abs(r - r_prev) > eps * self.target_prevalence:
+            r_prev = r
+
+            value = self._evaluate_r_monte_carlo(r) - self.target_prevalence
+            #value = self._evaluate_r_analytic(r) - self.target_prevalence
+
+            # if E[infection_prevalence[(r,SAR)] >= target_prevalence, we have to decrease r
+            if value >= 0:
+                r_max = r
+                r = 0.5 * (r_min + r)
+            else:
+                r_min = r
+                r = 0.5 * (r + r_max)
+
+        self.initial_prevalence = r
 
     def _sample_house_size(self):
         # Randomly select a house size from the self.household_size_dist distribution
