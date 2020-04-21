@@ -9,6 +9,9 @@ class MatrixGroupTest:
         #            forms 'matrix groups' of dimension group_size * group_size
         # false_negative_rate: how frequently does a test return false for a positive individual
         # fnr_at_swab_level: boolean. are false negatives at the swab level or the test level?
+        #                    If they are at the swab level, then an error will cause all tests on an individual's swab
+        #                    to come back negative.  If they are at the test level, then each test has an error
+        #                    independently.
         # group_by_household: boolean. form groups by household or by individuals?
         self.group_size = group_size
         self.false_negative_rate = false_negative_rate
@@ -17,17 +20,21 @@ class MatrixGroupTest:
 
 
     def _test_group(self, population, group):
-        # test a particular group for the presence of hte disease
+        # test a particular group for the presence of the disease
         # population: the relevant population object
         # group: the list of households in the group
         for i in group:
             for j in range(population.household_sizes[i]):
+                # For each swab that was tested in another group, we cache whether it was successful or not
                 if (i,j) in population.infected_individuals and (i,j) not in self.was_swab_successful:
                     if self.fnr_at_swab_level:
+                        # Randomize whether this new swab was successful.
                         self.was_swab_successful[(i,j)] = (random.random() > self.false_negative_rate)
                     else:
+                        # Since we aren't doing testing at the swab level, all swabs are successful
                         self.was_swab_successful[(i,j)] = True
 
+        # Number that are infected and have a successful swab
         num_in_group_infected = len([(i,j) for i in group for j in range(population.household_sizes[i])
                                     if (i,j) in population.infected_individuals 
                                     and self.was_swab_successful[(i,j)]])
@@ -35,12 +42,15 @@ class MatrixGroupTest:
         if self.fnr_at_swab_level:
             false_negative_pct = 0
         else:
+            # When false negatives are at the test level, we need to have an error for all infected individuals in the
+            # test for it come back negative
             false_negative_pct = self.false_negative_rate ** (num_in_group_infected)
 
         if num_in_group_infected == 0:
             if random.random() < self.false_positive_rate:
                 test_detected_presence = True
             else:
+                # False negatives from swab failures will cause num_in_group_infected == 0 and will show up here
                 test_detected_presence = False
         else:
             if random.random() < false_negative_pct:
@@ -53,6 +63,7 @@ class MatrixGroupTest:
 
 
     def test(self, population):
+        # Test the entire population.  Runs _test_group several times and aggregates results.
         avg_household_size = population.get_avg_household_size()
         household_group_size = ceil(self.group_size / float(avg_household_size))
         household_matrix_size = household_group_size ** 2
@@ -76,8 +87,8 @@ class MatrixGroupTest:
             row_groups = {i:[] for i in range(group_size)}
             column_groups = {j:[] for j in range(group_size)}
            
-            # form the row group assignments and the column group assignments 
-
+            # Form the row group assignments and the column group assignments.
+            # All members of a household are assigned together.
             for idx, household in enumerate(matrix_households):
                 row = floor(idx / float(group_size))
                 col = idx % group_size
@@ -85,7 +96,7 @@ class MatrixGroupTest:
                 column_groups[col].append(household)
 
              
-            # perform the tests for both row and column groups
+            # Perform the tests for both row and column groups.
             row_test_results = {}
             col_test_results = {}
             for idx in range(group_size):
@@ -94,7 +105,8 @@ class MatrixGroupTest:
                 n_tests += 2
 
 
-            # look at the intersection of all positive tests
+            # Look at the intersection of all positive tests.
+            # All members of a household are positive if their row and column both come back positive.
             for idx, household in enumerate(matrix_households):
                 row = floor(idx / float(group_size))
                 col = idx % group_size
