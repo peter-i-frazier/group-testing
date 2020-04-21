@@ -69,10 +69,12 @@ class StaticSimulation:
         n = self.population.get_num_individuals()
         # quarantine false negative rate is the number of quarantine false negatives,
         # i.e., positives that were incorrectly reported, divided by the overall number of positives
-        QFNR = np.mean(quarantine_false_negatives) / np.mean(positives)
+        #QFNR = np.mean(quarantine_false_negatives) / np.mean(positives)
+        QFNR = np.mean([QFN / P for QFN, P in zip(quarantine_false_negatives, positives)])
         # similarly, quarantine false positive rate is the number of negatives that were incorrectly reported divided
         # by the overall number of negatives
-        QFPR = np.mean(quarantine_false_positives) / (n - np.mean(positives))
+        #QFPR = np.mean(quarantine_false_positives) / (n - np.mean(positives))
+        QFPR = np.mean([QFP / (n - P) for QFP, P in zip(quarantine_false_positives, positives)])
         tests_per_person = np.mean(number_of_tests) / n
         quarantines_per_person = np.mean(quarantines) / n
 
