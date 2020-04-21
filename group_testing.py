@@ -24,7 +24,7 @@ class MatrixGroupTest:
             for j in range(population.household_sizes[i]):
                 if (i,j) in population.infected_individuals and (i,j) not in self.was_swab_successful:
                     if self.fnr_at_swab_level:
-                        self.was_swab_successful[(i,j)] = (random.random() < self.false_negative_rate)
+                        self.was_swab_successful[(i,j)] = (random.random() > self.false_negative_rate)
                     else:
                         self.was_swab_successful[(i,j)] = True
 
