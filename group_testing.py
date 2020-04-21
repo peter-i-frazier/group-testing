@@ -165,15 +165,19 @@ class EmptyTest:
 class GollierGroupTest:
     def __init__(self, infection_pct_blf=0.01):
         self.infection_pct_blf = infection_pct_blf
+        self.grp_size = -1 / np.log(1-self.infection_pct_blf)
+
+    def set_group_size(self, group_size):
+        self.grp_size = group_size
 
     def update_infection_blf(self, infection_blf):
         self.infection_pct_blf = infection_blf
+        self.grp_size = -1 / np.log(1-self.infection_pct_blf)
 
     def test(self, population):
         # TODO: need to update infection_pct_blf each round
         pop_size = population.get_population_size()
-        grp_size = -1 / np.log(1-self.infection_pct_blf)
-
+        grp_size = self.grp_size
         # for now ignore household correlation
         # grp_size_households = 
 
