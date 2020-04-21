@@ -103,7 +103,7 @@ class HouseholdGroupTest:
             group_test_size,
             group_test_participation_rate,
             false_negative_rate,
-            false_positive_rate):
+            false_positive_rate = 0):
         self.group_test_size = group_test_size
         self.group_test_participation_rate = group_test_participation_rate
         self.false_negative_rate = false_negative_rate

@@ -92,7 +92,14 @@ class Population:
                 self.infected_individuals.add((i,j))
                 self.cumulative_infected_individuals.add((i,j))
 
-        # TODO: Simulate secondary infections
+        # Simulate secondary infections
+        for i in self.households:
+            if any([(i,j) in self.infected_individuals for j in range(self.household_sizes[i])]):
+                for j in range(self.household_sizes[i]): 
+                    if (i,j) not in self.cumulative_infected_individuals:
+                        if random.random() < self.daily_secondary_attack_rate:
+                            self.infected_individuals.add((i,j))
+                            self.cumulative_infected_individuals.add((i,j))
 
     def halt_operations(self):
         self.currently_operating = False
