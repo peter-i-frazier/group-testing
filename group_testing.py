@@ -14,25 +14,35 @@ class MatrixGroupTest:
         self.false_negative_rate = false_negative_rate
         self.false_positive_rate = false_positive_rate
         self.fnr_at_swab_level = fnr_at_swab_level
-        assert( not fnr_at_swab_level) # TODO: support fnr_at_swab_level == False
+
 
     def _test_group(self, population, group):
         # test a particular group for the presence of hte disease
         # population: the relevant population object
         # group: the list of households in the group
-        
+        for i in group:
+            for j in range(population.household_sizes[i]):
+                if (i,j) in population.infected_individuals and (i,j) not in self.was_swab_successful:
+                    if self.fnr_at_swab_level:
+                        self.was_swab_successful[(i,j)] = (random.random() < self.false_negative_rate)
+                    else:
+                        self.was_swab_successful[(i,j)] = True
+
         num_in_group_infected = len([(i,j) for i in group for j in range(population.household_sizes[i])
-                                    if (i,j) in population.infected_individuals])
+                                    if (i,j) in population.infected_individuals 
+                                    and self.was_swab_successful[(i,j)]])
 
         if self.fnr_at_swab_level:
-            raise(Exception("Unsupported feature: fnr_at_swab_level"))
+            false_negative_pct = 0
+        else:
+            false_negative_pct = self.false_negative_rate ** (num_in_group_infected)
+
         if num_in_group_infected == 0:
             if random.random() < self.false_positive_rate:
                 test_detected_presence = True
             else:
                 test_detected_presence = False
         else:
-            false_negative_pct = self.false_negative_rate ** num_in_group_infected
             if random.random() < false_negative_pct:
                 test_detected_presence = False
             else:
@@ -47,8 +57,7 @@ class MatrixGroupTest:
         household_group_size = ceil(self.group_size / float(avg_household_size))
         household_matrix_size = household_group_size ** 2
 
-        if self.fnr_at_swab_level:
-            self.was_swab_succesful = {}
+        self.was_swab_successful = {}
 
         test_results = {}
 
