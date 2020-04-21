@@ -78,6 +78,8 @@ class Population:
                 self.infected_individuals.add((i,j))
                 self.cumulative_infected_individuals.add((i,j))
 
+        # TODO: Simulate secondary infections
+
     def halt_operations(self):
         self.currently_operating = False
 
@@ -95,6 +97,8 @@ class Population:
         # Simulate one step forward in time
         # Simulate how infectious individuals infect each other
         # Unquarantined susceptible people become infected w/ probability = alpha*current prevalence
+        # TODO: is this the right use of alpha?  Shouldn't it be (1-alpha)*current prevalence?
+        # TODO: That way, prevalence(day t+1) = alpha * prevalence(day t)
 
 
         # First simulate new primary cases
@@ -143,9 +147,19 @@ class Population:
                     self.fatality_individuals.add((i,j))
                 else:
                     self.recovered_individuals.add((i,j))
-   
+
+    def get_num_unquarantined(self):
+        # Returns the number of people not in quarantine
+        return len(self.unquarantined_individuals)
+
+    def get_num_infected(self):
+        return len(self.infected_individuals)
+
+    def get_num_individuals(self):
+        return self.n_households * self.household_size
 
     def get_current_prevalence(self):
+        # This returns prevalence in the unquarantined population
         total_unquarantined_infected = len(self.infected_individuals.intersection(self.unquarantined_individuals))
         total_unquarantined = len(self.unquarantined_individuals)
 
@@ -154,7 +168,6 @@ class Population:
         else:
             return total_unquarantined_infected / total_unquarantined
 
-   
     def quarantine_household(self, i):
         for j in range(self.household_size):
             self.unquarantined_individuals.discard((i,j))

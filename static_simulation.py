@@ -1,5 +1,6 @@
 from population import Population
 from group_testing import SymptomaticIndividualTest
+import numpy as np
 
 class StaticSimulation:
     # Runs a simulation over the initial population to estimate number of quarantined, number of people that should
@@ -22,7 +23,7 @@ class StaticSimulation:
         self.population = population
         self.group_test = group_test
 
-    def rep(self):
+    def __rep__(self):
         # Run one simulation of the group testing protocol on the population
         # Runs self.population.reset() when it starts
         # Returns   number of people quarantined,
@@ -31,16 +32,53 @@ class StaticSimulation:
         self.population.reset()
         self.test_results, number_of_tests = self.group_test.test(self.population)
 
-        quarantined = 0
+        quarantines = 0
         quarantine_false_negatives = 0
+        quarantine_false_positives = 0
         for (i,j), test_detected_presence in self.test_results.items():
             if test_detected_presence:
-                quarantined += 1
+                quarantines += 1
+                if (i,j) not in self.population.infected_individuals:
+                    quarantine_false_positives += 1
             elif (i,j) in self.population.infected_individuals:
                 # no virus detected but individual is positive
                 quarantine_false_negatives += 1
 
-        return quarantined, quarantine_false_negatives, number_of_tests
+        return { 'QFN' : quarantine_false_negatives,
+                 'QFP' : quarantine_false_positives,
+                 'tests' : number_of_tests,
+                 'quarantines' : quarantines,
+                 'positives' : self.population.get_num_infected(),
+                 }
+
+    def sim(self, nreps):
+        # Runs the simulation for many replications and aggregates the output
+        quarantine_false_negatives = [0]*nreps
+        quarantine_false_positives = [0]*nreps
+        number_of_tests = [0]*nreps
+        quarantines = [0]*nreps
+        positives = [0]*nreps
+        for m in range(nreps):
+            r = self.__rep__()
+            quarantine_false_negatives[m]=r['QFN']
+            quarantine_false_positives[m]=r['QFP']
+            number_of_tests[m] = r['tests']
+            quarantines[m] = r['quarantines']
+            positives[m] = r['positives']
+
+        n = self.population.get_num_individuals()
+        # quarantine false negative rate is the number of quarantine false negatives,
+        # i.e., positives that were incorrectly reported, divided by the overall number of positives
+        QFNR = np.mean(quarantine_false_negatives) / np.mean(positives)
+        # similarly, quarantine false positive rate is the number of negatives that were incorrectly reported divided
+        # by the overall number of negatives
+        QFPR = np.mean(quarantine_false_positives) / (n - np.mean(positives))
+        tests_per_person = np.mean(number_of_tests) / n
+        quarantines_per_person = np.mean(quarantines) / n
+
+        # TODO: should also return standard errors for these
+        return QFNR, QFPR, tests_per_person, quarantines_per_person
+
 
     @staticmethod
     def __test__():
@@ -58,7 +96,8 @@ class StaticSimulation:
 
         group_test = SymptomaticIndividualTest(false_negative_rate=0.3)
         s = StaticSimulation(pop,group_test)
-        print(s.rep())
+        print(s.__rep__())
+        print(s.sim(10))
 
 
 if __name__ == '__main__':
