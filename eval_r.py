@@ -1,8 +1,10 @@
 from scipy.optimize import fsolve
 import numpy as np
 
+US_dist = [0.2837, 0.3451, 0.1507, 0.1276, 0.0578, 0.0226, 0.0125]
 
-def eval_r(r, target_prevalence, household_dist, SAR):
+
+def match_r(r, target_prevalence, household_dist, SAR):
     # computes probability of a primary case given population level prevalence, household size distribution,
     # and household secondary attack rate
 
@@ -25,11 +27,11 @@ def eval_r(r, target_prevalence, household_dist, SAR):
 
     return frac_tot_infected - target_prevalence
 
+def eval_r(match_r, target_prevalence, household_dist = US_dist, SAR=0.3741):
+    return fsolve(match_r, 0.005, args=(target_prevalence, household_dist, SAR))
 
-US_dist = [0.2837, 0.3451, 0.1507, 0.1276, 0.0578, 0.0226, 0.0125]
 
-print("find r for target prevalence = 0.005")
-print(fsolve(eval_r,0.005,args=(0.005, US_dist, 0.3741)))
 
-print("find r for target prevalence = 0.01")
-print(fsolve(eval_r,0.005,args=(0.01, US_dist, 0.3741)))
+print("find r for target prevalence = 0.005: " + str(eval_r(match_r, 0.005)))
+print("find r for target prevalence = 0.01: " + str(eval_r(match_r, 0.01)))
+
