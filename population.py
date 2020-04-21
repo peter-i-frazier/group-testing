@@ -236,6 +236,11 @@ class Population:
                 else:
                     self.recovered_individuals.add((i,j))
 
+
+    def get_avg_household_size(self):
+        return np.mean([self.household_sizes[i] for i in range(self.n_households)])
+
+
     def get_num_unquarantined(self):
         # Returns the number of people not in quarantine
         return len(self.unquarantined_individuals)

@@ -2,6 +2,12 @@ from population import Population
 from group_testing import SymptomaticIndividualTest
 import numpy as np
 
+def _safe_divide(a,b):
+    if b == 0:
+        return 0
+    else:
+        return a / float(b)
+
 class StaticSimulation:
     # Runs a simulation over the initial population to estimate number of quarantined, number of people that should
     # have been quarantined but weren't, and number of tests
@@ -44,12 +50,14 @@ class StaticSimulation:
                 # no virus detected but individual is positive
                 quarantine_false_negatives += 1
 
+
         return { 'QFN' : quarantine_false_negatives,
                  'QFP' : quarantine_false_positives,
                  'tests' : number_of_tests,
                  'quarantines' : quarantines,
                  'positives' : self.population.get_num_infected(),
                  }
+
 
     def sim(self, nreps):
         # Runs the simulation for many replications and aggregates the output
@@ -70,11 +78,11 @@ class StaticSimulation:
         # quarantine false negative rate is the number of quarantine false negatives,
         # i.e., positives that were incorrectly reported, divided by the overall number of positives
         #QFNR = np.mean(quarantine_false_negatives) / np.mean(positives)
-        QFNR = np.mean([QFN / P for QFN, P in zip(quarantine_false_negatives, positives)])
+        QFNR = np.mean([_safe_divide(QFN,P) for QFN, P in zip(quarantine_false_negatives, positives)])
         # similarly, quarantine false positive rate is the number of negatives that were incorrectly reported divided
         # by the overall number of negatives
         #QFPR = np.mean(quarantine_false_positives) / (n - np.mean(positives))
-        QFPR = np.mean([QFP / (n - P) for QFP, P in zip(quarantine_false_positives, positives)])
+        QFPR = np.mean([_safe_divide(QFP,n - P) for QFP, P in zip(quarantine_false_positives, positives)])
         tests_per_person = np.mean(number_of_tests) / n
         quarantines_per_person = np.mean(quarantines) / n
 

@@ -1,16 +1,101 @@
-from math import ceil
+from math import ceil, sqrt, floor
 import random
 import numpy as np
 
 
 class MatrixGroupTest:
-    def __init__(self, group_size, false_negative_rate, fnr_at_swab_level, group_by_household):
+    def __init__(self, group_size, false_negative_rate, false_positive_rate, fnr_at_swab_level=False):
         # group_size: size of group on which each test is run.  That is, the method
         #            forms 'matrix groups' of dimension group_size * group_size
         # false_negative_rate: how frequently does a test return false for a positive individual
         # fnr_at_swab_level: boolean. are false negatives at the swab level or the test level?
         # group_by_household: boolean. form groups by household or by individuals?
-        pass
+        self.group_size = group_size
+        self.false_negative_rate = false_negative_rate
+        self.false_positive_rate = false_positive_rate
+        self.fnr_at_swab_level = fnr_at_swab_level
+        assert( not fnr_at_swab_level) # TODO: support fnr_at_swab_level == False
+
+    def _test_group(self, population, group):
+        # test a particular group for the presence of hte disease
+        # population: the relevant population object
+        # group: the list of households in the group
+        
+        num_in_group_infected = len([(i,j) for i in group for j in range(population.household_sizes[i])
+                                    if (i,j) in population.infected_individuals])
+
+        if self.fnr_at_swab_level:
+            raise(Exception("Unsupported feature: fnr_at_swab_level"))
+        if num_in_group_infected == 0:
+            if random.random() < self.false_positive_rate:
+                test_detected_presence = True
+            else:
+                test_detected_presence = False
+        else:
+            false_negative_pct = self.false_negative_rate ** num_in_group_infected
+            if random.random() < false_negative_pct:
+                test_detected_presence = False
+            else:
+                test_detected_presence = True
+
+        return test_detected_presence
+
+
+
+    def test(self, population):
+        avg_household_size = population.get_avg_household_size()
+        household_group_size = ceil(self.group_size / float(avg_household_size))
+        household_matrix_size = household_group_size ** 2
+
+        if self.fnr_at_swab_level:
+            self.was_swab_succesful = {}
+
+        test_results = {}
+
+        remaining_households = list(population.households)
+        random.shuffle(remaining_households)
+
+
+        n_tests = 0
+        while len(remaining_households) > 0:
+            matrix_size = min(household_matrix_size, len(remaining_households))
+            matrix_households = remaining_households[0:matrix_size]
+            remaining_households = remaining_households[matrix_size:]
+
+            group_size = ceil(sqrt(matrix_size))
+
+            row_groups = {i:[] for i in range(group_size)}
+            column_groups = {j:[] for j in range(group_size)}
+           
+            # form the row group assignments and the column group assignments 
+
+            for idx, household in enumerate(matrix_households):
+                row = floor(idx / float(group_size))
+                col = idx % group_size
+                row_groups[row].append(household)
+                column_groups[col].append(household)
+
+             
+            # perform the tests for both row and column groups
+            row_test_results = {}
+            col_test_results = {}
+            for idx in range(group_size):
+                row_test_results[idx] = self._test_group(population, row_groups[idx])
+                col_test_results[idx] = self._test_group(population, column_groups[idx])
+                n_tests += 2
+
+
+            # look at the intersection of all positive tests
+            for idx, household in enumerate(matrix_households):
+                row = floor(idx / float(group_size))
+                col = idx % group_size
+                test_detected_presence = (row_test_results[row] and col_test_results[col])
+                for j in range(population.household_sizes[household]):
+                    test_results[(household,j)] = test_detected_presence
+
+        return test_results, n_tests
+
+
 
 class SymptomaticIndividualTest:
 
