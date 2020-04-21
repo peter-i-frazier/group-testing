@@ -40,17 +40,20 @@ class Population:
         self.fatality_pct = fatality_pct
         self.daily_outside_infection_pct = daily_outside_infection_pct
         self.outside_symptomatic_prob = outside_symptomatic_prob
+        self.initial_quarantine = initial_quarantine
 
         # Reset the population and create an initial infection
         self.reset()
 
     def reset(self):
         # Resets the population to its initial state, including creation of an initial infection
+        n_households = self.n_households
+        household_size = self.household_size
 
         self.population = set([(i,j) for i in range(n_households) for j in range(household_size)]) 
         self.households = set([i for i in range(n_households)])
 
-        if initial_quarantine:
+        if self.initial_quarantine:
             self.quarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
             self.unquarantined_individuals = set()
         else:
