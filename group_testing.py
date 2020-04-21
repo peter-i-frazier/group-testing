@@ -102,10 +102,12 @@ class HouseholdGroupTest:
     def __init__(self, 
             group_test_size,
             group_test_participation_rate,
-            false_negative_rate):
+            false_negative_rate,
+            false_positive_rate):
         self.group_test_size = group_test_size
         self.group_test_participation_rate = group_test_participation_rate
         self.false_negative_rate = false_negative_rate
+        self.false_positive_rate = false_positive_rate
 
     def get_group_size(self):
         return self.group_test_size
@@ -124,7 +126,7 @@ class HouseholdGroupTest:
                 non_participating_individuals = set()
 
             for (i,j) in population.population - population.fatality_individuals - non_participating_individuals:
-                if (i,j) in population.quarantined_individuals or random.random() < self.group_test_participation_rate:
+                if (i,j) in population.quarantined_individuals or random.random() <= self.group_test_participation_rate:
                     test_individuals.add((i,j))
 
         number_of_groups = int(ceil(len(test_individuals) / self.group_test_size))
@@ -159,7 +161,10 @@ class HouseholdGroupTest:
             num_in_group_infected = len([(i,j) for (i,j) in test_groups[group_idx] 
                                     if (i,j) in population.infected_individuals])
             if num_in_group_infected == 0:
-                test_detected_presence = False
+                if random.random() < self.false_positive_rate:
+                    test_detected_presence = True
+                else:
+                    test_detected_presence = False
             else:
                 false_negative_pct = self.false_negative_rate ** num_in_group_infected
                 if random.random() < false_negative_pct:
