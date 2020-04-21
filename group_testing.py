@@ -49,6 +49,12 @@ class ThreeStageHierarchicalTest:
 
         self.previous_positive_individuals = set()
 
+    def get_group_size(self):
+        return self.large_group_size
+
+    def set_group_size(self, group_size):
+        self.large_group_size = group_size
+
 
     def test(self, population):
 
@@ -91,6 +97,12 @@ class HouseholdGroupTest:
         self.group_test_size = group_test_size
         self.group_test_participation_rate = group_test_participation_rate
         self.false_negative_rate = false_negative_rate
+
+    def get_group_size(self):
+        return self.group_test_size
+
+    def set_group_size(self, group_size):
+        self.group_test_size = group_size
 
     def test(self, population, test_individuals=None, non_participating_individuals=None):
 
@@ -169,6 +181,9 @@ class GollierGroupTest:
 
     def set_group_size(self, group_size):
         self.grp_size = group_size
+
+    def get_group_size(self):
+        return self.grp_size
 
     def update_infection_blf(self, infection_blf):
         self.infection_pct_blf = infection_blf
