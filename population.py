@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from math import log
+import copy
 
 class Population:
 
@@ -9,7 +10,7 @@ class Population:
     It has methods for simulating infection status forward in time """
     
     def __init__(self, n_households, 
-                    household_size, 
+                    household_size_dist, 
                     initial_prevalence, 
                     disease_length,
                     time_until_symptomatic,
@@ -18,7 +19,7 @@ class Population:
                     fatality_pct,
                     daily_outside_infection_pct,
                     outside_symptomatic_prob,
-                    initial_quarantine
+                    initial_quarantine,
                    ):
         # Initialize a population with non-trivial households
         # n_households:         the number of households in the population
@@ -31,7 +32,7 @@ class Population:
         #
 
         self.n_households = n_households
-        self.household_size = household_size
+        self.household_size_dist = household_size_dist
         self.initial_prevalence = initial_prevalence
         self.daily_secondary_attack_rate = daily_secondary_attack_rate
         self.non_quarantine_alpha = non_quarantine_alpha
@@ -42,22 +43,35 @@ class Population:
         self.outside_symptomatic_prob = outside_symptomatic_prob
         self.initial_quarantine = initial_quarantine
 
+        assert(np.isclose(sum(self.household_size_dist), 1))
+
         # Reset the population and create an initial infection
         self.reset()
+
+
+    def _sample_house_size(self):
+        # Randomly select a house size from the self.household_size_dist distribution
+        selector = random.random()
+        house_size = 0
+        while selector >= 0:
+            selector -= self.household_size_dist[house_size]
+            house_size += 1
+        return house_size
 
     def reset(self):
         # Resets the population to its initial state, including creation of an initial infection
         n_households = self.n_households
-        household_size = self.household_size
 
-        self.population = set([(i,j) for i in range(n_households) for j in range(household_size)]) 
-        self.households = set([i for i in range(n_households)])
+        self.households = set(range(n_households))
+        self.household_sizes = {i:self._sample_house_size() for i in range(n_households)}
+
+        self.population = set([(i,j) for i in range(n_households) for j in range(self.household_sizes[i])]) 
 
         if self.initial_quarantine:
-            self.quarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
+            self.quarantined_individuals = copy.deepcopy(self.population)
             self.unquarantined_individuals = set()
         else:
-            self.unquarantined_individuals = set([(i,j) for i in range(n_households) for j in range(household_size)])
+            self.unquarantined_individuals = copy.deepcopy(self.population)
             self.quarantined_individuals = set()
 
         self.fatality_individuals = set()
@@ -123,8 +137,8 @@ class Population:
 
         # Next simulate secondary cases
         for i in self.households:
-            if any([(i,j) in self.infected_individuals for j in range(self.household_size)]):
-                for j in range(self.household_size): 
+            if any([(i,j) in self.infected_individuals for j in range(self.household_sizes[i])]):
+                for j in range(self.household_sizes[i]): 
                     if (i,j) not in self.cumulative_infected_individuals:
                         if random.random() < self.daily_secondary_attack_rate:
                             self.infected_individuals.add((i,j))
@@ -156,7 +170,7 @@ class Population:
         return len(self.infected_individuals)
 
     def get_num_individuals(self):
-        return self.n_households * self.household_size
+        return len(self.population)
 
     def get_current_prevalence(self):
         # This returns prevalence in the unquarantined population
@@ -169,13 +183,13 @@ class Population:
             return total_unquarantined_infected / total_unquarantined
 
     def quarantine_household(self, i):
-        for j in range(self.household_size):
+        for j in range(self.household_sizes[i]):
             self.unquarantined_individuals.discard((i,j))
             self.quarantined_individuals.add((i,j))
 
 
     def unquarantine_household(self, i):
-        for j in range(self.household_size):
+        for j in range(self.household_sizes[i]):
             self.quarantined_individuals.discard((i,j))
             self.unquarantined_individuals.add((i,j))
 

@@ -8,7 +8,7 @@ from static_simulation import StaticSimulation
 def optimize_gollier_group_size(population, beta, FNR, tests_per_person_per_week_ub,
                                 group_size_min = 10, group_size_max = 1000, grid_size = 100, nreps = 100,
                                 group_test_name='Gollier',
-                                verbose=False):
+                                verbose=True):
     best_group_size = -1
     best_quarantines_per_person = 1.01
     best_days_between_tests = -1
@@ -49,16 +49,16 @@ def optimize_gollier_group_size(population, beta, FNR, tests_per_person_per_week
     return best_group_size, best_quarantines_per_person, best_tests_per_person_per_week, best_days_between_tests
 
 
-def larry_analysis(prevalence=0.01,household_size=1,group_test_name='Gollier',
+def larry_analysis(prevalence=0.01,household_size_dist=[1],group_test_name='Gollier',
                    group_size_min = 10, group_size_max = 100, grid_size = 9, nreps = 100):
     doubling_time = 3. # number of days for epidemic to double in the absence of distancing
     alpha = 2**(1/doubling_time)
     SAR = 0.374
 
-    assert(household_size==1) # TODO: Code does not currently support household size > 1
+    assert(np.isclose(sum(household_size_dist), 1)) # TODO: Code does not currently support household size > 1
 
     pop = Population(n_households=1000, # Should be big relative to the largest group size
-                     household_size=household_size,
+                     household_size_dist=household_size_dist,
                      initial_prevalence=prevalence,
                      disease_length=0,
                      time_until_symptomatic=0,
@@ -79,8 +79,8 @@ def larry_analysis(prevalence=0.01,household_size=1,group_test_name='Gollier',
         optimize_gollier_group_size(pop,beta,FNR,tests_per_week_per_person_ub,
                                     group_size_min, group_size_max, grid_size, nreps,
                                     group_test_name, True)
-    print('{} doubling time {} days, household size={} SAR={} test FNR={} FPR=0 beta={}'.format(
-        group_test_name, doubling_time,household_size, SAR,FNR,beta))
+    print('{} doubling time {} days, household size dist={} SAR={} test FNR={} FPR=0 beta={}'.format(
+        group_test_name, doubling_time,household_size_dist, SAR,FNR,beta))
     print('Optimum @ prevalence={}: group size={:.2f} quarantines/person={:.2f} tests/week/person={:.3f} days between tests={:2f}'.format(
         prevalence,best_group_size,best_quarantines_per_person,test_per_person_per_week,days_between_tests))
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     # Optimum @ prevalence = 0.01: group size = 60.00 quarantines / person = 0.34 tests / week / person = 0.017 days between tests = 6.970806
     # Spreadsheet (Appendix 2) confirms this (fraction of pop without a known case that can exit is 65.61%, days between tests is 7)
-    larry_analysis(0.01,1,'Gollier', group_size_min = 60, group_size_max = 60, grid_size = 1, nreps = 10000)
+    larry_analysis(0.01,[0.5,0.5],'Gollier', group_size_min = 60, group_size_max = 60, grid_size = 1, nreps = 10000)
     # At household size = 2, according to spreadsheet (Appendix 3), can do group size = 45, quarantine fraction = 30.5%, 8.19E05 tests / day, 8.9 days between tests
 
     # Optimum @ prevalence = 0.04: group size = 40.00 quarantines / person = 0.68 tests / week / person = 0.017 days between tests = 10.065353

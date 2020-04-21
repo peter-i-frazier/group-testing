@@ -3,6 +3,15 @@ import random
 import numpy as np
 
 
+class MatrixGroupTest:
+    def __init__(self, group_size, false_negative_rate, fnr_at_swab_level, group_by_household):
+        # group_size: size of group on which each test is run.  That is, the method
+        #            forms 'matrix groups' of dimension group_size * group_size
+        # false_negative_rate: how frequently does a test return false for a positive individual
+        # fnr_at_swab_level: boolean. are false negatives at the swab level or the test level?
+        # group_by_household: boolean. form groups by household or by individuals?
+        pass
+
 class SymptomaticIndividualTest:
 
     def __init__(self, false_negative_rate):
@@ -136,7 +145,7 @@ class HouseholdGroupTest:
                 test_groups[group_idx].add((i,j))
                 already_grouped_individuals.add((i,j))
 
-                for j_new in range(population.household_size):
+                for j_new in range(population.household_sizes[i]):
                     if (i,j_new) in test_individuals and j_new != j:
                         assert((i,j_new) not in already_grouped_individuals)
                         test_groups[group_idx].add((i,j_new))
