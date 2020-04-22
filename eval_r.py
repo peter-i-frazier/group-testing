@@ -32,6 +32,7 @@ def eval_r(match_r, target_prevalence, household_dist = US_dist, SAR=0.3741):
 
 
 
-print("find r for target prevalence = 0.005: " + str(eval_r(match_r, 0.005)))
-print("find r for target prevalence = 0.01: " + str(eval_r(match_r, 0.01)))
+if __name__ == '__main__':
+    print("find r for target prevalence = 0.005: " + str(eval_r(match_r, 0.005)))
+    print("find r for target prevalence = 0.01: " + str(eval_r(match_r, 0.01)))
 
