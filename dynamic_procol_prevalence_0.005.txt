@@ -1,0 +1,21 @@
+Beginning simulation with prevalence 0.005 and group sizes [150, 150, 70, 70]
+Week 0
+Start of Week, Before Test: Free=100.0%, Infected=0.5%, Infected&Free=0.5%, RecoveredOrDead=0.0%
+Test Properties:            Group Size=150, PCR/person=0.014 QFNR=9.8% QFPR=12.8%
+Start of Week, After test:  Free=86.8%, Infected=0.5%, Infected&Free=0.0%, RecoveredOrDead=0.0%
+End of Week:                Free=86.8%, Infected=0.7%, Infected&Free=0.2%, RecoveredOrDead=0.0%
+Week 1
+Start of Week, Before Test: Free=86.8%, Infected=0.7%, Infected&Free=0.2%, RecoveredOrDead=0.0%
+Test Properties:            Group Size=150, PCR/person=0.012 QFNR=10.7% QFPR=6.9%
+Start of Week, After test:  Free=80.6%, Infected=0.7%, Infected&Free=0.0%, RecoveredOrDead=0.0%
+End of Week:                Free=80.6%, Infected=0.8%, Infected&Free=0.1%, RecoveredOrDead=0.0%
+Week 2
+Start of Week, Before Test: Free=80.6%, Infected=0.8%, Infected&Free=0.1%, RecoveredOrDead=0.0%
+Test Properties:            Group Size=70, PCR/person=0.023 QFNR=11.5% QFPR=2.2%
+Start of Week, After test:  Free=91.8%, Infected=0.4%, Infected&Free=0.0%, RecoveredOrDead=0.5%
+End of Week:                Free=91.8%, Infected=0.4%, Infected&Free=0.1%, RecoveredOrDead=0.5%
+Week 3
+Start of Week, Before Test: Free=91.8%, Infected=0.4%, Infected&Free=0.1%, RecoveredOrDead=0.5%
+Test Properties:            Group Size=70, PCR/person=0.026 QFNR=11.2% QFPR=1.6%
+Start of Week, After test:  Free=96.6%, Infected=0.2%, Infected&Free=0.0%, RecoveredOrDead=0.7%
+End of Week:                Free=96.6%, Infected=0.2%, Infected&Free=0.0%, RecoveredOrDead=0.7%
