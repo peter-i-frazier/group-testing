@@ -51,18 +51,21 @@ class Population:
             self._compute_initial_infection_probability()
         else:
             self.initial_prevalence = initial_prevalence
-            prevalences = []
-            for _ in range(100):
-                self.reset()
-                prevalences.append(self.get_num_infected() / float(self.get_num_individuals()))
-            if abs(np.mean(prevalences)-self.target_prevalence) > eps:
-                print("Warning: Monte-carlo estimate of gap between desired target_prevalence and \
-                        Expected target prevalence is large: {}".format(
-                            abs(np.mean(prevalences)-self.target_prevalence) ))
-
+            
         # Reset the population and create an initial infection
         self.reset()
-    
+
+    def sanity_check_prevalences(self):
+        prevalences = []
+        for _ in range(100):
+            self.reset()
+            prevalences.append(self.get_num_infected() / float(self.get_num_individuals()))
+        if abs(np.mean(prevalences)-self.target_prevalence) > eps:
+            print("Warning: Monte-carlo estimate of gap between desired target_prevalence and \
+                    Expected target prevalence is large: {}".format(
+                        abs(np.mean(prevalences)-self.target_prevalence) ))
+            return False
+
     def _evaluate_r_monte_carlo(self, r, nreps=100):
         prevalences = []
         self.initial_prevalence = r
@@ -135,10 +138,10 @@ class Population:
         self.population = set([(i,j) for i in range(n_households) for j in range(self.household_sizes[i])]) 
 
         if self.initial_quarantine:
-            self.quarantined_individuals = copy.deepcopy(self.population)
+            self.quarantined_individuals = self.population.copy()
             self.unquarantined_individuals = set()
         else:
-            self.unquarantined_individuals = copy.deepcopy(self.population)
+            self.unquarantined_individuals = self.population.copy()
             self.quarantined_individuals = set()
 
         self.fatality_individuals = set()

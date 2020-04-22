@@ -13,7 +13,7 @@ class MatrixGroupTest:
         #                    to come back negative.  If they are at the test level, then each test has an error
         #                    independently.
         # group_by_household: boolean. form groups by household or by individuals?
-        self.group_size = group_size
+        self.group_size = int(group_size)
         self.false_negative_rate = false_negative_rate
         self.false_positive_rate = false_positive_rate
         self.fnr_at_swab_level = fnr_at_swab_level
@@ -78,11 +78,11 @@ class MatrixGroupTest:
 
         n_tests = 0
         while len(remaining_households) > 0:
-            matrix_size = min(household_matrix_size, len(remaining_households))
+            matrix_size = int(min(household_matrix_size, len(remaining_households)))
             matrix_households = remaining_households[0:matrix_size]
             remaining_households = remaining_households[matrix_size:]
 
-            group_size = ceil(sqrt(matrix_size))
+            group_size = int(ceil(sqrt(matrix_size)))
 
             row_groups = {i:[] for i in range(group_size)}
             column_groups = {j:[] for j in range(group_size)}

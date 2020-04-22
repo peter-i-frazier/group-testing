@@ -3,24 +3,24 @@ from population import Population
 from group_testing import HouseholdGroupTest, MatrixGroupTest
 from static_simulation import StaticSimulation
 import numpy as np
+import sys
 
 def test_properties(prevalence, group_size, FNR = 0.3, FPR = 0.1):
-    initial_prevalence = eval_r(match_r, prevalence)
 
 
-    alpha = 0 # I don't think we need this
-    SAR = 0.374
-
-    nreps = 1
+    
+    nreps = 100
     #nreps = 100
     # n_households=22500
+    SAR = 0.374
 
-    pop = Population(n_households=10000, # Should be big relative to the largest group size
+    initial_prevalence = eval_r(match_r, prevalence)
+    pop = Population(n_households=22500, # Should be big relative to the largest group size
                       household_size_dist=US_dist,
                       target_prevalence=prevalence,
                       disease_length=0,
                       time_until_symptomatic=0,
-                      non_quarantine_alpha=alpha,
+                      non_quarantine_alpha=0, # not needed for present purposes
                       daily_secondary_attack_rate=SAR,
                       fatality_pct=0,
                       daily_outside_infection_pct=0,
@@ -29,7 +29,7 @@ def test_properties(prevalence, group_size, FNR = 0.3, FPR = 0.1):
                       initial_prevalence=initial_prevalence)
 
     # group_test = HouseholdGroupTest(group_size, 1, FNR, FPR)
-    group_test = MatrixGroupTest(group_size, FNR, FPR, fnr_at_swab_level=False)
+    group_test = MatrixGroupTest(group_size, FNR, FPR, fnr_at_swab_level=True)
     QFNR, QFPR, tests_per_person, quarantines_per_person = StaticSimulation(pop,group_test).sim(nreps)
 
     return QFNR, QFPR, tests_per_person
@@ -58,8 +58,8 @@ def simple_simulation(group_sizes=[80,90,100,110], prevalence=0.01, resolved=0.)
               'QR2': 0.,
               }
 
+    
     for t in range(T):
-        print()
         print('Week {}'.format(t))
 
         print_state(state, 'Start of Week, Before Test:')
@@ -117,5 +117,8 @@ def print_state(state,preamble='',verbose=False):
 
 
 if __name__ == '__main__':
+    prevalence = float(sys.argv[1])
+    group_sizes = [int(sys.argv[idx]) for idx in range(2,6)]
+    print("Beginning simulation with prevalence {} and group sizes {}".format(prevalence, group_sizes))
     # __test_test_properties():
-    simple_simulation()
+    simple_simulation(group_sizes, prevalence)
