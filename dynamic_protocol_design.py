@@ -118,6 +118,4 @@ def print_state(state,preamble='',verbose=False):
 
 if __name__ == '__main__':
     # __test_test_properties():
-    # simple_simulation()
-
-
+    simple_simulation()
