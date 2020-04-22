@@ -110,3 +110,12 @@ if __name__ == '__main__':
     larry_analysis(0.04,us_census_household_dist,'Gollier', group_size_min = 40, group_size_max = 40, grid_size = 1, nreps = 1000)
     # Optimum @ prevalence = 0.04: group size = 40.00 quarantines / person = 0.68 tests / week / person = 0.017 days between tests = 10.065353
     # larry_analysis(0.04,1,'Gollier', group_size_min = 30, group_size_max = 50, grid_size = 5, nreps = 1000)
+
+def yujia_analysis():
+    # iterate over prevalence
+    # iterate over group sizes
+    for p in np.linspace(prevalence_min, prevalence_max, grid_size)
+
+
+
+
