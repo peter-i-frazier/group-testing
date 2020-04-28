@@ -110,3 +110,20 @@ class BasePopulation:
 
     def step(self):
         raise(Exception("step() logic must be implemented by child class"))
+
+    
+    def infect_agent(self, agent_id):
+        self.infection_status[agent_id] = True
+    
+
+    def is_agent_infected(self, agent_id):
+        # might need to optimize this for speed in the future
+        return self.infection_status[agent_id]
+
+
+    def get_n_agents_quarantined(self, agent_id):
+        return sum(self.quarantine_status.values())
+
+
+    def is_agent_quarantined(self, agent_id):
+        return self.quarantine_status[agent_id]
