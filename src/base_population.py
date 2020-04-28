@@ -41,10 +41,10 @@ BasePopulation has the following attributes:
 
 BasePopulation implements the following methods:
     * step(): run one day of disease progression
-    * update_infection_status(): increase days_infected_so_far count for each
+    * track_infection_status(): increase days_infected_so_far count for each
                                     infected individual, resolve disease for agents who have
                                     reached disease_length
-    * update_quarantine_status(): increase days_quarantined_so_far for each infected individual,
+    * track_quarantine_status(): increase days_quarantined_so_far for each infected individual,
                                     resolve quarantine for agents who have reached
                                     quarantine_length
     * resolve_infection(agent_id): implement logic about what happens when disease has 
@@ -79,8 +79,10 @@ class BasePopulation:
         self.disease_length = disease_length
         self.quarantine_length = quarantine_length
 
+    def get_summary_data(self):
+        raise(Exception("todo"))
 
-    def update_infection_status(self):
+    def track_infection_status(self):
         for agent_id in self.agents:
             if self.infection_status[agent_id]:
                 self.days_infected_so_far[agent_id] += 1
@@ -90,7 +92,7 @@ class BasePopulation:
                     self.resolve_infection(agent_id)
 
 
-    def update_quarantine_status(self):
+    def track_quarantine_status(self):
         for agent_id in self.agents:
             if self.quarantine_status[agent_id]:
                 self.days_quarantined_so_far[agent_id] += 1
@@ -98,6 +100,9 @@ class BasePopulation:
                     self.quarantine_status[agent_id] = False
                     self.days_quarantined_so_far[agent_id] = 0
                     self.resolve_quarantine(agent_id)
+
+    def respond_to_test_results(self, test_results, day_of_test):
+        raise(Exception("respond_to_test_results() must be implemented by child class"))
 
 
     def resolve_infection(self, agent_id):
@@ -121,8 +126,12 @@ class BasePopulation:
         return self.infection_status[agent_id]
 
 
-    def get_n_agents_quarantined(self, agent_id):
+    def get_num_quarantined(self):
         return sum(self.quarantine_status.values())
+    
+
+    def get_num_infected(self): 
+        return sum(self.infection_status.values())
 
 
     def is_agent_quarantined(self, agent_id):
