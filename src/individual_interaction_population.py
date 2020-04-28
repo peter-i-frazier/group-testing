@@ -52,10 +52,9 @@ class IndividualInteractionPopulation(BasePopulation):
 
     def get_summary_data(self):
         return {'num_quarantined':self.get_num_quarantined(),
-                'num_infected': self.get_num_infected()}
+                'num_infected': self.get_num_infected(),
+                'cumulative_num_infected': self.get_cumulative_num_infected()}
     
-    def respond_to_test_results(self, test_results, day_of_test):
-        pass
 
     def resolve_infection(self, agent_id):
         # Do nothing when an infection is resolved -- the agent_id goes back
@@ -113,7 +112,7 @@ class IndividualInteractionPopulation(BasePopulation):
 
                 # sample probability of passing along disease only if exactly one
                 # individual is infected
-                if self.infection_status[i] + self.infection_status[j] == 1:
+                if self.is_agent_infected(i) + self.is_agent_infected(j) == 1:
                     for _ in range(n_interactions):
                         if random.random() < self.interaction_infection_pct:
                             self.infect_agent(i)

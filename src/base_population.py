@@ -78,6 +78,7 @@ class BasePopulation:
         self.days_until_symptomatic = days_until_symptomatic
         self.disease_length = disease_length
         self.quarantine_length = quarantine_length
+        self.cumulative_infected_agents = set()
 
     def get_summary_data(self):
         raise(Exception("todo"))
@@ -85,6 +86,7 @@ class BasePopulation:
     def track_infection_status(self):
         for agent_id in self.agents:
             if self.infection_status[agent_id]:
+                self.cumulative_infected_agents.add(agent_id)
                 self.days_infected_so_far[agent_id] += 1
                 if self.days_infected_so_far[agent_id] >= self.disease_length:
                     self.infection_status[agent_id] = False
@@ -101,9 +103,6 @@ class BasePopulation:
                     self.days_quarantined_so_far[agent_id] = 0
                     self.resolve_quarantine(agent_id)
 
-    def respond_to_test_results(self, test_results, day_of_test):
-        raise(Exception("respond_to_test_results() must be implemented by child class"))
-
 
     def resolve_infection(self, agent_id):
         raise(Exception("resolve_disease() must be implemented by child class"))
@@ -119,11 +118,20 @@ class BasePopulation:
     
     def infect_agent(self, agent_id):
         self.infection_status[agent_id] = True
-    
+        self.cumulative_infected_agents.add(agent_id)
+
+   
+    def quarantine_agent(self, agent_id):
+        self.quarantine_status[agent_id] = True
+
 
     def is_agent_infected(self, agent_id):
         # might need to optimize this for speed in the future
         return self.infection_status[agent_id]
+
+
+    def is_agent_quarantined(self, agent_id):
+        return self.quarantine_status[agent_id]
 
 
     def get_num_quarantined(self):
@@ -134,5 +142,8 @@ class BasePopulation:
         return sum(self.infection_status.values())
 
 
-    def is_agent_quarantined(self, agent_id):
-        return self.quarantine_status[agent_id]
+    def is_agent_symptomatic(self, agent_id):
+        return self.days_infected_so_far[agent_id] >= self.days_until_symptomatic
+
+    def get_cumulative_num_infected(self):
+        return len(self.cumulative_infected_agents)

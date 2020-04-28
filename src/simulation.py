@@ -43,8 +43,8 @@ class BaseSimulation:
         self.day_of_last_test = -1
         self.recorded_test_results = {}
 
-        self.summary_population_data = {}
-        self.summary_test_data = {}
+        self.summary_population_data = {-1: population.get_summary_data()}
+        self.summary_test_data = {-1: test_protocol.get_summary_data()}
 
     def step(self):
         # begin simulation step() by running one iteration of disease progression on population
@@ -63,7 +63,7 @@ class BaseSimulation:
         for test_day in outstanding_test_days:
             if self.report_test_today(test_day):
                 test_results = self.recorded_test_results[test_day]
-                self.population.respond_to_test_results(test_results, test_day)
+                self.test_protocol.respond_to_test(self.population, test_results, test_day)
 
                 # remove test_day from list of outstanding test results
                 self.recorded_test_results.pop(test_day)
