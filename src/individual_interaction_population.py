@@ -40,8 +40,8 @@ class IndividualInteractionPopulation(BasePopulation):
 
         self.interaction_lambda = interaction_frequency_lambda
         self.interaction_infection_pct = interaction_infection_pct
-        self.days_since_last_interaction = np.full((n_agents, n_agents), 
-                                                initial_days_since_interaction)
+        #self.days_since_last_interaction = np.full((n_agents, n_agents), 
+        #                                        initial_days_since_interaction)
 
         super().__init__(n_agents, 
                 disease_length, 
@@ -66,8 +66,44 @@ class IndividualInteractionPopulation(BasePopulation):
         # Do nothing when an agent leaves quarantine
         pass
 
-
+    
+    
     def step(self):
+        #self.days_since_last_interaction = self.days_since_last_interaction + \
+        #                                    np.ones(self.days_since_last_interaction.shape)
+
+        unquarantined_agents = list([agent_idx for agent_idx in self.agents 
+                                if not self.is_agent_quarantined(agent_idx)])
+
+        n_agents_free = len(unquarantined_agents)
+        assert(n_agents_free == self.n_agents - self.get_num_quarantined())
+
+        # interaction_lambda has the interpretation: expected number of interactions 
+        # per day per unquarantined person
+        scaled_lambda = n_agents_free * self.interaction_lambda
+
+        # sample how many interactions occur
+        num_interactions = np.random.poisson(scaled_lambda)
+        
+        # sample the sequence of left agents and the sequence of right agents
+        # in each of the num_interactions (i,j) interactions
+        left_agents = random.choices(unquarantined_agents, k=num_interactions)
+        right_agents = random.choices(unquarantined_agents, k=num_interactions)
+
+        # loop through the list of interactions and update the interaction counts
+        # and pass on an infection if necessary
+        for (i,j) in zip(left_agents, right_agents):
+            #self.days_since_last_interaction[i,j] = 0
+            #self.days_since_last_interaction[j,i] = 0
+
+            if self.is_agent_infected(i) + self.is_agent_infected(j) == 1:
+                if random.random() < self.interaction_infection_pct:
+                    self.infect_agent(i)
+                    self.infect_agent(j)
+   
+    # on an instance with n_agents=1000, this version of the code clocked in at 651ms (using %timeit)
+    # the new step() functino above clocks in at 2.48ms!!!!
+    def legacy_step(self):
         # Implement the infection dynamics for the stochastic interactions which occur
         # each day
 

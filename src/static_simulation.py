@@ -35,8 +35,16 @@ class StaticSimulation:
         # Returns   number of people quarantined,
         #           quarantine false negatives (number of people that should have been quarantined, but weren't),
         #           number_of_tests
+
         self.population.reset()
+        attempts = 0
+        while self.population.get_num_infected() == 0 and attempts < 400:
+            self.population.reset()
+            attempts += 1
+        if self.population.get_num_infected() == 0:
+            raise(Exception("could not infect population"))
         self.test_results, number_of_tests = self.group_test.test(self.population)
+        #import pdb; pdb.set_trace()
 
         quarantines = 0
         quarantine_false_negatives = 0
