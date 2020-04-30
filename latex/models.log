@@ -1,0 +1,279 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  30 APR 2020 16:26
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**models.tex
+(./models.tex
+LaTeX2e <2016/03/31>
+Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./preamble.tex (/usr/local/texlive/2016/texmf-dist/tex/latex/geometry/geomet
+ry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2016/05/14 v3.1 Provides the ifpdf switch
+)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count87
+\Gm@cntv=\count88
+\c@Gm@tempcnt=\count89
+\Gm@bindingoffset=\dimen103
+\Gm@wd@mp=\dimen104
+\Gm@odd@mp=\dimen105
+\Gm@even@mp=\dimen106
+\Gm@layoutwidth=\dimen107
+\Gm@layoutheight=\dimen108
+\Gm@layouthoffset=\dimen109
+\Gm@layoutvoffset=\dimen110
+\Gm@dimlist=\toks15
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/comment/comment.sty
+\CommentStream=\write3
+
+Excluding comment 'comment')
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/bm.sty
+Package: bm 2016/02/27 v1.2a Bold Symbol Support (DPC/FMi)
+\symboldoperators=\mathgroup4
+\symboldletters=\mathgroup5
+\symboldsymbols=\mathgroup6
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 142.
+LaTeX Info: Redefining \bm on input line 208.
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/algorithms/algorithmic.sty
+Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\c@ALC@unique=\count90
+\c@ALC@line=\count91
+\c@ALC@rem=\count92
+\c@ALC@depth=\count93
+\ALC@tlm=\skip43
+\algorithmicindent=\skip44
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2016/02/21 v3.3-144 Customizing captions (AR)
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2016/02/04 v1.7-139 caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 67.
+\captionmargin=\dimen111
+\captionmargin@=\dimen112
+\captionwidth=\dimen113
+\caption@tempdima=\dimen114
+\caption@indent=\dimen115
+\caption@parindent=\dimen116
+\caption@hangindent=\dimen117
+)
+\c@ContinuedFloat=\count94
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2016/02/20 v1.1-142 Sub-captions (AR)
+\c@subfigure=\count95
+\c@subtable=\count96
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2015/03/04 v2.20.2
+\thm@style=\toks16
+\thm@bodyfont=\toks17
+\thm@headfont=\toks18
+\thm@notefont=\toks19
+\thm@headpunct=\toks20
+\thm@preskip=\skip45
+\thm@postskip=\skip46
+\thm@headsep=\skip47
+\dth@everypar=\toks21
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip10
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2016/03/10 v2.15b AMS math features
+\@mathmargin=\skip48
+
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01 AMS text
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks22
+\ex@=\dimen118
+))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+LaTeX Info: Redefining \boldsymbol on input line 28.
+\pmbraise@=\dimen119
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count97
+LaTeX Info: Redefining \frac on input line 199.
+\uproot@=\count98
+\leftroot@=\count99
+LaTeX Info: Redefining \overline on input line 297.
+\classnum@=\count100
+\DOTSCASE@=\count101
+LaTeX Info: Redefining \ldots on input line 394.
+LaTeX Info: Redefining \dots on input line 397.
+LaTeX Info: Redefining \cdots on input line 518.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen120
+LaTeX Font Info:    Redeclaring font encoding OML on input line 634.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 635.
+\macc@depth=\count102
+\c@MaxMatrixCols=\count103
+\dotsspace@=\muskip11
+\c@parentequation=\count104
+\dspbrk@lvl=\count105
+\tag@help=\toks23
+\row@=\count106
+\column@=\count107
+\maxfields@=\count108
+\andhelp@=\toks24
+\eqnshift@=\dimen121
+\alignsep@=\dimen122
+\tagshift@=\dimen123
+\tagwidth@=\dimen124
+\totwidth@=\dimen125
+\lineht@=\dimen126
+\@envbody=\toks25
+\multlinegap=\skip49
+\multlinetaggap=\skip50
+\mathdisplay@stack=\toks26
+LaTeX Info: Redefining \[ on input line 2739.
+LaTeX Info: Redefining \] on input line 2740.
+)
+\c@theorem=\count109
+\c@definition=\count110
+\c@corollary=\count111
+\c@proposition=\count112
+\c@lemma=\count113
+\c@conjecture=\count114
+\c@assumption=\count115
+\c@fact=\count116
+)
+(./models.aux)
+\openout1 = `models.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
+* v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=469.75502pt
+* \textheight=650.43001pt
+* \oddsidemargin=0.0pt
+* \evensidemargin=0.0pt
+* \topmargin=-37.0pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=59.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+
+LaTeX Warning: No \author given.
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 22.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 22.
+ [1
+
+{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+ [4]
+(./models.aux) ) 
+Here is how much of TeX's memory you used:
+ 3064 strings out of 493014
+ 43946 string characters out of 6133351
+ 115658 words of memory out of 5000000
+ 6598 multiletter control sequences out of 15000+600000
+ 13298 words of font info for 47 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 38i,9n,38p,235b,195s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmex10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmmi8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
+12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17
+.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pf
+b></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
+/usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
+usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></us
+r/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr
+/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on models.pdf (4 pages, 148758 bytes).
+PDF statistics:
+ 69 PDF objects out of 1000 (max. 8388607)
+ 49 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

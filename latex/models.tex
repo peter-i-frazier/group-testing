@@ -1,0 +1,156 @@
+\documentclass[11pt]{article}
+\input{preamble.tex}
+
+\title{Summary of Epidemic Models Used in Group Testing Resource Analysis}
+\begin{document}
+\maketitle
+\section{Introduction}
+This note summarizes various epidemic models, paraphrasing heavily from the following
+lecture notes \url{https://web.stanford.edu/~jhj1/teachingdocs/Jones-on-R0.pdf}.
+The goal is to be precise about the dynamics we are assuming in the group-testing
+capacity analysis, and also to potentially study properties of group-testing protocols
+through the lens of ODEs.
+
+\section{The Deterministic SIR Epidemic Model}
+
+Consider a closed population of size $N$.  Each individual in the population is
+in one of three states: let $S(t)$, $I(t)$, $R(t)$ denote
+the number of susceptible, infected, and recovered individuals, respectively, at time $t\geq 0$.
+
+The epidemic dynamics are governed by the following constants:
+\begin{itemize}
+    \item $\tau=\frac{\mbox{infections}}{\mbox{S-I contact}}$ is the rate at which
+        the infection is transmitted per interaction between susceptible and infectious individuals.
+    \item $\bar{C} = \frac{\mbox{total number of contacts}}{\mbox{time}}$ is the number of contacts that occur per unit of time.
+    \item $\bar{c}=\frac{\bar{C}}{N}$ is the number of contacts per person per time.
+    \item $d=\frac{\mbox{infection}}{\mbox{time}}$ is the amount of time that the infection lasts in an infected individual.
+\end{itemize}
+The above constants are then re-expressed as follows:
+$$
+\beta = \tau\bar{c}
+$$
+is the \emph{effective contact rate}, measuring the volume of new infections per unit of time.
+$$
+\nu = d^{-1}
+$$
+is the \emph{removal rate}.
+
+We assume a constant population size, constant rates, and a well-mixed population (see above lecture
+notes or below discussion).
+
+Let $s(t)=S(t)/N$, $i(t)=I(t)/N$, and $r(t)=R(t)/N$ denote the fraction of individuals in each
+state.  The discrete-time SIR model is defined by the following equations:
+\begin{align*}
+    s(t+1) &= s(t) - \beta i(t) s(t),\\
+    i(t+1) &= i(t) + \beta i(t) s(t) - \nu i(t),\\
+    r(t+1) &= r(t) + \nu i(t).
+\end{align*}
+I state the discrete-time dynamics above to make the following interpretation simpler:
+The ``well-mixed population'' assumption states that the infection status of both individuals
+in each ``contact'' is well approximated by the average infection status in the population.  
+Thus, since there are $\bar{C}$ contacts at time $t$, there are $\bar{C}i(t)s(t)$ 
+contacts between an infected individual and a susceptible individual at time $t$.
+Since $\tau$ is the proportion of new infections per contact between an infected and susceptible
+individual, this leads to a volume of 
+$$
+\tau\bar{C}i(t)s(t) = N \beta i(t) s(t)
+$$
+new infections at each time $t$, leading to the following discrete-time dynamics:
+$$
+S(t+1) = S(t) - N\beta i(t)s(t).
+$$
+Dividing through by the population size $N$, we recover the first equation governing the SIR dynamics:
+$$
+s(t+1) = s(t) - \beta i(t) s(t).
+$$
+The interpretation of the remaining equations, governing the discrete-time updates for $i(t)$ and $r(t)$,
+should be easy to understand, in light of the assumption that the population is closed, i.e.
+$s(t)+i(t)+r(t)=1$ must hold for all $t$.
+
+Moving forward, we will work with the continuous-time analogue of the above dynamics:
+\begin{align}
+s'(t) &= - \beta i(t) s(t),\\
+i'(t) &= \beta i(t) s(t) - \nu i(t),\\
+r'(t) &= \nu i(t).
+\end{align}
+In the absence of an intervention, we see that an infections are growing at a particular time $t$ if
+the following criterion is met:
+$$
+\beta i(t) s(t) - \nu i(t) > 0.
+$$
+Assuming that the population is almost entirely susceptible, i.e. $s(t)\approx 1$, then this condition
+simplifies to
+$$
+1 < \frac{\beta}{\nu} = \tau\bar{c}d =: \mathcal{R}_0.
+$$
+Thus, we have derived the standard $\mathcal{R}_0>1$ condition for predicting whether an outbreak
+will occur, in a very simple deterministic SIR model. 
+
+\section{Group Testing Intervention in a Deterministic SIR-Q Model}
+Consider a ``test-and-quarantine'' intervention that one can run at any time they so choose, possibly subject
+to capacity constraints and logistical constraints associated with the test.
+
+To model the dynamics of the quarantine intervention we include
+two additional states in the above model: let $Q_I(t)$ denote the number of quarantined, infected
+individuals at time $t$, and let $Q_S(t)$ denote the number of quarantined, susceptible individuals
+at time $t$.  Let $q_i(t)=Q_I(t)/N$ and $q_s(t)=Q_S(t)/N$ denote their normalized counterparts.
+
+Let $\mathcal{T}$ denote a particular test-and-quarantine protocol, and suppose
+each protocol is parameterized by the following metrics:
+\begin{itemize}
+    \item $QFPR(s,i;\mathcal{T})$ is the \emph{quarantine false-positive rate}.  It has the following interpretation:
+        given a proportion of $s=s(t)$ susceptible individuals and $i=i(t)$ infected individuals, what proportion of
+        susceptible individuals are forced into quarantine by the test protocol (despite not being infected)?
+    \item $QFNR(s,i;\mathcal{T})$ is the \emph{quarantine false-negative rate}.  Given a proportion of
+        $s$ susceptible individuals and $i$ infected individuals, what proportion of infected individuals are
+        not forced into quarantine by the test protocol (despite that they are infected)?
+\end{itemize}
+
+
+Suppose we are planning to run the test $\mathcal{T}$ at a pre-specified set of times $T\subseteq [0,\infty)$. 
+Assume quarantine lasts $d$ days, and all the remaining dynamics are the same as the above model.
+The SIR-Q dynamics are then governed by the following equations.  For times $t$ where we do not administer the
+test, i.e. $t\notin T$:
+\begin{align}
+    s'(t) &= -\beta i(t) s(t) + \nu q_s(t),\\
+    i'(t) &= \beta i(t) s(t) - \nu i(t) \\
+    r'(t) &= \nu i(t) + \nu q_i(t), \\
+    q_s'(t) &= -\nu q_s(t) \\
+    q_i'(t) &= -\nu q_i(t) .
+\end{align}
+At times $t$ when we do administer the test, i.e. $t\in T$, we have the following discontinuous dynamics:
+\begin{align}
+    s(t) &= \left[1-QFPR(s,i;\mathcal{T})\right]s(t),\\
+    i(t) &= QFNR(s,k;\mathcal{T}) i(t),\\
+    q_s(t) &= \left[1-QFPR(s,i;\mathcal{T})\right]s(t),\\
+    q_i(t) &= QFNR(s,k;\mathcal{T})i(t).
+\end{align}
+
+\subsection{Optimizing the Test Schedule}
+Suppose we want to find a simple schedule that administers the test once every $t_0$ units of time, 
+i.e. we want to run the test at each time period $0, t_0, 2t_0, 3t_0$, etc.  What is the largest time
+interval $t_0$ we can choose, under which the proportion of infections $i(t)$ nevers grows larger than
+its initial value $i(0)$?
+
+Consider the period from time $0$ to $t_0$.  After administering the test at time $0$ the infection volume
+is $QFNR(s,k;\mathcal{T}) i(0)$.  What is the longest time $t_0$ we can wait before the infection proportion
+surpasses its original volume?  That is, starting with above infection proportion, how many units of time $t_0$
+will it take for $i(t_0)=i(0)$?
+Given the growth dynamics of $i(t)$ in the absence of testing, this time can be expressed as
+$$
+QFNR(s,i;\mathcal{T})i(0) + \int_{t=0}^{t_0}\beta i(t)s(t) - \nu i(t)dt = i(0).
+$$
+Assuming $s(t)\approx 1$ and using the upper bound $i(t)\leq i(t_0)$, we can find a test-frequency $t_0$
+which satisfies the tighter bound $i(t_0)\leq i(0)$ by solving the following equation in terms of $t_0$:
+$$
+QFNR(s,i;\mathcal{T})i(0) + i(0)\int_{t=0}^{t_0}\beta  - \nu dt = i(0).
+$$
+Rearranging, we have
+$$
+QFNR(\mathcal{T}) + t_0(\beta - \nu) = 1.
+$$
+Thus, 
+$$
+t_0 = \frac{1-QFNR(\mathcal{T})}{\beta - \nu}.
+$$
+\end{document}
