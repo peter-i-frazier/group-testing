@@ -48,24 +48,7 @@ class IndividualInteractionPopulation(BasePopulation):
                 quarantine_length,
                 days_until_symptomatic,
                 initial_prevalence)
-
-
-    def get_summary_data(self):
-        return {'num_quarantined':self.get_num_quarantined(),
-                'num_infected': self.get_num_infected(),
-                'cumulative_num_infected': self.get_cumulative_num_infected()}
-    
-
-    def resolve_infection(self, agent_id):
-        # Do nothing when an infection is resolved -- the agent_id goes back
-        # to being a normal agent, as if they were never infected
-        pass
-    
-
-    def resolve_quarantine(self, agent_id):
-        # Do nothing when an agent leaves quarantine
-        pass
-
+        self.recent_interactions = {i:set() for i in range(disease_length)}
     
     
     def step(self):
@@ -90,17 +73,47 @@ class IndividualInteractionPopulation(BasePopulation):
         left_agents = random.choices(unquarantined_agents, k=num_interactions)
         right_agents = random.choices(unquarantined_agents, k=num_interactions)
 
+        # update recent interactions
+        for i in range(self.disease_length - 1):
+            day = self.disease_length - 1 - i
+            self.recent_interactions[day] = self.recent_interactions[day - 1]
+
+        self.recent_interactions[0] = set()
+
+
         # loop through the list of interactions and update the interaction counts
         # and pass on an infection if necessary
         for (i,j) in zip(left_agents, right_agents):
             #self.days_since_last_interaction[i,j] = 0
             #self.days_since_last_interaction[j,i] = 0
 
+            self.recent_interactions[0].add((i,j))
+
             if self.is_agent_infected(i) + self.is_agent_infected(j) == 1:
                 if random.random() < self.interaction_infection_pct:
                     self.infect_agent(i)
                     self.infect_agent(j)
-   
+
+
+    def get_recent_contacts(self, agent_ids):
+        recent_contacts = set()
+        for day in range(self.disease_length):
+            for (i,j) in self.recent_interactions[day]:
+                if i in agent_ids:
+                    recent_contacts.add(j)
+                if j in agent_ids:
+                    recent_contacts.add(i)
+        return recent_contacts
+
+
+    def iter_unquarantined_symptomatic(self):
+        for agent_id in self.agents:
+            if self.is_agent_infected(agent_id) and \
+                    self.is_agent_symptomatic(agent_id) and \
+                    not self.quarantine_status[agent_id]:
+                yield agent_id
+
+
     # on an instance with n_agents=1000, this version of the code clocked in at 651ms (using %timeit)
     # the new step() functino above clocks in at 2.48ms!!!!
     def legacy_step(self):

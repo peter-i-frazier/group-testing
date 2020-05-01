@@ -80,8 +80,16 @@ class BasePopulation:
         self.quarantine_length = quarantine_length
         self.cumulative_infected_agents = set()
 
+
     def get_summary_data(self):
         raise(Exception("todo"))
+
+
+    def get_summary_data(self):
+        return {'num_quarantined':self.get_num_quarantined(),
+                'num_infected': self.get_num_infected(),
+                'cumulative_num_infected': self.get_cumulative_num_infected()}
+
 
     def track_infection_status(self):
         for agent_id in self.agents:
@@ -89,8 +97,6 @@ class BasePopulation:
                 self.cumulative_infected_agents.add(agent_id)
                 self.days_infected_so_far[agent_id] += 1
                 if self.days_infected_so_far[agent_id] >= self.disease_length:
-                    self.infection_status[agent_id] = False
-                    self.days_infected_so_far[agent_id] = 0
                     self.resolve_infection(agent_id)
 
 
@@ -99,17 +105,17 @@ class BasePopulation:
             if self.quarantine_status[agent_id]:
                 self.days_quarantined_so_far[agent_id] += 1
                 if self.days_quarantined_so_far[agent_id] >= self.quarantine_length:
-                    self.quarantine_status[agent_id] = False
-                    self.days_quarantined_so_far[agent_id] = 0
                     self.resolve_quarantine(agent_id)
 
 
     def resolve_infection(self, agent_id):
-        raise(Exception("resolve_disease() must be implemented by child class"))
+        self.infection_status[agent_id] = False
+        self.days_infected_so_far[agent_id] = 0
     
 
     def resolve_quarantine(self, agent_id):
-        raise(Exception("resolve_disease() must be implemented by child class"))
+        self.quarantine_status[agent_id] = False
+        self.days_quarantined_so_far[agent_id] = 0
     
 
     def step(self):
@@ -117,8 +123,9 @@ class BasePopulation:
 
     
     def infect_agent(self, agent_id):
-        self.infection_status[agent_id] = True
-        self.cumulative_infected_agents.add(agent_id)
+        if agent_id not in self.cumulative_infected_agents:
+            self.infection_status[agent_id] = True
+            self.cumulative_infected_agents.add(agent_id)
 
    
     def quarantine_agent(self, agent_id):
@@ -134,6 +141,11 @@ class BasePopulation:
         return self.quarantine_status[agent_id]
 
 
+    def is_agent_recovered(self, agent_id):
+        return (not self.infection_status[agent_id]) and \
+                (agent_id in self.cumulative_infected_agents)
+
+
     def get_num_quarantined(self):
         return sum(self.quarantine_status.values())
     
@@ -144,6 +156,7 @@ class BasePopulation:
 
     def is_agent_symptomatic(self, agent_id):
         return self.days_infected_so_far[agent_id] >= self.days_until_symptomatic
+
 
     def get_cumulative_num_infected(self):
         return len(self.cumulative_infected_agents)

@@ -59,3 +59,34 @@ class QuarantineSymptomaticProtocol(BaseTestProtocol):
         for agent_id in test_results:
             population.quarantine_agent(agent_id)
 
+class ContactTraceProtocol(BaseTestProtocol):
+
+    def __init__(self):
+        super().__init__()
+        self.followup_contacts = set()
+
+    def run_test(self, population):
+        num_tests = 0
+        test_results = set()
+
+        for agent_id in population.iter_unquarantined_symptomatic():
+            num_tests += 1
+            test_results.add(agent_id)
+
+
+        for agent_id in self.followup_contacts:
+            if population.is_agent_infected(agent_id):
+                test_results.add(agent_id)
+                num_tests +=  1
+
+        recent_contacts = population.get_recent_contacts(test_results)
+        new_followup = recent_contacts.difference(test_results)
+       
+        self.followup_contacts = new_followup
+
+        return test_results
+
+    def respond_to_test(self, population, test_results, test_day):
+        for agent_id in test_results:
+            population.quarantine_agent(agent_id)
+
