@@ -2,8 +2,13 @@ from math import ceil, sqrt, floor
 import random
 import numpy as np
 
-def fnr_from_dilution(prevalence_in_group, params):
-    return 0 
+def fnr_from_dilution(prevalence_in_group, group_size):
+    i = prevalence_in_group
+    n = group_size
+    # 5% error rate for i = n = 1
+    # 10% error rate for i = 1; n = 32
+    fnr = 0.05 **(i/(n**0.076))
+    return  fnr
 
 class MatrixGroupTest:
     def __init__(self, group_size, false_negative_rate, false_positive_rate, fnr_at_swab_level=False):
@@ -41,8 +46,8 @@ class MatrixGroupTest:
                                     if (i,j) in population.infected_individuals 
                                     and self.was_swab_successful[(i,j)]])
 
-        if self.fnr_at_swab_level:
-            false_negative_pct = fnr_from_dilution(num_in_group_infected / float(len(group)), None)
+        if self.fnr_at_swab_level and num_in_group_infected > 0:
+            false_negative_pct = fnr_from_dilution(num_in_group_infected, len(group))
         else:
             # When false negatives are at the test level, we need to have an error for all infected individuals in the
             # test for it come back negative
