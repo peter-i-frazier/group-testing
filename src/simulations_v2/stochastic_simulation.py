@@ -81,6 +81,12 @@ class StochasticSimulation:
         self.current_day = 0
         self.last_test_day = -1
 
+    def run_new_trajectory(self, T):
+        self.reset_initial_state()
+        for _ in range(T):
+            self.step()
+        return self.sim_df
+     
     def run_contact_trace(self, new_QI):
         raise(Exception("not implemented yet"))
 
@@ -153,7 +159,7 @@ class StochasticSimulation:
         free_tot = free_infectious + free_susceptible + self.R
         poisson_param = free_infectious * self.contacts_lambda * free_susceptible / free_tot
 
-        new_E = np.random.poisson(poisson_param)
+        new_E = min(np.random.poisson(poisson_param), self.S)
 
         # resolve exposures queue
         new_S = np.random.binomial(self.E[0], self.exposed_infection_p)
@@ -189,11 +195,13 @@ class StochasticSimulation:
 
         self.current_day += 1
 
+       
+
     def _append_sim_df(self):
         data = self.get_current_state_vector()
         labels = self.get_state_vector_labels()
         new_row_df = pd.DataFrame([data], columns=labels)
-        self.sim_df = self.sim_df.append(new_row_df)
+        self.sim_df = self.sim_df.append(new_row_df, ignore_index=True)
         if sum(data) != self.pop_size:
             raise(Exception("population has shrunk"))
 
