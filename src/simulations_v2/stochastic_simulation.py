@@ -88,7 +88,19 @@ class StochasticSimulation:
         return self.sim_df
      
     def run_contact_trace(self, new_QI):
-        raise(Exception("not implemented yet"))
+        leave_E = min(sum(self.E), new_QI * self.contact_tracing_c)
+        new_QI = int(self.exposed_infection_p * leave_E)
+        new_QS = leave_E - new_QI
+        self.QS = self.QS + new_QS
+        self.QI = self.QI + new_QI
+
+        idx = self.max_time_E - 1
+        while leave_E > 0:
+            leave_E_idx = min(self.E[idx], leave_E)
+            self.E[idx] -= leave_E_idx
+            leave_E -= leave_E_idx
+            idx -= 1
+        
 
     def run_test(self):
         """ execute one step of the testing logic """
@@ -162,7 +174,7 @@ class StochasticSimulation:
         new_E = min(np.random.poisson(poisson_param), self.S)
 
         # resolve exposures queue
-        new_S = np.random.binomial(self.E[0], self.exposed_infection_p)
+        new_S = np.random.binomial(self.E[0], 1 - self.exposed_infection_p)
         new_pre_ID = self.E[0] - new_S
 
         # resolve pre-ID queue
