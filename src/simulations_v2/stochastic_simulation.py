@@ -154,7 +154,7 @@ class StochasticSimulation:
         """ simulate a single day in the progression of the disease """
 
         # do testing logic first 
-        if self.current_day - self.last_test_day >= self.days_between_tests:
+        if self.current_day - self.last_test_day >= self.days_between_tests or self.last_test_day == -1:
             self.last_test_day = self.current_day
             self.run_test() 
 
