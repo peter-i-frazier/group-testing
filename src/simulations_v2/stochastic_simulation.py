@@ -162,13 +162,16 @@ class StochasticSimulation:
         if self.pre_ID_state == 'infectious':
             free_infectious += sum(self.pre_ID)
         free_infectious += sum(self.ID)
-        free_infectious += sum(self.E) * self.exposed_infection_p
+        # free_infectious += sum(self.E) * self.exposed_infection_p
 
         free_susceptible = self.S + (1 - self.exposed_infection_p) * sum(self.E)
 
 
         # simulate new exposures between free infectious & free susceptible:
-        free_tot = free_infectious + free_susceptible + self.R
+        free_tot = free_infectious + free_susceptible + self.R + sum(self.E) * self.exposed_infection_p
+        if self.pre_ID_state != 'detectable':
+            free_tot += sum(self.pre_ID)
+
         poisson_param = free_infectious * self.contacts_lambda * free_susceptible / free_tot
 
         new_E = min(np.random.poisson(poisson_param), self.S)
