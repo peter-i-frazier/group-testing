@@ -47,8 +47,8 @@ class StochasticSimulation:
         self.mild_symptoms_p = params['mild_symptoms_p']
 
         # parameters governing symptomatic daily self reporting
-        self.mild_self_report_p = params['mild_symptoms_self_report_p']
-        self.severe_self_report_p = params['severe_symptoms_self_report_p']
+        self.mild_self_report_p = params['mild_symptoms_daily_self_report_p']
+        self.severe_self_report_p = params['severe_symptoms_daily_self_report_p']
 
         # parameters governing test protocol
         self.days_between_tests = params['days_between_tests']
@@ -95,9 +95,9 @@ class StochasticSimulation:
         ID_sample = self.sample_ID_times(self.init_ID_count + pre_ID_sample[0])
         self.ID = ID_sample[1:]
 
-        additional_mild = np.random.sample(ID_sample[0], self.mild_symptoms_p)
+        additional_mild = np.random.binomial(ID_sample[0], self.mild_symptoms_p)
         additional_severe = ID_sample[0] - additional_mild
-
+        
         SyID_mild_sample = self.sample_SyID_mild_times(self.init_SyID_mild_count + additional_mild)
         self.SyID_mild = SyID_mild_sample[1:]
 
@@ -111,7 +111,7 @@ class StochasticSimulation:
         self.QS = 0
         self.QI = 0
 
-        self.R = SyID_mild_sample[0] + SyID_mild_severe[0]
+        self.R = SyID_mild_sample[0] + SyID_mild_sample[0]
         
         
         var_labels = self.get_state_vector_labels()
@@ -142,10 +142,10 @@ class StochasticSimulation:
         while leave_E > 0:
             leave_E_at_idx = min(self.E[idx], leave_E)
             self.E[idx] -= leave_E_at_idx
-            leave_E -= leave_E_idx
+            leave_E -= leave_E_at_idx
             idx -= 1
 
-      def _shift_contact_queue(self):
+    def _shift_contact_queue(self):
         idx = 0
         while idx <= self.contact_tracing_delay - 1:
             self.contact_trace_queue[idx] = self.contact_trace_queue[idx+1]
