@@ -135,14 +135,52 @@ class StochasticSimulation:
         resolve_today_QI = self.contact_trace_queue[0]
         self._shift_contact_queue()
 
-        leave_E = int(min(sum(self.E), resolve_today_QI * self.contact_tracing_c))
-        self.QI = self.QI + leave_E
+        # compute how many cases we find
+        total_contacts_traced = int(new_QI * 14 * self.daily_contacts_lambda)
+        trace_success_p = self.exposed_infection_p * self.contact_tracing_c
+        total_cases_traced = np.random.binomial(total_contacts_traced, trace_success_p)
 
+        # trace these cases across E, pre-ID and ID states
+
+        leave_E = int(min(sum(self.E), total_cases_traced))
+        self._trace_E_queue(leave_E)
+        total_cases_traced -= leave_E
+
+        leave_pre_ID = min(sum(self.pre_ID), total_cases_traced)
+        self._trace_pre_ID_queue(leave_pre_ID)
+        total_cases_traced -= leave_pre_ID
+
+        leave_ID = min(sum(self.ID), total_cases_traced)
+        self._trace_ID_queue(leave_ID)
+
+    def _trace_E_queue(self, leave_E):
+        assert(leave_E <= sum(self.E))
+        self.QI = self.QI + leave_E
         idx = self.max_time_E - 1
         while leave_E > 0:
             leave_E_at_idx = min(self.E[idx], leave_E)
             self.E[idx] -= leave_E_at_idx
             leave_E -= leave_E_at_idx
+            idx -= 1
+
+    def _trace_pre_ID_queue(self, leave_pre_ID):
+        assert(leave_pre_ID <= sum(self.pre_ID))
+        self.QI = self.QI + leave_pre_ID
+        idx = self.max_time_pre_ID - 1
+        while leave_pre_ID > 0:
+            leave_pre_ID_at_idx = min(self.pre_ID[idx], leave_pre_ID)
+            self.pre_ID[idx] -= leave_pre_ID_at_idx
+            leave_pre_ID -= leave_pre_ID_at_idx
+            idx -= 1
+
+    def _trace_ID_queue(self, leave_ID):
+        assert(leave_ID <= sum(self.ID))
+        self.QI = self.QI + leave_ID
+        idx = self.max_time_ID - 1
+        while leave_ID > 0:
+            leave_ID_at_idx = min(self.ID[idx], leave_ID)
+            self.ID[idx] -= leave_ID_at_idx
+            leave_ID -= leave_ID_at_idx
             idx -= 1
 
     def _shift_contact_queue(self):
@@ -226,7 +264,7 @@ class StochasticSimulation:
 
         new_QI = 0
         # do testing logic first 
-        if self.current_day - self.last_test_day >= self.days_between_tests or self.last_test_day == -1:
+        if self.current_day - self.last_test_day >= self.days_between_tests:
             self.last_test_day = self.current_day
             new_QI += self.run_test() 
 
