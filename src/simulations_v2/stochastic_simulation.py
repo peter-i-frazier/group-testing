@@ -112,7 +112,7 @@ class StochasticSimulation:
         self.QS = 0
         self.QI = 0
 
-        self.R = SyID_mild_sample[0] + SyID_mild_sample[0]
+        self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
         
         
         var_labels = self.get_state_vector_labels()
@@ -343,8 +343,6 @@ class StochasticSimulation:
         leave_QI = self.sample_QI_exit_count(self.QI)
         self.QI -= leave_QI
         self.R += leave_QI + new_R_from_mild + new_R_from_severe
-
-        # sample number of people who leave quarantine-S
         leave_QS = self.sample_QS_exit_count(self.QS)
         self.QS -= leave_QS
         self.S += leave_QS
@@ -361,6 +359,7 @@ class StochasticSimulation:
         new_row_df = pd.DataFrame([data], columns=labels)
         self.sim_df = self.sim_df.append(new_row_df, ignore_index=True)
         if sum(data) != self.pop_size:
+            import pdb; pdb.set_trace()
             raise(Exception("population has shrunk"))
 
     def _shift_E_queue(self):
