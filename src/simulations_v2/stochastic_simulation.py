@@ -71,6 +71,7 @@ class StochasticSimulation:
         self.init_E_count = params['initial_E_count']
         self.init_pre_ID_count = params['initial_pre_ID_count']
         self.init_ID_count = params['initial_ID_count']
+        self.init_ID_prevalence = params['initial_ID_prevalence']
         self.init_SyID_mild_count = params['initial_SyID_mild_count']
         self.init_SyID_severe_count = params['initial_SyID_severe_count']
 
@@ -93,7 +94,11 @@ class StochasticSimulation:
         pre_ID_sample = self.sample_pre_ID_times(self.init_pre_ID_count + E_sample[0])
         self.pre_ID = pre_ID_sample[1:]
 
-        ID_sample = self.sample_ID_times(self.init_ID_count + pre_ID_sample[0])
+        if self.init_ID_prevalence:
+            init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
+        else:
+            init_ID_count = self.init_ID_count
+        ID_sample = self.sample_ID_times(init_ID_count + pre_ID_sample[0])
         self.ID = ID_sample[1:]
 
         additional_mild = np.random.binomial(ID_sample[0], self.mild_symptoms_p)
@@ -298,6 +303,7 @@ class StochasticSimulation:
 
         poisson_param = free_infectious * self.daily_contacts_lambda * free_susceptible / free_tot
         n_contacts = np.random.poisson(poisson_param)
+        #n_contacts = int(free_infectious * free_susceptible / free_tot * np.random.geometric(1/self.daily_contacts_lambda))
 
         # sample number of new E cases
         new_E = min(np.random.binomial(n_contacts, self.exposed_infection_p), self.S)

@@ -14,6 +14,22 @@ def poisson_pmf(max_time, mean_time):
     pmf.append(1-np.sum(pmf))
     return np.array(pmf)
 
+def plot_many_dfs_threshold(dfs_dict, threshold=0.1, xlabel="", title="", figsize=(10,6)):
+    plt.figure(figsize=figsize)
+    for df_label, dfs_varied in dfs_dict.items():
+        p_thresholds = []
+        xs = sorted(list(dfs_varied.keys()))
+        for x in xs:
+            cips = extract_cips(dfs_varied[x])
+            cip_exceed_thresh = [cip for cip in cips if cip >= threshold]
+            p_thresholds.append(len(cip_exceed_thresh) / len(cips) * 100)
+        plt.plot(xs, p_thresholds, marker='o', label=df_label)
+    plt.xlabel(xlabel)
+    plt.ylabel("Probability(greater than {:.1f}% infected)".format(threshold * 100))
+    plt.title(title)
+    plt.legend(loc='best')
+    plt.show()
+
 def poisson_waiting_function(max_time, mean_time):
     return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
 
@@ -105,7 +121,7 @@ def plot_many_cips(df_cips, title="", plot_avg=False, figsize=(10,6)):
         p95.append(np.quantile(cips, 0.95))
         p05.append(np.quantile(cips, 0.05))
     
-    plt.figure(figsize=figsize))
+    plt.figure(figsize=figsize)
     
     if plot_avg:
         plt.plot(cs, avg, label='Mean CIP')
