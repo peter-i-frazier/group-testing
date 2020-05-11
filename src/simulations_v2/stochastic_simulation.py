@@ -60,6 +60,7 @@ class StochasticSimulation:
         self.perform_contact_tracing = params['perform_contact_tracing']
         self.contact_tracing_c = params['contact_tracing_constant']
         self.contact_tracing_delay = params['contact_tracing_delay']
+        self.contact_trace_infectious_window = params['contact_trace_infectious_window']
 
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
@@ -136,21 +137,27 @@ class StochasticSimulation:
         self._shift_contact_queue()
 
         # compute how many cases we find
-        total_contacts_traced = int(new_QI * 14 * self.daily_contacts_lambda)
-        trace_success_p = self.exposed_infection_p * self.contact_tracing_c
-        total_cases_traced = np.random.binomial(total_contacts_traced, trace_success_p)
+        total_contacts = int(new_QI * self.contact_trace_infectious_window \
+                                        * self.daily_contacts_lambda)
+        total_contacts_traced = np.random.binomial(total_contacts, self.contact_tracing_c)
+        total_cases_isolated = np.random.binomial(total_contacts_traced, self.exposed_infection_p)
+        total_contacts_quarantined = min(self.S, total_contacts_traced - total_cases_isolated)
+
+        # add susceptible people to the quarantine state 
+        self.S -= total_contacts_quarantined
+        self.QS += total_contacts_quarantined
 
         # trace these cases across E, pre-ID and ID states
 
-        leave_E = int(min(sum(self.E), total_cases_traced))
+        leave_E = int(min(sum(self.E), total_cases_isolated))
         self._trace_E_queue(leave_E)
-        total_cases_traced -= leave_E
+        total_cases_isolated -= leave_E
 
-        leave_pre_ID = min(sum(self.pre_ID), total_cases_traced)
+        leave_pre_ID = min(sum(self.pre_ID), total_cases_isolated)
         self._trace_pre_ID_queue(leave_pre_ID)
-        total_cases_traced -= leave_pre_ID
+        total_cases_isolated -= leave_pre_ID
 
-        leave_ID = min(sum(self.ID), total_cases_traced)
+        leave_ID = min(sum(self.ID), total_cases_isolated)
         self._trace_ID_queue(leave_ID)
 
     def _trace_E_queue(self, leave_E):
