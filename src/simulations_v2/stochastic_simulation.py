@@ -84,7 +84,12 @@ class StochasticSimulation:
         self.reset_initial_state()
     
     def reset_initial_state(self):
-        self.S = self.init_S_count
+        if self.init_ID_prevalence:
+            init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
+        else:
+            init_ID_count = self.init_ID_count
+
+        self.S = self.init_S_count + self.init_ID_count - init_ID_count
 
         # all of the following state vectors have the following convention:
         # state[k] is how many people have k days left to go.
@@ -94,10 +99,6 @@ class StochasticSimulation:
         pre_ID_sample = self.sample_pre_ID_times(self.init_pre_ID_count + E_sample[0])
         self.pre_ID = pre_ID_sample[1:]
 
-        if self.init_ID_prevalence:
-            init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
-        else:
-            init_ID_count = self.init_ID_count
         ID_sample = self.sample_ID_times(init_ID_count + pre_ID_sample[0])
         self.ID = ID_sample[1:]
 
