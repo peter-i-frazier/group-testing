@@ -46,6 +46,31 @@ def run_sensitivity_sims(base_params, param_to_vary, param_values,
         if verbose:
             print("Done simulating {} equal to {}".format(param_to_vary, val))
     return perturbed_dfs
+
+def run_sensitivity_sims_time_dist(base_params, state_sensitivity, param_avg_values, param_max_values,
+                        f=poisson_waiting_function, time_horizon=150, trajectories_per_config=100, verbose=True):
+    """ run simulations, varying time in state_sensitivity, setting time distribution equal to f(avg, max) for 
+    avg, max in param_avg_values and param_max_values respectively
+    Inputs for state_sensitivity:
+        exposed
+        pre_ID
+        ID
+        SyID_mild
+        SyID_severe
+    """
+    perturbed_dfs = {}
+    sim_params = base_params.copy()
+    for index, avg_value in enumerate(param_avg_values):
+        max_value = param_max_values[index]
+        sim_params['max_time_'+state_sensitivity] = max_value
+        sim_params[state_sensitivity+'_time_function'] = f(max_value, avg_value)
+        perturbed_dfs[avg_value] = run_multiple_trajectories(sim_params,
+                                            ntrajectories=trajectories_per_config,
+                                            time_horizon=time_horizon)
+        if verbose:
+            print("Done simulating time in {} with average length {}".format(state_sensitivity, avg_value))
+    return perturbed_dfs
+
         
 
 def run_multiple_trajectories(sim_params, ntrajectories = 100, time_horizon=150):
