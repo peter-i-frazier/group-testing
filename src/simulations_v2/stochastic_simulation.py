@@ -1,6 +1,6 @@
 """
 Implements class containing the stochastic simulation logic outlined in the
-following doc: 
+following doc:
 https://docs.google.com/document/d/18wv_2vcH9tKx1OJ0PpJoI8QZMTSutzX9f44mNKgVS1g/edit#
 """
 
@@ -13,17 +13,17 @@ class StochasticSimulation:
         # Meta-parameters governing the maximum number of days an
         # individual spends in each 'infection' state
         self.max_time_E = params['max_time_exposed']
-        self.max_time_pre_ID = params['max_time_pre_ID'] 
-        self.max_time_ID = params['max_time_ID'] 
-        self.max_time_SyID_mild = params['max_time_SyID_mild'] 
-        self.max_time_SyID_severe = params['max_time_SyID_severe'] 
-       
+        self.max_time_pre_ID = params['max_time_pre_ID']
+        self.max_time_ID = params['max_time_ID']
+        self.max_time_SyID_mild = params['max_time_SyID_mild']
+        self.max_time_SyID_severe = params['max_time_SyID_severe']
+
         # parameters governing distribution over time spent in each
         # of these infection states:
         # Assumptions about the sample_X_times variables:
         # sample_X_times(n) returns a numpy array times of length max_time_X+1
         # such that times[k] is the number of people who stay in state X
-        # for k time periods. 
+        # for k time periods.
         # (However, the length of the corresponding queue arrays will just be max_time_X,
         # not max_time_X + 1)
         # We assume that sum(times) == n
@@ -79,10 +79,10 @@ class StochasticSimulation:
                         self.init_pre_ID_count - self.init_ID_count - \
                         self.init_SyID_mild_count - self.init_SyID_severe_count
         assert(self.init_S_count >= 0)
-        
+
         # instantiate state variables and relevant simulation variables
         self.reset_initial_state()
-    
+
     def reset_initial_state(self):
         if self.init_ID_prevalence:
             init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
@@ -104,7 +104,7 @@ class StochasticSimulation:
 
         additional_mild = np.random.binomial(ID_sample[0], self.mild_symptoms_p)
         additional_severe = ID_sample[0] - additional_mild
-        
+
         SyID_mild_sample = self.sample_SyID_mild_times(self.init_SyID_mild_count + additional_mild)
         self.SyID_mild = SyID_mild_sample[1:]
 
@@ -119,8 +119,8 @@ class StochasticSimulation:
         self.QI = 0
 
         self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
-        
-        
+
+
         var_labels = self.get_state_vector_labels()
         self.sim_df = pd.DataFrame(columns=var_labels)
         self._append_sim_df()
@@ -132,9 +132,9 @@ class StochasticSimulation:
         for _ in range(T):
             self.step()
         return self.sim_df
-     
+
     def step_contact_trace(self, new_QI):
-        """ resolve contact traces at the front of the queue and add new QIs to the back 
+        """ resolve contact traces at the front of the queue and add new QIs to the back
         of the contact trace queue"""
 
         # update the contact trace queue
@@ -149,7 +149,7 @@ class StochasticSimulation:
         total_cases_isolated = np.random.binomial(total_contacts_traced, self.exposed_infection_p)
         total_contacts_quarantined = min(self.S, total_contacts_traced - total_cases_isolated)
 
-        # add susceptible people to the quarantine state 
+        # add susceptible people to the quarantine state
         self.S -= total_contacts_quarantined
         self.QS += total_contacts_quarantined
 
@@ -202,7 +202,7 @@ class StochasticSimulation:
             self.contact_trace_queue[idx] = self.contact_trace_queue[idx+1]
             idx += 1
         self.contact_trace_queue[self.contact_tracing_delay] = 0
-   
+
 
     def run_test(self):
         """ execute one step of the testing logic """
@@ -269,17 +269,17 @@ class StochasticSimulation:
         self.QI = self.QI + new_QI
 
         return new_QI
-        
+
 
 
     def step(self):
         """ simulate a single day in the progression of the disease """
 
         new_QI = 0
-        # do testing logic first 
+        # do testing logic first
         if self.current_day - self.last_test_day >= self.days_between_tests:
             self.last_test_day = self.current_day
-            new_QI += self.run_test() 
+            new_QI += self.run_test()
 
         # resolve symptomatic self-reporting
         new_QI += self.isolate_self_reports()
@@ -358,7 +358,7 @@ class StochasticSimulation:
 
         self.current_day += 1
 
-       
+
 
     def _append_sim_df(self):
         data = self.get_current_state_vector()
@@ -376,7 +376,7 @@ class StochasticSimulation:
             idx += 1
         self.E[self.max_time_E - 1] = 0
 
-    def _shift_pre_ID_queue(self): 
+    def _shift_pre_ID_queue(self):
         idx = 0
         while idx <= self.max_time_pre_ID - 2:
             self.pre_ID[idx] = self.pre_ID[idx+1]
@@ -399,7 +399,7 @@ class StochasticSimulation:
 
     def _shift_SyID_severe_queue(self):
         idx = 0
-        while idx <= self.max_time_SyID_mild - 2:
+        while idx <= self.max_time_SyID_severe - 2:
             self.SyID_severe[idx] = self.SyID_severe[idx+1]
             idx += 1
         self.SyID_severe[self.max_time_SyID_severe - 1] = 0
@@ -418,48 +418,3 @@ class StochasticSimulation:
                 ['ID_{}'.format(x) for x in range(self.max_time_ID)] + \
                 ['SyID_mild_{}'.format(x) for x in range(self.max_time_SyID_mild)] + \
                 ['SyID_severe_{}'.format(x) for x in range(self.max_time_SyID_severe)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
