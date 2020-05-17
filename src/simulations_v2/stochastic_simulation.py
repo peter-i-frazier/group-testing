@@ -44,7 +44,13 @@ class StochasticSimulation:
         # each infection state
         self.exposed_infection_p = params['exposed_infection_p']
         self.daily_contacts_lambda = params['expected_contacts_per_day']
-        self.mild_symptoms_p = params['mild_symptoms_p']
+
+        # mild_severity_levels is the number of severity levels that are contained within the mild class.
+        # We assume that they are the first entries in teh severity_prevalence array
+        # severity_prevalence is an array that has the distribution of severity levels for any infected patient
+        self.mild_severity_levels = params['mild_severity_levels']
+        self.severity_prevalence = params['severity_prevalence']
+        self.mild_symptoms_p = np.sum(self.severity_prevalence[:self.mild_severity_levels])
 
         # parameters governing symptomatic daily self reporting
         self.mild_self_report_p = params['mild_symptoms_daily_self_report_p']
@@ -118,7 +124,12 @@ class StochasticSimulation:
         self.QS = 0
         self.QI = 0
 
+        self.QI_mild = 0
+        self.QI_severe = 0
+
         self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
+        self.R_mild = SyID_mild_sample[0]
+        self.R_severe = SyID_severe_sample[0]
 
 
         var_labels = self.get_state_vector_labels()
@@ -131,6 +142,15 @@ class StochasticSimulation:
         self.reset_initial_state()
         for _ in range(T):
             self.step()
+
+        for i in range(len(self.severity_prevalence)):
+            if i < self.mild_severity_levels:
+                # Mild severity
+                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_mild'] * (self.severity_prevalence[i] / self.mild_symptoms_p)
+            else:
+                # Severe symptoms
+                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * (self.severity_prevalence[i] / (1 - self.mild_symptoms_p))
+
         return self.sim_df
 
     def step_contact_trace(self, new_QI):
@@ -169,6 +189,10 @@ class StochasticSimulation:
     def _trace_E_queue(self, leave_E):
         assert(leave_E <= sum(self.E))
         self.QI = self.QI + leave_E
+        leave_E_mild = np.random.binomial(leave_E, self.mild_symptoms_p)
+        leave_E_severe = leave_E - leave_E_mild
+        self.QI_mild += leave_E_mild
+        self.QI_severe += leave_E_severe
         idx = self.max_time_E - 1
         while leave_E > 0:
             leave_E_at_idx = min(self.E[idx], leave_E)
@@ -179,6 +203,10 @@ class StochasticSimulation:
     def _trace_pre_ID_queue(self, leave_pre_ID):
         assert(leave_pre_ID <= sum(self.pre_ID))
         self.QI = self.QI + leave_pre_ID
+        leave_pre_ID_mild = np.random.binomial(leave_pre_ID, self.mild_symptoms_p)
+        leave_pre_ID_severe = leave_pre_ID - leave_pre_ID_mild
+        self.QI_mild += leave_pre_ID_mild
+        self.QI_severe += leave_pre_ID_severe
         idx = self.max_time_pre_ID - 1
         while leave_pre_ID > 0:
             leave_pre_ID_at_idx = min(self.pre_ID[idx], leave_pre_ID)
@@ -189,6 +217,10 @@ class StochasticSimulation:
     def _trace_ID_queue(self, leave_ID):
         assert(leave_ID <= sum(self.ID))
         self.QI = self.QI + leave_ID
+        leave_ID_mild = np.random.binomial(leave_ID, self.mild_symptoms_p)
+        leave_ID_severe = leave_ID - leave_ID_mild
+        self.QI_mild += leave_ID_mild
+        self.QI_severe += leave_ID_severe
         idx = self.max_time_ID - 1
         while leave_ID > 0:
             leave_ID_at_idx = min(self.ID[idx], leave_ID)
@@ -215,6 +247,8 @@ class StochasticSimulation:
 
         # sample the number of free infected people who end up quarantined
         new_QI_from_ID = np.random.binomial(self.ID, new_QI_p)
+        new_QI_from_ID_mild = np.random.binomial(new_QI_from_ID, self.mild_symptoms_p)
+        new_QI_from_ID_severe = new_QI_from_ID - new_QI_from_ID_mild
         new_QI_from_SyID_mild = np.random.binomial(self.SyID_mild, new_QI_p)
         new_QI_from_SyID_severe = np.random.binomial(self.SyID_severe, new_QI_p)
 
@@ -224,25 +258,39 @@ class StochasticSimulation:
         self.SyID_severe = self.SyID_severe - new_QI_from_SyID_severe
 
         new_QI = sum(new_QI_from_ID) + sum(new_QI_from_SyID_mild) + sum(new_QI_from_SyID_severe)
+        new_QI_mild = sum(new_QI_from_ID_mild) + sum(new_QI_from_SyID_mild)
+        new_QI_severe = sum(new_QI_from_ID_severe) + sum(new_QI_from_SyID_severe)
 
         # do the above for pre-ID state, if it is detectable
         if self.pre_ID_state == 'detectable':
             new_QI_from_pre_ID = np.random.binomial(self.pre_ID, new_QI_p)
+            new_QI_from_pre_ID_mild = np.random.binomial(new_QI_from_pre_ID, self.mild_symptoms_p)
+            new_QI_from_pre_ID_severe = new_QI_from_pre_ID - new_QI_from_pre_ID_mild
             self.pre_ID = self.pre_ID - new_QI_from_pre_ID
             new_QI += sum(new_QI_from_pre_ID)
+            new_QI_mild += sum(new_QI_from_pre_ID_mild)
+            new_QI_severe += sum(new_QI_from_pre_ID_severe)
 
         # add to QI individuals from E, and from pre-ID (if state is 'infectious'), using
         # the false-positive rate for undetectable individuals
         new_QI_undetectable_p = self.test_pop_fraction * self.test_QFPR
 
         new_QI_from_E = np.random.binomial(self.E, new_QI_undetectable_p)
+        new_QI_from_E_mild = np.random.binomial(new_QI_from_E, self.mild_symptoms_p)
+        new_QI_from_E_severe = new_QI_from_E - new_QI_from_E_mild
         self.E = self.E - new_QI_from_E
         new_QI += sum(new_QI_from_E)
+        new_QI_mild += sum(new_QI_from_E_mild)
+        new_QI_severe += sum(new_QI_from_E_severe)
 
         if self.pre_ID_state == 'infectious':
             new_QI_from_pre_ID = np.random.binomial(self.pre_ID, new_QI_undetectable_p)
+            new_QI_from_pre_ID_mild = np.random.binomial(new_QI_from_pre_ID, self.mild_symptoms_p)
+            new_QI_from_pre_ID_severe = new_QI_from_pre_ID - new_QI_from_pre_ID_mild
             self.pre_ID = self.pre_ID - new_QI_from_pre_ID
             new_QI += sum(new_QI_from_pre_ID)
+            new_QI_mild += sum(new_QI_from_pre_ID_mild)
+            new_QI_severe += sum(new_QI_from_pre_ID_severe)
 
         # add to QS individuals from S, due to false positives
         new_QS_p = self.test_pop_fraction *  self.test_QFPR
@@ -253,6 +301,8 @@ class StochasticSimulation:
         # update QS and QI
         self.QS = self.QS + new_QS_from_S
         self.QI = self.QI + new_QI
+        self.QI_mild += new_QI_mild
+        self.QI_severe += new_QI_severe
 
         return new_QI
 
@@ -261,12 +311,16 @@ class StochasticSimulation:
         mild_self_reports = np.random.binomial(self.SyID_mild, self.mild_self_report_p)
         self.SyID_mild = self.SyID_mild - mild_self_reports
         new_QI = sum(mild_self_reports)
+        new_QI_mild = sum(mild_self_reports)
 
         severe_self_reports = np.random.binomial(self.SyID_severe, self.severe_self_report_p)
         self.SyID_severe = self.SyID_severe - severe_self_reports
         new_QI += sum(severe_self_reports)
+        new_QI_severe = sum(severe_self_reports)
 
         self.QI = self.QI + new_QI
+        self.QI_mild += new_QI_mild
+        self.QI_severe += new_QI_severe
 
         return new_QI
 
@@ -348,8 +402,18 @@ class StochasticSimulation:
 
         # sample number of people who leave quarantine-I/ resolve new R cases
         leave_QI = self.sample_QI_exit_count(self.QI)
+        if leave_QI == 0:
+            leave_QI_mild = 0
+            leave_QI_severe = 0
+        else:
+            leave_QI_mild = min(np.random.binomial(leave_QI, self.QI_mild / self.QI), self.QI_mild)
+            leave_QI_severe = leave_QI - leave_QI_mild
         self.QI -= leave_QI
+        self.QI_mild -= leave_QI_mild
+        self.QI_severe -= leave_QI_severe
         self.R += leave_QI + new_R_from_mild + new_R_from_severe
+        self.R_mild += leave_QI_mild + new_R_from_mild
+        self.R_severe += leave_QI_severe + new_R_from_severe
         leave_QS = self.sample_QS_exit_count(self.QS)
         self.QS -= leave_QS
         self.S += leave_QS
@@ -361,13 +425,20 @@ class StochasticSimulation:
 
 
     def _append_sim_df(self):
+        self.generate_cumulative_stats()
         data = self.get_current_state_vector()
         labels = self.get_state_vector_labels()
         new_row_df = pd.DataFrame([data], columns=labels)
         self.sim_df = self.sim_df.append(new_row_df, ignore_index=True)
-        if sum(data) != self.pop_size:
+        # print(sum(data), sum(data[-1*(len(self.severity_prevalence)+2):]))
+        # print(labels[-1*(len(self.severity_prevalence)+2):])
+        if abs(sum(data) - sum(data[-2:]) - self.pop_size) > 0.0001:
             import pdb; pdb.set_trace()
             raise(Exception("population has shrunk"))
+        if np.sum(data < 0) > 0:
+            import pdb; pdb.set_trace()
+            raise(Exception("negative category size"))
+
 
     def _shift_E_queue(self):
         idx = 0
@@ -408,7 +479,8 @@ class StochasticSimulation:
     def get_current_state_vector(self):
         return np.concatenate([
             [self.S], [self.QS], [self.QI], [self.R],
-            self.E, self.pre_ID, self.ID, self.SyID_mild, self.SyID_severe
+            self.E, self.pre_ID, self.ID, self.SyID_mild, self.SyID_severe,
+            [self.cumulative_mild], [self.cumulative_severe]
             ])
 
     def get_state_vector_labels(self):
@@ -417,4 +489,16 @@ class StochasticSimulation:
                 ['pre_ID_{}'.format(x) for x in range(self.max_time_pre_ID)] + \
                 ['ID_{}'.format(x) for x in range(self.max_time_ID)] + \
                 ['SyID_mild_{}'.format(x) for x in range(self.max_time_SyID_mild)] + \
-                ['SyID_severe_{}'.format(x) for x in range(self.max_time_SyID_severe)]
+                ['SyID_severe_{}'.format(x) for x in range(self.max_time_SyID_severe)] + \
+                ['cumulative_mild', 'cumulative_severe']
+
+
+    def generate_cumulative_stats(self):
+        self.cumulative_mild = self.QI_mild + sum(self.SyID_mild) + self.R_mild
+        self.cumulative_severe = self.QI_severe + sum(self.SyID_severe) + self.R_severe
+
+        # self.severity = list()
+        # for i in range(self.mild_severity_levels):
+        #     self.severity.append((self.severity_prevalence[i] / self.mild_symptoms_p ) * self.cumulative_mild)
+        # for i in range(len(self.severity_prevalence) - self.mild_severity_levels):
+        #     self.severity.append((self.severity_prevalence[i + self.mild_severity_levels]) / (1 - self.mild_symptoms_p) * self.cumulative_severe)
