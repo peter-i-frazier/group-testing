@@ -407,7 +407,8 @@ class StochasticSimulation:
             leave_QI_severe = 0
         else:
             leave_QI_mild = min(np.random.binomial(leave_QI, self.QI_mild / self.QI), self.QI_mild)
-            leave_QI_severe = leave_QI - leave_QI_mild
+            leave_QI_severe = min(leave_QI - leave_QI_mild, self.QI_severe)
+            leave_QI = leave_QI_mild + leave_QI_severe
         self.QI -= leave_QI
         self.QI_mild -= leave_QI_mild
         self.QI_severe -= leave_QI_severe
@@ -432,11 +433,12 @@ class StochasticSimulation:
         self.sim_df = self.sim_df.append(new_row_df, ignore_index=True)
         # print(sum(data), sum(data[-1*(len(self.severity_prevalence)+2):]))
         # print(labels[-1*(len(self.severity_prevalence)+2):])
+        assert(self.QI_mild + self.QI_severe == self.QI)
+        assert(self.R_mild + self.R_severe == self.R)
+        assert(min(self.QI_mild, self.QI_severe, self.R_mild, self.R_severe) >= 0)
         if abs(sum(data) - sum(data[-2:]) - self.pop_size) > 0.0001:
-            import pdb; pdb.set_trace()
             raise(Exception("population has shrunk"))
         if np.sum(data < 0) > 0:
-            import pdb; pdb.set_trace()
             raise(Exception("negative category size"))
 
 

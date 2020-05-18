@@ -8,7 +8,6 @@ from analysis_helpers import run_multiple_trajectories
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
 def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
-    # run sims
     try:
         dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
         
