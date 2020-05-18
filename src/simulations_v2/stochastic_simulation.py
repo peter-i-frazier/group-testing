@@ -163,7 +163,7 @@ class StochasticSimulation:
         self._shift_contact_queue()
 
         # compute how many cases we find
-        total_contacts = int(new_QI * self.contact_trace_infectious_window \
+        total_contacts = int(resolve_today_QI * self.contact_trace_infectious_window \
                                         * self.daily_contacts_lambda)
         total_contacts_traced = np.random.binomial(total_contacts, self.contact_tracing_c)
         total_cases_isolated = np.random.binomial(total_contacts_traced, self.exposed_infection_p)
