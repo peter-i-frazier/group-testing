@@ -6,7 +6,7 @@ from scipy.stats import geom, poisson
 
 import functools
 
-@functools.lru_cache(maxsize=128)
+#@functools.lru_cache(maxsize=128)
 def poisson_pmf(max_time, mean_time):
     pmf = list()
     for i in range(max_time):
