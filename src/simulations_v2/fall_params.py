@@ -14,8 +14,8 @@ daily_self_report_mild = 0
 # avg_infectious_window = (avg time in ID state) + (avg time in Sy state prior to self-reporting)
 avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_severe) + \
                         (1-pct_self_reports_severe) * (1 / daily_self_report_mild)
-pre_reopen_population = 1500
-pre_reopen_daily_contacts = 7
+population_size = 34310
+daily_contacts = 50
 
 
 prob_severity_given_age = np.array([[0.1, 0.88, 0.02, 0],\
@@ -25,7 +25,7 @@ prob_severity_given_age = np.array([[0.1, 0.88, 0.02, 0],\
                                 [0, 0.4, 0.3, 0.3]])
 
 prob_infection = np.array([0.018, 0.022, 0.029, 0.042, 0.042])
-prob_age = np.array([0, 0.6588805, 0.3170955, 0.0206745, 0.0033495])
+prob_age = np.array([0, 0.85808522, 0.13170574, 0.00878566, 0.00142338])
 
 base_params = {
     'max_time_exposed': 4,
@@ -47,7 +47,7 @@ base_params = {
     'sample_QS_exit_function': (lambda n: np.random.binomial(n, 0.3)),
     
     'exposed_infection_p': 0.026,
-    'expected_contacts_per_day': pre_reopen_daily_contacts,
+    'expected_contacts_per_day': daily_contacts,
     
     'mild_severity_levels': 1,
     'severity_prevalence': subdivide_severity(prob_severity_given_age, prob_infection, prob_age),
@@ -67,7 +67,7 @@ base_params = {
     
     'pre_ID_state': 'detectable',
     
-    'population_size': pre_reopen_population,
+    'population_size': population_size,
     'initial_E_count': 0,
     'initial_pre_ID_count': 45,
     'initial_ID_count': 0,
