@@ -12,8 +12,9 @@ daily_self_report_severe = 0.8
 daily_self_report_mild = 0
 
 # avg_infectious_window = (avg time in ID state) + (avg time in Sy state prior to self-reporting)
-avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_severe) + \
-                        (1-pct_self_reports_severe) * (1 / daily_self_report_mild)
+avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_severe) 
+if daily_self_report_mild != 0:
+    avg_infectious_window += (1 - pct_self_reports_severe) * (1 / daily_self_report_mild)
 pre_reopen_population = 1500
 pre_reopen_daily_contacts = 7
 
@@ -69,7 +70,7 @@ base_params = {
     
     'population_size': pre_reopen_population,
     'initial_E_count': 0,
-    'initial_pre_ID_count': 45,
+    'initial_pre_ID_count': 0,
     'initial_ID_count': 0,
     'initial_ID_prevalence': 0.001,
     'initial_SyID_mild_count': 0,
