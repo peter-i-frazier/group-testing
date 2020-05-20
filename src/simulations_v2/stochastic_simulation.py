@@ -6,6 +6,7 @@ https://docs.google.com/document/d/18wv_2vcH9tKx1OJ0PpJoI8QZMTSutzX9f44mNKgVS1g/
 
 import numpy as np
 import pandas as pd
+from math import ceil
 
 class StochasticSimulation:
     def __init__(self, params):
@@ -81,9 +82,14 @@ class StochasticSimulation:
         self.init_E_count = params['initial_E_count']
         self.init_pre_ID_count = params['initial_pre_ID_count']
         self.init_ID_count = params['initial_ID_count']
-        self.init_ID_prevalence = params['initial_ID_prevalence']
         self.init_SyID_mild_count = params['initial_SyID_mild_count']
         self.init_SyID_severe_count = params['initial_SyID_severe_count']
+
+        self.init_ID_prevalence = params['initial_ID_prevalence']
+        if 'init_ID_prevalence_stochastic' in params:
+            self.init_ID_prevalence_stochastic = params['init_ID_prevalence_stochastic']
+        else:
+            self.init_ID_prevalence_stochastic = False
 
         self.init_S_count = self.pop_size - self.init_E_count - \
                         self.init_pre_ID_count - self.init_ID_count - \
@@ -95,7 +101,10 @@ class StochasticSimulation:
 
     def reset_initial_state(self):
         if self.init_ID_prevalence:
-            init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
+            if self.init_ID_prevalence_stochastic:
+                init_ID_count = np.random.binomial(self.pop_size, self.init_ID_prevalence)
+            else:
+                init_ID_count = ceil(self.pop_size * self.init_ID_prevalence)
         else:
             init_ID_count = self.init_ID_count
 
