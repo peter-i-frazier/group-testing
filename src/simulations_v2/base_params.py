@@ -15,28 +15,28 @@ daily_self_report_mild = 0
 avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_severe) 
 if daily_self_report_mild != 0:
     avg_infectious_window += (1 - pct_self_reports_severe) * (1 / daily_self_report_mild)
-pre_reopen_population = 1500
+pre_reopen_population = 2500
 pre_reopen_daily_contacts = 7
 
 
-prob_severity_given_age = np.array([[0.1, 0.88, 0.02, 0],\
-				[0.1, 0.7, 0.15, 0.05],\
-				[0.05, 0.7, 0.15, 0.1],\
-                                [0.05, 0.6, 0.2, 0.15],\
-                                [0, 0.4, 0.3, 0.3]])
+prob_severity_given_age = np.array([[0.05, 0.94, 0.01, 0],\
+                                    [0.04, 0.83, 0.10, 0.03],\
+                                    [0.04, 0.79, 0.10, 0.07],\
+                                    [0.04, 0.73, 0.13, 0.10],\
+                                    [0.03, 0.57, 0.2, 0.2]])
 
 prob_infection = np.array([0.018, 0.022, 0.029, 0.042, 0.042])
-prob_age = np.array([0, 0.6588805, 0.3170955, 0.0206745, 0.0033495])
+prob_age = np.array([0, 0.6534332, 0.3221892, 0.0209788, 0.0033988])
 
 base_params = {
     'max_time_exposed': 4,
-    'exposed_time_function': poisson_waiting_function(max_time=4, mean_time=1),
+    'exposed_time_function': poisson_waiting_function(max_time=4, mean_time=2),
     
     'max_time_pre_ID': 4,
-    'pre_ID_time_function': poisson_waiting_function(max_time=4, mean_time=1),
+    'pre_ID_time_function': poisson_waiting_function(max_time=4, mean_time=0),
     
     'max_time_ID': 8,
-    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=4),
+    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=3),
     
     'max_time_SyID_mild': 14,
     'SyID_mild_time_function': poisson_waiting_function(max_time=14, mean_time=10),
