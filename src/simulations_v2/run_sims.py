@@ -4,6 +4,7 @@ import time
 import os
 import multiprocessing
 from analysis_helpers import run_multiple_trajectories
+import cPickle as pickle
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -86,6 +87,8 @@ if __name__ == "__main__":
         # instantiate relevant sim params
         sim_params = params.copy()
         sim_params[param_to_vary] = param_val
+        pickle.dump(sim_params, open("{}/sim_params.pickle".format(sim_sub_dir), "wb"))
+        print("Saved sim_params to pickle file")
         # start new process
         fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
         proc = multiprocessing.Process(target = run_background_sim, args=fn_args)

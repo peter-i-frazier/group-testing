@@ -1,0 +1,8 @@
+base_params_to_update:
+    days_between_tests: 1
+    test_population_fraction: 0.07
+    contact_trace_testing_frac: 0.5
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: contact_tracing_constant
+parameter_values: [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
