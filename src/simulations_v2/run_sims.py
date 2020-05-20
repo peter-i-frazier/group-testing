@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     sim_timestamp = time.time()
     if len(sys.argv) >= 3:
-        sim_id = "{}.{}".format(sys.argv[2], sim_timestamp)
+        sim_id = "{}.{}".format(sys.argv[3], sim_timestamp)
     else:
         sim_id = str(sim_timestamp)
     print("Simulation ID: {}".format(sim_id))

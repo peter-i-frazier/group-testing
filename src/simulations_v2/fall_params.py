@@ -16,7 +16,7 @@ avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_sev
 if daily_self_report_mild != 0:
     avg_infectious_window += (1 - pct_self_reports_severe) * (1 / daily_self_report_mild)
 population_size = 34310
-daily_contacts = 50
+daily_contacts = 15
 
 
 prob_severity_given_age = np.array([[0.1, 0.88, 0.02, 0],\
@@ -70,7 +70,7 @@ base_params = {
     
     'population_size': population_size,
     'initial_E_count': 0,
-    'initial_pre_ID_count': 45,
+    'initial_pre_ID_count': 0,
     'initial_ID_count': 0,
     'initial_ID_prevalence': 0.001,
     'initial_SyID_mild_count': 0,
