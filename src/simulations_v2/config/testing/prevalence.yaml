@@ -10,4 +10,4 @@ base_params_to_update:
 ntrajectories: 500
 time_horizon: 112
 param_to_vary: initial_ID_prevalence
-parameter_values: [0.0001,0.0005,0.001,0.005,0.01,0.05]
+parameter_values: [0.0005, 0.001,0.002,0.003,0.004,0.005,0.01,0.015,0.02,0.025,0.03]
