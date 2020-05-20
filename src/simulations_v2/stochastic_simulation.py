@@ -65,6 +65,10 @@ class StochasticSimulation:
         # parameters governing contact tracing
         self.perform_contact_tracing = params['perform_contact_tracing']
         self.contact_tracing_c = params['contact_tracing_constant']
+        if 'contact_trace_testing_frac' in params:
+            self.contact_trace_testing_frac = params['contact_trace_testing_frac']
+        else:
+            self.contact_trace_testing_frac = 1
         self.contact_tracing_delay = params['contact_tracing_delay']
         self.contact_trace_infectious_window = params['contact_trace_infectious_window']
 
@@ -330,17 +334,22 @@ class StochasticSimulation:
         """ simulate a single day in the progression of the disease """
 
         new_QI = 0
+        new_contact_traces = 0
         # do testing logic first
         if self.current_day - self.last_test_day >= self.days_between_tests:
             self.last_test_day = self.current_day
             new_QI += self.run_test()
+            new_contact_traces += int(self.contact_trace_testing_frac * new_QI)
+
 
         # resolve symptomatic self-reporting
-        new_QI += self.isolate_self_reports()
+        new_self_reports = self.isolate_self_reports()
+        new_QI += new_self_reports
+        new_contact_traces += new_self_reports
 
         # do contact tracing
         if self.perform_contact_tracing:
-            self.step_contact_trace(new_QI)
+            self.step_contact_trace(new_contact_traces)
 
         # simulate number of contacts between free infectious & free susceptible:
         free_infectious = 0

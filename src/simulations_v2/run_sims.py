@@ -40,7 +40,7 @@ if __name__ == "__main__":
     params = base_params.copy()
     if 'base_params_to_update' in sim_config and sim_config['base_params_to_update'] != None:
         for param, val in sim_config['base_params_to_update'].items():
-            if param not in params:
+            if param not in params and param != 'contact_trace_testing_frac':
                 print("Configuration attempting to modify non-existent parameter {}".format(
                     param))
                 exit()
