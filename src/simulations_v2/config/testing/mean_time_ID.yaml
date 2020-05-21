@@ -1,0 +1,11 @@
+base_params_to_update:
+    max_time_ID: 14
+    days_between_tests: 1
+    test_population_fraction: 0.07
+    contact_trace_testing_frac: 0.5
+
+
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: ID_time_mean
+parameter_values: [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,6.5,7,7.5,8]

@@ -1,0 +1,7 @@
+base_params_to_update:
+    max_time_exposed: 8
+
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: E_time_mean
+parameter_values: [0,0.5,1,1.5,2,2.5,3,3.5,4]

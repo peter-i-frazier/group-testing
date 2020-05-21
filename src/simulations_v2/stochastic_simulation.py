@@ -7,6 +7,17 @@ https://docs.google.com/document/d/18wv_2vcH9tKx1OJ0PpJoI8QZMTSutzX9f44mNKgVS1g/
 import numpy as np
 import pandas as pd
 from math import ceil
+from scipy.stats import poisson
+
+def poisson_pmf(max_time, mean_time):
+    pmf = list()
+    for i in range(max_time):
+        pmf.append(poisson.pmf(i, mean_time))
+    pmf.append(1-np.sum(pmf))
+    return np.array(pmf)
+
+def poisson_waiting_function(max_time, mean_time):
+    return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
 
 class StochasticSimulation:
     def __init__(self, params):
@@ -28,11 +39,35 @@ class StochasticSimulation:
         # (However, the length of the corresponding queue arrays will just be max_time_X,
         # not max_time_X + 1)
         # We assume that sum(times) == n
-        self.sample_E_times = params['exposed_time_function']
-        self.sample_pre_ID_times = params['pre_ID_time_function']
-        self.sample_ID_times = params['ID_time_function']
-        self.sample_SyID_mild_times = params['SyID_mild_time_function']
-        self.sample_SyID_severe_times = params['SyID_severe_time_function']
+        if 'E_time_mean' in params:
+            mean_time = params['E_time_mean']
+            self.sample_E_times = poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
+        else:
+            self.sample_E_times = params['exposed_time_function']
+
+        if 'pre_ID_time_mean' in params:
+            mean_time = params['pre_ID_time_mean']
+            self.sample_pre_ID_times = poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
+        else:
+            self.sample_pre_ID_times = params['pre_ID_time_function']
+
+        if 'ID_time_mean' in params:
+            mean_time = params['ID_time_mean']
+            self.sample_ID_times = poisson_waiting_function(max_time = self.max_time_ID, mean_time = mean_time)
+        else:
+            self.sample_ID_times = params['ID_time_function']
+
+        if 'SyID_mild_time_mean' in params:
+            mean_time = params['SyID_mild_time_mean']
+            self.sample_SyID_mild_times = poisson_waiting_function(max_time = self.max_time_SyID_mild, mean_time = mean_time)
+        else:
+            self.sample_SyID_mild_times = params['SyID_mild_time_function']
+
+        if 'SyID_severe_time_mean' in params:
+            mean_time = params['SyID_severe_time_mean']
+            self.sample_SyID_severe_times = poisson_waiting_function(max_time = self.max_time_SyID_severe, mean_time = mean_time)
+        else:
+            self.sample_SyID_severe_times = params['SyID_severe_time_function']
 
         # assumption: sample_QI_exit_count(n) returns a number m <= n
         #             indicating the number of people in the state QI

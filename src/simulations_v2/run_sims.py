@@ -1,10 +1,11 @@
 import sys
+import numpy as np
 import yaml
 import time
 import os
 import multiprocessing
 from analysis_helpers import run_multiple_trajectories
-import cPickle as pickle
+#import dill
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -23,6 +24,27 @@ def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=1
         f.write(error_msg)
         f.close()
 
+
+def update_params(sim_params, param_to_vary, param_val):
+    # VERY TEMPORARY HACK TO GET SENSITIVITY SIMS FOR ASYMPTOMATIC %
+    if param_to_vary == 'asymptomatic_p':
+        assert(sim_params['mild_severity_levels'] == 1)
+        curr_prevalence_dist = params['severity_prevalence']
+        assert(param_val >= 0 and param_val <= 1)
+        curr_prevalence_dist[0] = param_val
+        remaining_mass = sum(curr_prevalence_dist[1:])
+
+        # need to scale so that param_val + x * remaning_mass == 1
+        scale = (1 - param_val) / remaining_mass
+        idx = 1
+        while idx < len(curr_prevalence_dist):
+            curr_prevalence_dist[idx] = curr_prevalence_dist[idx] * scale
+        assert(np.isclose(curr_prevalence_dist, 1))
+        sim_params['severity_prevalence'] = curr_prevalence_dist
+    else:
+        sim_params[param_to_vary] = param_val
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
@@ -33,6 +55,8 @@ if __name__ == "__main__":
         from fall_params import base_params
     elif sys.argv[2] == 'base':
         from base_params import base_params
+    elif sys.argv[2] == 'fall_old_severity':
+        from fall_params import base_params_tuesday_severity as base_params
     else:
         print("Error: second argument must be 'fall' or 'base', but got {}".format(sys.argv[2]))
 
@@ -41,12 +65,16 @@ if __name__ == "__main__":
     params = base_params.copy()
     if 'base_params_to_update' in sim_config and sim_config['base_params_to_update'] != None:
         for param, val in sim_config['base_params_to_update'].items():
-            if param not in params and param != 'contact_trace_testing_frac':
-                print("Configuration attempting to modify non-existent parameter {}".format(
-                    param))
-                exit()
-            else:
-                params[param] = val
+
+            # got rid of the following sanity check because we are adding a lot of parameters on the fly
+            # should eventually have some kind of sanity check here when the codebase stabilizes
+
+            #if param not in params and param != 'contact_trace_testing_frac' and param != 'init_ID_prevalence_stochastic':
+            #    print("Configuration attempting to modify non-existent parameter {}".format(
+            #        param))
+            #    exit()
+    
+            update_params(params, param, val)
 
     sim_timestamp = time.time()
     if len(sys.argv) >= 3:
@@ -68,7 +96,7 @@ if __name__ == "__main__":
     if 'ntrajectories' in sim_config:
         ntrajectories = sim_config['ntrajectories']
     else:
-        ntrajectories = 150
+        ntrajectories = 500
 
     if 'time_horizon' in sim_config:
         time_horizon = sim_config['time_horizon']
@@ -86,9 +114,12 @@ if __name__ == "__main__":
         print("Created directory {} to save output".format(sim_sub_dir))
         # instantiate relevant sim params
         sim_params = params.copy()
-        sim_params[param_to_vary] = param_val
-        pickle.dump(sim_params, open("{}/sim_params.pickle".format(sim_sub_dir), "wb"))
-        print("Saved sim_params to pickle file")
+
+        
+        update_params(sim_params, param_to_vary, param_val)        
+        
+        #dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
+        print("Saved sim_params to dill file")
         # start new process
         fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
         proc = multiprocessing.Process(target = run_background_sim, args=fn_args)

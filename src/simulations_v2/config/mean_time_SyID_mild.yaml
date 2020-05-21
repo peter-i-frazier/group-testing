@@ -1,0 +1,7 @@
+base_params_to_update: 
+    max_time_SyID_mild: 18
+    
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: SyID_mild_time_mean
+parameter_values: [5,6,7,8,9,10,11,12,13]

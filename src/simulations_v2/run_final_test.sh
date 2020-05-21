@@ -1,0 +1,1 @@
+python run_sims.py config/daily_contacts_old_severity_test_config.yaml fall_old_severity daily_contacts_fall_old_severity &
