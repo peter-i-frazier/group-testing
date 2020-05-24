@@ -24,7 +24,10 @@ class StochasticSimulation:
 
         # Meta-parameters governing the maximum number of days an
         # individual spends in each 'infection' state
-        self.max_time_E = params['max_time_exposed']
+        if 'max_time_E' in params:
+            self.max_time_E = params['max_time_E']
+        else:
+            self.max_time_E = params['max_time_exposed']
         self.max_time_pre_ID = params['max_time_pre_ID']
         self.max_time_ID = params['max_time_ID']
         self.max_time_SyID_mild = params['max_time_SyID_mild']
@@ -39,32 +42,32 @@ class StochasticSimulation:
         # (However, the length of the corresponding queue arrays will just be max_time_X,
         # not max_time_X + 1)
         # We assume that sum(times) == n
-        if 'E_time_mean' in params:
-            mean_time = params['E_time_mean']
+        if 'mean_time_E' in params:
+            mean_time = params['mean_time_E']
             self.sample_E_times = poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
         else:
             self.sample_E_times = params['exposed_time_function']
 
-        if 'pre_ID_time_mean' in params:
-            mean_time = params['pre_ID_time_mean']
+        if 'mean_time_pre_ID' in params:
+            mean_time = params['mean_time_pre_ID']
             self.sample_pre_ID_times = poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
         else:
             self.sample_pre_ID_times = params['pre_ID_time_function']
 
-        if 'ID_time_mean' in params:
-            mean_time = params['ID_time_mean']
+        if 'mean_time_ID' in params:
+            mean_time = params['mean_time_ID']
             self.sample_ID_times = poisson_waiting_function(max_time = self.max_time_ID, mean_time = mean_time)
         else:
             self.sample_ID_times = params['ID_time_function']
 
-        if 'SyID_mild_time_mean' in params:
-            mean_time = params['SyID_mild_time_mean']
+        if 'mean_time_SyID_mild' in params:
+            mean_time = params['mean_time_SyID_mild']
             self.sample_SyID_mild_times = poisson_waiting_function(max_time = self.max_time_SyID_mild, mean_time = mean_time)
         else:
             self.sample_SyID_mild_times = params['SyID_mild_time_function']
 
-        if 'SyID_severe_time_mean' in params:
-            mean_time = params['SyID_severe_time_mean']
+        if 'mean_time_SyID_severe' in params:
+            mean_time = params['mean_time_SyID_severe']
             self.sample_SyID_severe_times = poisson_waiting_function(max_time = self.max_time_SyID_severe, mean_time = mean_time)
         else:
             self.sample_SyID_severe_times = params['SyID_severe_time_function']
@@ -218,10 +221,12 @@ class StochasticSimulation:
         total_contacts_quarantined = min(self.S, total_contacts_traced - total_cases_isolated)
 
         # add susceptible people to the quarantine state
-        self.S -= total_contacts_quarantined
-        self.QS += total_contacts_quarantined
+        self.S = self.S - total_contacts_quarantined
+        self.QS = self.QS + total_contacts_quarantined
 
         # trace these cases across E, pre-ID and ID states
+
+        initial_isolations = total_cases_isolated
 
         leave_E = int(min(sum(self.E), total_cases_isolated))
         self._trace_E_queue(leave_E)
@@ -233,6 +238,42 @@ class StochasticSimulation:
 
         leave_ID = min(sum(self.ID), total_cases_isolated)
         self._trace_ID_queue(leave_ID)
+        total_cases_isolated -= leave_ID
+
+        leave_SyID_severe = min(sum(self.SyID_severe), total_cases_isolated)
+        self._trace_SyID_severe_queue(leave_SyID_severe)
+        total_cases_isolated -= leave_SyID_severe
+
+        leave_SyID_mild = min(sum(self.SyID_mild), total_cases_isolated)
+        self._trace_SyID_mild_queue(leave_SyID_mild)
+        total_cases_isolated -= leave_SyID_mild
+
+        print("initial isolations: {}, final isolations: {}".format(initial_isolations, total_cases_isolated))
+
+
+    def _trace_SyID_severe_queue(self, leave_SyID_severe):
+        assert(leave_SyID_severe <= sum(self.SyID_severe))
+        self.QI = self.QI + leave_SyID_severe
+        self.QI_severe += leave_SyID_severe
+        idx = self.max_time_SyID_severe - 1
+        while leave_SyID_severe > 0:
+            leave_SyID_severe_at_idx = min(self.SyID_severe[idx], leave_SyID_severe)
+            self.SyID_severe[idx] -= leave_SyID_severe_at_idx
+            leave_SyID_severe -= leave_SyID_severe_at_idx
+            idx -= 1
+
+
+    def _trace_SyID_mild_queue(self, leave_SyID_mild):
+        assert(leave_SyID_mild <= sum(self.SyID_mild))
+        self.QI = self.QI + leave_SyID_mild
+        self.QI_mild += leave_SyID_mild
+        idx = self.max_time_SyID_mild - 1
+        while leave_SyID_mild > 0:
+            leave_SyID_mild_at_idx = min(self.SyID_mild[idx], leave_SyID_mild)
+            self.SyID_mild[idx] -= leave_SyID_mild_at_idx
+            leave_SyID_mild -= leave_SyID_mild_at_idx
+            idx -= 1
+   
 
     def _trace_E_queue(self, leave_E):
         assert(leave_E <= sum(self.E))
@@ -403,8 +444,8 @@ class StochasticSimulation:
 
         free_infectious += sum(self.ID) + sum(self.SyID_mild) + sum(self.SyID_severe)
 
-        free_susceptible = self.S + (1 - self.exposed_infection_p) * sum(self.E)
-        free_tot = free_infectious + free_susceptible + self.R + sum(self.E) * self.exposed_infection_p
+        free_susceptible = self.S
+        free_tot = free_infectious + free_susceptible + self.R + sum(self.E) 
 
         if self.pre_ID_state == 'detectable':
             free_tot += sum(self.pre_ID)

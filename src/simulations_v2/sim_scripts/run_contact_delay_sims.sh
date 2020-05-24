@@ -1,0 +1,3 @@
+
+python run_sims.py config/contact_tracing_delay.yaml fall_slightly_pessimistic contact_delay_fall_slightly_pessimistic &
+python run_sims.py config/contact_tracing_delay.yaml fall_slightly_pessimistic_testing contact_delay_fall_slightly_pessimistic_testing &

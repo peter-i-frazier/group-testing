@@ -57,6 +57,30 @@ if __name__ == "__main__":
         from base_params import base_params
     elif sys.argv[2] == 'fall_old_severity':
         from fall_params import base_params_tuesday_severity as base_params
+    elif sys.argv[2] == 'fall_slightly_pessimistic_testing':
+        from fall_slightly_pessimistic import base_params_testing as base_params
+    elif sys.argv[2] == 'fall_slightly_optimistic_testing':
+        from fall_slightly_optimistic import base_params_testing as base_params
+    elif sys.argv[2] == 'fall_realistic_testing':
+        from fall_realistic import base_params_testing as base_params
+    elif sys.argv[2] == 'fall_slightly_pessimistic':
+        from fall_slightly_pessimistic import base_params as base_params
+    elif sys.argv[2] == 'fall_slightly_optimistic':
+        from fall_slightly_optimistic import base_params as base_params
+    elif sys.argv[2] == 'fall_realistic':
+        from fall_realistic import base_params as base_params
+    elif sys.argv[2] == 'june_slightly_pessimistic_testing':
+        from june_slightly_pessimistic import base_params_testing as base_params
+    elif sys.argv[2] == 'june_slightly_optimistic_testing':
+        from june_slightly_optimistic import base_params_testing as base_params
+    elif sys.argv[2] == 'june_realistic_testing':
+        from june_realistic import base_params_testing as base_params
+    elif sys.argv[2] == 'june_slightly_pessimistic':
+        from june_slightly_pessimistic import base_params as base_params
+    elif sys.argv[2] == 'june_slightly_optimistic':
+        from june_slightly_optimistic import base_params as base_params
+    elif sys.argv[2] == 'june_realistic':
+        from june_realistic import base_params as base_params
     else:
         print("Error: second argument must be 'fall' or 'base', but got {}".format(sys.argv[2]))
 
