@@ -248,7 +248,7 @@ class StochasticSimulation:
         self._trace_SyID_mild_queue(leave_SyID_mild)
         total_cases_isolated -= leave_SyID_mild
 
-        print("initial isolations: {}, final isolations: {}".format(initial_isolations, total_cases_isolated))
+        #print("initial isolations: {}, final isolations: {}".format(initial_isolations, total_cases_isolated))
 
 
     def _trace_SyID_severe_queue(self, leave_SyID_severe):
