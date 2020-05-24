@@ -48,9 +48,11 @@ def update_params(sim_params, param_to_vary, param_val):
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Usage: python {} yaml-config-file ('fall' or 'base') (optional:simulation-name)".format(sys.argv[0]))
+        print("Usage: python {} yaml-config-file 'fall'|'base'|'fall_old_severity' (optional:simulation-name) (optional:basedir)".format(sys.argv[0]))
         exit()
 
+    # TODO: should we change this to a better naming convention?
+    #  e.g., fall, fall-optimistic, fall-pessimistic, summer, etc.
     if sys.argv[2] == 'fall':
         from fall_params import base_params
     elif sys.argv[2] == 'base':
@@ -82,7 +84,7 @@ if __name__ == "__main__":
     elif sys.argv[2] == 'june_realistic':
         from june_realistic import base_params as base_params
     else:
-        print("Error: second argument must be 'fall' or 'base', but got {}".format(sys.argv[2]))
+        print("Error: second argument must be 'fall' or 'base' or 'fall_old_severity', but got {}".format(sys.argv[2]))
 
     sim_config = yaml.load(open(sys.argv[1]), Loader=yaml.FullLoader)
 
@@ -101,18 +103,33 @@ if __name__ == "__main__":
             update_params(params, param, val)
 
     sim_timestamp = time.time()
-    if len(sys.argv) >= 3:
+    if len(sys.argv) > 3:
         sim_id = "{}.{}".format(sys.argv[3], sim_timestamp)
     else:
         sim_id = str(sim_timestamp)
     print("Simulation ID: {}".format(sim_id))
-    sim_main_dir = BASE_DIRECTORY + str(sim_id)
-    try: 
+
+
+    if len(sys.argv) > 4:
+        basedir = sys.argv[4]
+    else:
+        basedir = BASE_DIRECTORY
+
+    if not os.path.isdir(basedir):
+        print("Directory {} does not exist. Please create it.".format(basedir))
+        exit()
+
+    sim_main_dir = basedir + str(sim_id)
+    try:
         os.mkdir(sim_main_dir)
         print("Output directory {} created".format(sim_main_dir))
     except FileExistsError:
         print("Output directory {} already exists".format(sim_main_dir))
         exit()
+    except FileNotFoundError:
+        print("Directory {} cannot be created.".format(sim_main_dir))
+        exit()
+
 
     
     param_to_vary = sim_config['param_to_vary']
