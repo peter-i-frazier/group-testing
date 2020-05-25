@@ -12,12 +12,15 @@ daily_self_report_severe = 0.2
 daily_self_report_mild = 0
 
 # avg_infectious_window = (avg time in ID state) + (avg time in Sy state prior to self-reporting)
-avg_infectious_window = 3 + pct_self_reports_severe * (1 / daily_self_report_severe) 
+avg_infectious_window = 4 + pct_self_reports_severe * (1 / daily_self_report_severe) 
 if daily_self_report_mild != 0:
     avg_infectious_window += (1 - pct_self_reports_severe) * (1 / daily_self_report_mild)
 population_size = 34310
 
 daily_contacts = 25
+
+num_isolations = avg_infectious_window * daily_contacts * 0.4 * 0.026
+num_quarantines = max(7 - num_isolations, 0)
 
 prob_severity_given_age = np.array([[0.15, 0.84, 0.01, 0],\
                                     [0.1, 0.77, 0.10, 0.03],\
@@ -58,14 +61,15 @@ base_params = {
     'days_between_tests': 300,
     'test_population_fraction': 0,
     
-    'test_protocol_QFNR': 0.1,
+    'test_protocol_QFNR': 0.19,
     'test_protocol_QFPR': 0.005,
     
     'perform_contact_tracing': True,
-    'contact_tracing_constant': 0.4,
     'contact_tracing_delay': 2,
-    'contact_trace_infectious_window': avg_infectious_window,
-    
+    'cases_isolated_per_contact': num_isolations,
+    'cases_quarantined_per_contact': num_quarantines,
+    'contact_recall': 0.4,
+
     'pre_ID_state': 'detectable',
     
     'population_size': population_size,

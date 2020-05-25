@@ -101,15 +101,23 @@ class StochasticSimulation:
         self.test_QFNR = params['test_protocol_QFNR']
         self.test_QFPR = params['test_protocol_QFPR']
 
-        # parameters governing contact tracing
         self.perform_contact_tracing = params['perform_contact_tracing']
-        self.contact_tracing_c = params['contact_tracing_constant']
+        self.contact_tracing_delay = params['contact_tracing_delay']
+
+        # new parameters governing contact tracing
+        # these can be fractions -- we will round them to integers in the code
+        self.cases_isolated_per_contact = params['cases_isolated_per_contact']
+        self.cases_quarantined_per_contact = params['cases_quarantined_per_contact']
+
+        # old/deprecated parameters governing contact tracing
+        if 'contact_tracing_constant' in params:
+            self.contact_tracing_c = params['contact_tracing_constant']
         if 'contact_trace_testing_frac' in params:
             self.contact_trace_testing_frac = params['contact_trace_testing_frac']
         else:
             self.contact_trace_testing_frac = 1
-        self.contact_tracing_delay = params['contact_tracing_delay']
-        self.contact_trace_infectious_window = params['contact_trace_infectious_window']
+        if 'contact_trace_infectious_window' in params:
+            self.contact_trace_infectious_window = params['contact_trace_infectious_window']
 
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
@@ -214,15 +222,18 @@ class StochasticSimulation:
         self._shift_contact_queue()
 
         # compute how many cases we find
-        total_contacts = int(resolve_today_QI * self.contact_trace_infectious_window \
-                                        * self.daily_contacts_lambda)
-        total_contacts_traced = np.random.binomial(total_contacts, self.contact_tracing_c)
-        total_cases_isolated = np.random.binomial(total_contacts_traced, self.exposed_infection_p)
-        total_contacts_quarantined = min(self.S, total_contacts_traced - total_cases_isolated)
+        #total_contacts = int(resolve_today_QI * self.contact_trace_infectious_window \
+        #                                * self.daily_contacts_lambda)
+        #total_contacts_traced = np.random.binomial(total_contacts, self.contact_tracing_c)
+        #total_cases_isolated = np.random.binomial(total_contacts_traced, self.exposed_infection_p)
+        #total_contacts_quarantined = min(self.S, total_contacts_traced - total_cases_isolated)
 
+        total_contacts_quarantined = min(self.S, int(self.cases_quarantined_per_contact * resolve_today_QI))
         # add susceptible people to the quarantine state
         self.S = self.S - total_contacts_quarantined
         self.QS = self.QS + total_contacts_quarantined
+
+        total_cases_isolated = int(self.cases_isolated_per_contact * resolve_today_QI)
 
         # trace these cases across E, pre-ID and ID states
 

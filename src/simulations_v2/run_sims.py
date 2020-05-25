@@ -5,7 +5,7 @@ import time
 import os
 import multiprocessing
 from analysis_helpers import run_multiple_trajectories
-#import dill
+import dill
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -41,6 +41,15 @@ def update_params(sim_params, param_to_vary, param_val):
             curr_prevalence_dist[idx] = curr_prevalence_dist[idx] * scale
         assert(np.isclose(curr_prevalence_dist, 1))
         sim_params['severity_prevalence'] = curr_prevalence_dist
+
+    # VERY TEMPORARY HACK TO GET SENSITIVITY SIMS WORKING FOR CONTACT RECALL %
+    elif param_to_vary == 'contact_tracing_constant':
+        num_isolations = sim_params['cases_isolated_per_contact']
+        base_recall = sim_params['contact_recall']
+        new_isolations = num_isolations * param_val / base_recall
+        new_quarantines = max(7 - new_isolations, 0)
+        sim_params['cases_isolated_per_contact'] = new_isolations
+        sim_params['cases_quarantined_per_contact'] = new_quarantines
     else:
         sim_params[param_to_vary] = param_val
 
@@ -159,7 +168,7 @@ if __name__ == "__main__":
         
         update_params(sim_params, param_to_vary, param_val)        
         
-        #dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
+        dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
         print("Saved sim_params to dill file")
         # start new process
         fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)

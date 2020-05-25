@@ -19,6 +19,10 @@ population_size = 2500
 
 daily_contacts = 20
 
+num_isolations = avg_infectious_window * daily_contacts * 0.4 * 0.026
+num_quarantines = max(7 - num_isolations, 0)
+
+
 prob_severity_given_age = np.array([[0.15, 0.84, 0.01, 0],\
                                     [0.1, 0.77, 0.10, 0.03],\
                                     [0.1, 0.73, 0.10, 0.07],\
@@ -58,14 +62,15 @@ base_params = {
     'days_between_tests': 300,
     'test_population_fraction': 0,
     
-    'test_protocol_QFNR': 0.1,
+    'test_protocol_QFNR': 0.19,
     'test_protocol_QFPR': 0.005,
     
     'perform_contact_tracing': True,
-    'contact_tracing_constant': 0.4,
     'contact_tracing_delay': 2,
-    'contact_trace_infectious_window': avg_infectious_window,
-    
+    'cases_isolated_per_contact': num_isolations,
+    'cases_quarantined_per_contact': num_quarantines,
+    'contact_recall': 0.4,
+
     'pre_ID_state': 'detectable',
     
     'population_size': population_size,
