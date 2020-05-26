@@ -1,6 +1,6 @@
 # nominal sims
 python3 run_sims.py config/contact_tracing_delay.yaml june_realistic contact_delay_june_realistic &
-python3 run_sims.py config/contact_tracing_recall.yaml june_realistic contact_recall_june_realistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml june_realistic contact_isolations_june_realistic &
 python3 run_sims.py config/daily_contacts.yaml june_realistic daily_contacts_june_realistic &
 python3 run_sims.py config/exposed_infection_p.yaml june_realistic exposed_infection_p_june_realistic &
 python3 run_sims.py config/mild_self_reporting.yaml june_realistic mild_self_reporting_june_realistic &
@@ -9,7 +9,7 @@ python3 run_sims.py config/severe_self_reporting.yaml june_realistic severe_self
 python3 run_sims.py config/asymptomatic_p.yaml june_realistic asymptomatic_p_june_realistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_realistic contact_delay_fall_realistic &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_realistic contact_recall_fall_realistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_realistic contact_isolations_fall_realistic &
 python3 run_sims.py config/daily_contacts.yaml fall_realistic daily_contacts_fall_realistic &
 python3 run_sims.py config/exposed_infection_p.yaml fall_realistic exposed_infection_p_fall_realistic &
 python3 run_sims.py config/mild_self_reporting.yaml fall_realistic mild_self_reporting_fall_realistic &
@@ -18,7 +18,7 @@ python3 run_sims.py config/severe_self_reporting.yaml fall_realistic severe_self
 python3 run_sims.py config/asymptomatic_p.yaml fall_realistic asymptomatic_p_fall_realistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_realistic_testing contact_delay_fall_realistic_testing &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_realistic_testing contact_recall_fall_realistic_testing &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_realistic_testing contact_isolations_fall_realistic_testing &
 python3 run_sims.py config/daily_contacts.yaml fall_realistic_testing daily_contacts_fall_realistic_testing &
 python3 run_sims.py config/exposed_infection_p.yaml fall_realistic_testing exposed_infection_p_fall_realistic_testing &
 python3 run_sims.py config/mild_self_reporting.yaml fall_realistic_testing mild_self_reporting_fall_realistic_testing &
@@ -28,7 +28,7 @@ python3 run_sims.py config/asymptomatic_p.yaml fall_realistic_testing asymptomat
 
 # optimistic sims
 python3 run_sims.py config/contact_tracing_delay.yaml june_slightly_optimistic contact_delay_june_slightly_optimistic &
-python3 run_sims.py config/contact_tracing_recall.yaml june_slightly_optimistic contact_recall_june_slightly_optimistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml june_slightly_optimistic contact_isolations_june_slightly_optimistic &
 python3 run_sims.py config/daily_contacts.yaml june_slightly_optimistic daily_contacts_june_slightly_optimistic &
 python3 run_sims.py config/exposed_infection_p.yaml june_slightly_optimistic exposed_infection_p_june_slightly_optimistic &
 python3 run_sims.py config/mild_self_reporting.yaml june_slightly_optimistic mild_self_reporting_june_slightly_optimistic &
@@ -37,7 +37,7 @@ python3 run_sims.py config/severe_self_reporting.yaml june_slightly_optimistic s
 python3 run_sims.py config/asymptomatic_p.yaml june_slightly_optimistic asymptomatic_p_june_slightly_optimistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_slightly_optimistic contact_delay_fall_slightly_optimistic &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_slightly_optimistic contact_recall_fall_slightly_optimistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_slightly_optimistic contact_isolations_fall_slightly_optimistic &
 python3 run_sims.py config/daily_contacts.yaml fall_slightly_optimistic daily_contacts_fall_slightly_optimistic &
 python3 run_sims.py config/exposed_infection_p.yaml fall_slightly_optimistic exposed_infection_p_fall_slightly_optimistic &
 python3 run_sims.py config/mild_self_reporting.yaml fall_slightly_optimistic mild_self_reporting_fall_slightly_optimistic &
@@ -46,7 +46,7 @@ python3 run_sims.py config/severe_self_reporting.yaml fall_slightly_optimistic s
 python3 run_sims.py config/asymptomatic_p.yaml fall_slightly_optimistic asymptomatic_p_fall_slightly_optimistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_slightly_optimistic_testing contact_delay_fall_slightly_optimistic_testing &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_slightly_optimistic_testing contact_recall_fall_slightly_optimistic_testing &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_slightly_optimistic_testing contact_isolations_fall_slightly_optimistic_testing &
 python3 run_sims.py config/daily_contacts.yaml fall_slightly_optimistic_testing daily_contacts_fall_slightly_optimistic_testing &
 python3 run_sims.py config/exposed_infection_p.yaml fall_slightly_optimistic_testing exposed_infection_p_fall_slightly_optimistic_testing &
 python3 run_sims.py config/mild_self_reporting.yaml fall_slightly_optimistic_testing mild_self_reporting_fall_slightly_optimistic_testing &
@@ -56,7 +56,7 @@ python3 run_sims.py config/asymptomatic_p.yaml fall_slightly_optimistic_testing 
 
 # slightly pessimistic 
 python3 run_sims.py config/contact_tracing_delay.yaml june_slightly_pessimistic contact_delay_june_slightly_pessimistic &
-python3 run_sims.py config/contact_tracing_recall.yaml june_slightly_pessimistic contact_recall_june_slightly_pessimistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml june_slightly_pessimistic contact_isolations_june_slightly_pessimistic &
 python3 run_sims.py config/daily_contacts.yaml june_slightly_pessimistic daily_contacts_june_slightly_pessimistic &
 python3 run_sims.py config/exposed_infection_p.yaml june_slightly_pessimistic exposed_infection_p_june_slightly_pessimistic &
 python3 run_sims.py config/mild_self_reporting.yaml june_slightly_pessimistic mild_self_reporting_june_slightly_pessimistic &
@@ -65,7 +65,7 @@ python3 run_sims.py config/severe_self_reporting.yaml june_slightly_pessimistic 
 python3 run_sims.py config/asymptomatic_p.yaml june_slightly_pessimistic asymptomatic_p_june_slightly_pessimistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_slightly_pessimistic contact_delay_fall_slightly_pessimistic &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_slightly_pessimistic contact_recall_fall_slightly_pessimistic &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_slightly_pessimistic contact_isolations_fall_slightly_pessimistic &
 python3 run_sims.py config/daily_contacts.yaml fall_slightly_pessimistic daily_contacts_fall_slightly_pessimistic &
 python3 run_sims.py config/exposed_infection_p.yaml fall_slightly_pessimistic exposed_infection_p_fall_slightly_pessimistic &
 python3 run_sims.py config/mild_self_reporting.yaml fall_slightly_pessimistic mild_self_reporting_fall_slightly_pessimistic &
@@ -74,7 +74,7 @@ python3 run_sims.py config/severe_self_reporting.yaml fall_slightly_pessimistic 
 python3 run_sims.py config/asymptomatic_p.yaml fall_slightly_pessimistic asymptomatic_p_fall_slightly_pessimistic &
 
 python3 run_sims.py config/contact_tracing_delay.yaml fall_slightly_pessimistic_testing contact_delay_fall_slightly_pessimistic_testing &
-python3 run_sims.py config/contact_tracing_recall.yaml fall_slightly_pessimistic_testing contact_recall_fall_slightly_pessimistic_testing &
+python3 run_sims.py config/contact_tracing_isolations.yaml fall_slightly_pessimistic_testing contact_isolations_fall_slightly_pessimistic_testing &
 python3 run_sims.py config/daily_contacts.yaml fall_slightly_pessimistic_testing daily_contacts_fall_slightly_pessimistic_testing &
 python3 run_sims.py config/exposed_infection_p.yaml fall_slightly_pessimistic_testing exposed_infection_p_fall_slightly_pessimistic_testing &
 python3 run_sims.py config/mild_self_reporting.yaml fall_slightly_pessimistic_testing mild_self_reporting_fall_slightly_pessimistic_testing &

@@ -1,0 +1,4 @@
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: contact_tracing_isolations
+parameter_values: [0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3]

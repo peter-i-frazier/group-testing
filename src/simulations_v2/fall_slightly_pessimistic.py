@@ -19,7 +19,7 @@ population_size = 34310
 
 daily_contacts = 25
 
-num_isolations = avg_infectious_window * daily_contacts * 0.4 * 0.026
+num_isolations = 2.0
 num_quarantines = max(7 - num_isolations, 0)
 
 prob_severity_given_age = np.array([[0.15, 0.84, 0.01, 0],\
@@ -39,7 +39,7 @@ base_params = {
     'pre_ID_time_function': poisson_waiting_function(max_time=4, mean_time=0),
     
     'max_time_ID': 8,
-    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=4),
+    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=3.5),
     
     'max_time_SyID_mild': 18,
     'SyID_mild_time_function': poisson_waiting_function(max_time=18, mean_time=14),

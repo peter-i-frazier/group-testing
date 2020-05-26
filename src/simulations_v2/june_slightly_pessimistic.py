@@ -19,7 +19,7 @@ population_size = 2500
 
 daily_contacts = 20
 
-num_isolations = avg_infectious_window * daily_contacts * 0.4 * 0.026
+num_isolations = 1.6
 num_quarantines = max(7 - num_isolations, 0)
 
 
@@ -40,7 +40,7 @@ base_params = {
     'pre_ID_time_function': poisson_waiting_function(max_time=4, mean_time=0),
     
     'max_time_ID': 8,
-    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=4),
+    'ID_time_function': poisson_waiting_function(max_time=8, mean_time=2.5),
     
     'max_time_SyID_mild': 18,
     'SyID_mild_time_function': poisson_waiting_function(max_time=18, mean_time=14),

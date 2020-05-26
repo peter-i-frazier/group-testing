@@ -50,6 +50,9 @@ def update_params(sim_params, param_to_vary, param_val):
         new_quarantines = max(7 - new_isolations, 0)
         sim_params['cases_isolated_per_contact'] = new_isolations
         sim_params['cases_quarantined_per_contact'] = new_quarantines
+    elif param_to_vary == 'contact_tracing_isolations':
+        sim_param['cases_isolated_per_contact'] = param_val
+        sim_param['cases_quarantined_per_contact'] = 7 - param_val
     else:
         sim_params[param_to_vary] = param_val
 
@@ -95,7 +98,9 @@ if __name__ == "__main__":
     else:
         print("Error: second argument must be 'fall' or 'base' or 'fall_old_severity', but got {}".format(sys.argv[2]))
 
-    sim_config = yaml.load(open(sys.argv[1]), Loader=yaml.FullLoader)
+
+    sim_config = yaml.load(open(sys.argv[1]))
+
 
     params = base_params.copy()
     if 'base_params_to_update' in sim_config and sim_config['base_params_to_update'] != None:

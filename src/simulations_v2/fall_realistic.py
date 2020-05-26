@@ -19,7 +19,7 @@ population_size = 34310
 
 daily_contacts = 20
 
-num_isolations = avg_infectious_window * daily_contacts * 0.5 * 0.026
+num_isolations = 1.4
 num_quarantines = max(7 - num_isolations, 0)
 
 prob_severity_given_age = np.array([[0.1, 0.89, 0.01, 0],\
