@@ -31,16 +31,17 @@ def update_params(sim_params, param_to_vary, param_val):
         assert(sim_params['mild_severity_levels'] == 1)
         curr_prevalence_dist = params['severity_prevalence']
         assert(param_val >= 0 and param_val <= 1)
-        curr_prevalence_dist[0] = param_val
+        new_dist = [param_val]
         remaining_mass = sum(curr_prevalence_dist[1:])
 
         # need to scale so that param_val + x * remaning_mass == 1
         scale = (1 - param_val) / remaining_mass
         idx = 1
         while idx < len(curr_prevalence_dist):
-            curr_prevalence_dist[idx] = curr_prevalence_dist[idx] * scale
-        assert(np.isclose(curr_prevalence_dist, 1))
-        sim_params['severity_prevalence'] = curr_prevalence_dist
+            new_dist.append(curr_prevalence_dist[idx] * scale)
+            idx += 1
+        assert(np.isclose(sum(new_dist), 1))
+        sim_params['severity_prevalence'] = np.array(new_dist)
 
     # VERY TEMPORARY HACK TO GET SENSITIVITY SIMS WORKING FOR CONTACT RECALL %
     elif param_to_vary == 'contact_tracing_constant':
@@ -51,8 +52,8 @@ def update_params(sim_params, param_to_vary, param_val):
         sim_params['cases_isolated_per_contact'] = new_isolations
         sim_params['cases_quarantined_per_contact'] = new_quarantines
     elif param_to_vary == 'contact_tracing_isolations':
-        sim_param['cases_isolated_per_contact'] = param_val
-        sim_param['cases_quarantined_per_contact'] = 7 - param_val
+        sim_params['cases_isolated_per_contact'] = param_val
+        sim_params['cases_quarantined_per_contact'] = 7 - param_val
     else:
         sim_params[param_to_vary] = param_val
 
