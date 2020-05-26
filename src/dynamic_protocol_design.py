@@ -45,7 +45,6 @@ def simple_simulation(group_sizes=[80,90,100,110], prevalence=0.01, resolved=0.,
 
     T = len(group_sizes)
 
-
     # state[t] is the input to node t
     # group_sizes[t] is the control for node t
     # state[t+1] is the output from node t
@@ -54,15 +53,9 @@ def simple_simulation(group_sizes=[80,90,100,110], prevalence=0.01, resolved=0.,
     loss = [0 for i in range(T)]
 
     # Construct the initial state
-    state[0] = { 'FI': prevalence,  # free infected
-              'FS': 1. - prevalence - resolved, # free susceptible
-              'FR': 0.,  #free resolved
-              'QI1' : 0., # infected,    in quarantine for 1 test period
-              'QS1' : 0., # susceptible, in quarantine for 1 test period
-              'QR1' : 0., # resolved,    in quarantine for 1 test period
-              'QI2': 0.,  # same thing, but in quarantine for 2 test periods
-              'QS2': 0.,
-              'QR2': 0.,
+    state[0] = { 'I': prevalence,  # free infected
+              'S': 1. - prevalence - resolved, # free susceptible
+              'R': 0.,  #free resolved
               }
 
 
@@ -101,11 +94,11 @@ def node(state, group_size, costs = {'test' : .001, 'infections' : 1, 'quarantin
     # Set some epidemiological parameters
     doubling_time = 3.0
     alpha = 2 ** (1 / doubling_time)
-    test_period = 7 # days between tests
+    test_period = 14 # days between tests
 
     # Assumes that we don't know that recovered people are recovered, and so we test them
-    size_of_tested_pop = state['FI'] + state['FS'] + state['FR']
-    prevalence_in_tested_pop = state['FI'] / size_of_tested_pop
+    size_of_tested_pop = 1
+    prevalence_in_tested_pop = state['I'] / size_of_tested_pop
 
     QFNR, QFPR, tests_per_person = test_properties(prevalence_in_tested_pop, group_size)
 
@@ -121,35 +114,34 @@ def node(state, group_size, costs = {'test' : .001, 'infections' : 1, 'quarantin
             QFPR * 100))
 
     # Simulate the effect of the test
-    old_state = state.copy() # Remember previous state so we can refer back after modifying entries
+    new_state = {}
 
-    state['FI'] = old_state['FI'] * QFNR  # the only people who remain free infected are those that are missed in the test
-    state['FS'] = old_state['FS'] * (1 - QFPR) + old_state['QS2']
-    state['FR'] = old_state['FR'] * (1 - QFPR) + old_state['QI2'] + old_state['QR2']  # Assumes all infected leaving quarantine are now resolved
+    new_state['FI'] = state['I'] * QFNR  # the only people who remain free infected are those that are missed in the test
+    new_state['QI'] = state['I'] * (1 - QFNR)
 
-    state['QI1'] = old_state['FI'] * (1 - QFNR)
-    state['QS1'] = old_state['FS'] * QFPR
-    state['QR1'] = old_state['FR'] * QFPR
+    new_state['FS'] = state['S'] * (1 - QFPR)
+    new_state['QS'] = state['S'] * QFPR
 
-    state['QI2'] = old_state['QI1']
-    state['QS2'] = old_state['QS1']
-    state['QR2'] = old_state['QR1']
+    new_state['FR'] = state['R'] * (1 - QFPR)
+    new_state['QR'] = state['R'] * QFPR
 
     # Add the loss from having people in quarantine
-    people_in_quarantine  = state['QI1'] + state['QS1'] + state['QR1']
-    people_in_quarantine += state['QI2'] + state['QS2'] + state['QR2']
+    people_in_quarantine  = state['QI'] + state['QS'] + state['QR']
     loss += people_in_quarantine * costs['quarantine']
 
     if verbose:
         print_state(state, 'Start of Week, After test: ')
 
+    # Fraction of people that are susceptible in the free population
+    fraction_susceptible = new_state['FS'] / (new_state['FS'] + new_state['FI'] + new_state['FR'])
 
     # Simulate the growth of the disease in the free population
-    fraction_susceptible = 1
     growth = alpha ** (test_period * fraction_susceptible)
-    new_infections = state['FI'] * (growth - 1)
-    state['FI'] = state['FI'] + new_infections
-    state['FS'] = state['FS'] - new_infections
+    new_infections = new_state['FI'] * (growth - 1)
+    new_recoveries = state['I'] # all of the previously infected people will recover (or die)
+    state['I'] = new_infections
+    state['S'] -= new_infections
+    state['R'] += new_recoveries
 
     loss += new_infections * costs['infections']
 
@@ -161,8 +153,8 @@ def print_state(state,preamble='',verbose=False):
     free = state['FI'] + state['FS'] + state['FR']
     infected  = state['FI'] + state['QI1'] + state['QI2']
     recovered = state['FR'] + state['QR1'] + state['QR2']
-    print('{} Free={:.1f}%, Infected={:.1f}%, Infected&Free={:.1f}%, RecoveredOrDead={:.1f}%'.format(
-        preamble,free*100,infected*100,state['FI']*100,recovered*100))
+    print('{} Infected={:.1f}%, RecoveredOrDead={:.1f}%'.format(
+        preamble,state['I']*100,state['R']*100))
 
     if verbose:
         print(state)
