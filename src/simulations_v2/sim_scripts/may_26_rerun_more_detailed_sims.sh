@@ -1,0 +1,8 @@
+
+python3 run_sims.py config/detailed_prevalence.yaml june_realistic prevalence_june_realistic &
+python3 run_sims.py config/detailed_prevalence.yaml fall_realistic prevalence_fall_realistic &
+python3 run_sims.py config/detailed_prevalence.yaml fall_realistic_testing prevalence_fall_realistic_testing &
+
+python3 run_sims.py config/detailed_severe_self_reporting.yaml june_realistic severe_self_reporting_june_realistic &
+python3 run_sims.py config/detailed_severe_self_reporting.yaml fall_realistic severe_self_reporting_fall_realistic &
+python3 run_sims.py config/detailed_severe_self_reporting.yaml fall_realistic_testing severe_self_reporting_fall_realistic_testing &
