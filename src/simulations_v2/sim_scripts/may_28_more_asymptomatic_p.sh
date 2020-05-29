@@ -1,0 +1,5 @@
+python3 run_sims.py config/detailed_asymptomatic_p.yaml june_realistic asymptomatic_p_june_realistic &
+python3 run_sims.py config/detailed_asymptomatic_p.yaml fall_realistic asymptomatic_p_fall_realistic &
+python3 run_sims.py config/detailed_asymptomatic_p.yaml fall_realistic_testing asymptomatic_p_fall_realistic_testing &
+
+

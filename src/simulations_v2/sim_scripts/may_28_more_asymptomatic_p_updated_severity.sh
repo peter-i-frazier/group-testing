@@ -1,0 +1,4 @@
+python3 run_sims.py config/detailed_asymptomatic_p.yaml fall_realistic_updated_age_severity asymptomatic_p_fall_realistic_updated_age_severity &
+python3 run_sims.py config/detailed_asymptomatic_p.yaml fall_realistic_updated_age_severity_testing asymptomatic_p_fall_realistic_updated_age_severity_testing &
+
+
