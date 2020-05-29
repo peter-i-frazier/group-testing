@@ -6,6 +6,8 @@ import os
 import multiprocessing
 from analysis_helpers import run_multiple_trajectories
 import dill
+from params import ParamConfig
+import argparse
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -18,6 +20,7 @@ def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=1
             df_file_name = "{}/{}.csv".format(output_dir, idx)
             df.to_csv(df_file_name)
     except Exception as e:
+        print(e)
         error_msg = "Encountered error: {}".format(str(e))
         print(error_msg)
         f = open(output_dir + "/error.txt", "w")
@@ -60,84 +63,48 @@ def update_params(sim_params, param_to_vary, param_val):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 2:
-        print("Usage: python {} yaml-config-file 'fall'|'base'|'fall_old_severity' (optional:simulation-name) (optional:basedir)".format(sys.argv[0]))
-        exit()
+    parser = argparse.ArgumentParser(description='Run multiple simulations using multiprocessing')
+    parser.add_argument('-w', '--when', choices=['fall', 'june'], 
+                        default='fall',
+                        help='what time period should the simulations use')
+    parser.add_argument('-a', '--assumption', choices=['pessimistic', 'optimistic', 'nominal'],
+                        default='nominal',
+                        help='what assumption-level should the simulations use')
+    parser.add_argument('-n', '--notest', action='store_true', help='turn off asymptomatic testing')
+    parser.add_argument('-o', '--outputdir', default=BASE_DIRECTORY, 
+                        help='directory to store simulation output')
+    parser.add_argument('-s', '--silent', action='store_true', help='turn off script output')
+    parser.add_argument('config',
+            help='YAML config file specifying which parameters to vary across the different processes')
 
-    # TODO: should we change this to a better naming convention?
-    #  e.g., fall, fall-optimistic, fall-pessimistic, summer, etc.
-    if sys.argv[2] == 'fall':
-        from fall_params import base_params
-    elif sys.argv[2] == 'base':
-        from base_params import base_params
-    elif sys.argv[2] == 'fall_old_severity':
-        from fall_params import base_params_tuesday_severity as base_params
-    elif sys.argv[2] == 'fall_slightly_pessimistic_testing':
-        from fall_slightly_pessimistic import base_params_testing as base_params
-    elif sys.argv[2] == 'fall_slightly_optimistic_testing':
-        from fall_slightly_optimistic import base_params_testing as base_params
-    elif sys.argv[2] == 'fall_realistic_testing':
-        from fall_realistic import base_params_testing as base_params
-    elif sys.argv[2] == 'fall_slightly_pessimistic':
-        from fall_slightly_pessimistic import base_params as base_params
-    elif sys.argv[2] == 'fall_slightly_optimistic':
-        from fall_slightly_optimistic import base_params as base_params
-    elif sys.argv[2] == 'fall_realistic':
-        from fall_realistic import base_params as base_params
-    elif sys.argv[2] == 'june_slightly_pessimistic_testing':
-        from june_slightly_pessimistic import base_params_testing as base_params
-    elif sys.argv[2] == 'june_slightly_optimistic_testing':
-        from june_slightly_optimistic import base_params_testing as base_params
-    elif sys.argv[2] == 'june_realistic_testing':
-        from june_realistic import base_params_testing as base_params
-    elif sys.argv[2] == 'june_slightly_pessimistic':
-        from june_slightly_pessimistic import base_params as base_params
-    elif sys.argv[2] == 'june_slightly_optimistic':
-        from june_slightly_optimistic import base_params as base_params
-    elif sys.argv[2] == 'june_realistic':
-        from june_realistic import base_params as base_params
-    else:
-        print("Error: second argument must be 'fall' or 'base' or 'fall_old_severity', but got {}".format(sys.argv[2]))
+    args = parser.parse_args()
+
+    sim_config = yaml.load(open(args.config))
+
+    params = ParamConfig.load_config(args.when, not args.notest, args.assumption)
 
 
-    sim_config = yaml.load(open(sys.argv[1]))
+    timestamp = time.time()
+    sim_id = "{timestamp}-{when}-{assumption}-{testing}-{param_to_vary}".format(
+                timestamp=str(time.time()).split('.')[0], 
+                when=args.when, 
+                assumption=args.assumption,
+                testing= "notest" if args.notest else "withtest",
+                param_to_vary = sim_config['param_to_vary'])
+    if not args.silent:
+        print("Simulation ID: {}".format(sim_id))
 
-
-    params = base_params.copy()
-    if 'base_params_to_update' in sim_config and sim_config['base_params_to_update'] != None:
-        for param, val in sim_config['base_params_to_update'].items():
-
-            # got rid of the following sanity check because we are adding a lot of parameters on the fly
-            # should eventually have some kind of sanity check here when the codebase stabilizes
-
-            #if param not in params and param != 'contact_trace_testing_frac' and param != 'init_ID_prevalence_stochastic':
-            #    print("Configuration attempting to modify non-existent parameter {}".format(
-            #        param))
-            #    exit()
-    
-            update_params(params, param, val)
-
-    sim_timestamp = time.time()
-    if len(sys.argv) > 3:
-        sim_id = "{}.{}".format(sys.argv[3], sim_timestamp)
-    else:
-        sim_id = str(sim_timestamp)
-    print("Simulation ID: {}".format(sim_id))
-
-
-    if len(sys.argv) > 4:
-        basedir = sys.argv[4]
-    else:
-        basedir = BASE_DIRECTORY
+    basedir = args.outputdir
 
     if not os.path.isdir(basedir):
         print("Directory {} does not exist. Please create it.".format(basedir))
         exit()
 
-    sim_main_dir = basedir + str(sim_id)
+    sim_main_dir = basedir + "/" + str(sim_id)
     try:
         os.mkdir(sim_main_dir)
-        print("Output directory {} created".format(sim_main_dir))
+        if not args.silent:
+            print("Output directory {} created".format(sim_main_dir))
     except FileExistsError:
         print("Output directory {} already exists".format(sim_main_dir))
         exit()
@@ -146,6 +113,9 @@ if __name__ == "__main__":
         exit()
 
 
+    if 'base_params_to_update' in sim_config and sim_config['base_params_to_update'] != None:
+        for param, val in sim_config['base_params_to_update'].items():
+            update_params(params, param, val)
     
     param_to_vary = sim_config['param_to_vary']
     param_values = sim_config['parameter_values']
@@ -165,9 +135,10 @@ if __name__ == "__main__":
 
     for param_val in param_values:
         # create the relevant subdirectory
-        sim_sub_dir = "{}/{}.{}".format(sim_main_dir, param_to_vary, param_val)
+        sim_sub_dir = "{}/{}-{}".format(sim_main_dir, param_to_vary, param_val)
         os.mkdir(sim_sub_dir)
-        print("Created directory {} to save output".format(sim_sub_dir))
+        if not args.silent: 
+            print("Created directory {} to save output".format(sim_sub_dir))
         # instantiate relevant sim params
         sim_params = params.copy()
 
@@ -175,16 +146,19 @@ if __name__ == "__main__":
         update_params(sim_params, param_to_vary, param_val)        
         
         dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
-        print("Saved sim_params to dill file")
+        if not args.silent:
+            print("Saved sim_params to dill file")
         # start new process
         fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
         proc = multiprocessing.Process(target = run_background_sim, args=fn_args)
         #proc.daemon = True
         proc.start()
-        print("starting process for {} value {}".format(param_to_vary, param_val))
-        print("process PID = {}".format(proc.pid))
+        if not args.silent:
+            print("starting process for {} value {}".format(param_to_vary, param_val))
+            print("process PID = {}".format(proc.pid))
 
-    print("Waiting for processes to finish...")
+    if not args.silent:
+        print("Waiting for processes to finish...")
 
         
 
