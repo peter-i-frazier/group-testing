@@ -14,8 +14,28 @@ prob_severity_given_age_v2 = np.array([[0.35, 0.63895, 0.00863, 0.00242],\
                                     [0.35, 0.6019, 0.03521, 0.01289],\
                                     [0.35, 0.6019, 0.03521, 0.01289]])
 
+prob_severity_given_age_v3 = np.array([[0.17, 0.816, 0.011, 0.003],\
+                                    [0.52, 0.472, 0.006, 0.002],\
+                                    [0.31, 0.659, 0.022, 0.009],\
+                                    [0.13, 0.806, 0.047, 0.017],\
+                                    [0.13, 0.806, 0.047, 0.017]])
+
 prob_infection = np.array([0.018, 0.022, 0.029, 0.042, 0.042])
 prob_age = np.array([0, 0.85808522, 0.13170574, 0.00878566, 0.00142338])
+
+def update_sev_prevalence(curr_prevalence_dist, new_asymptomatic_pct):
+    new_dist = [new_asymptomatic_pct]
+    remaining_mass = sum(curr_prevalence_dist[1:])
+
+    # need to scale so that param_val + x * remaning_mass == 1
+    scale = (1 - new_asymptomatic_pct) / remaining_mass
+    idx = 1
+    while idx < len(curr_prevalence_dist):
+        new_dist.append(curr_prevalence_dist[idx] * scale)
+        idx += 1
+    assert(np.isclose(sum(new_dist), 1))
+    return np.array(new_dist)
+
 
 # put the config-dict defining code inside a static methods
 # so that it is not immediately run at import-time
@@ -25,8 +45,9 @@ class ParamConfig:
         assert(time_period in ['june', 'fall'])
         assert(type(use_testing) == type(True))
         assert(assn_type in ['optimistic', 'nominal', 'pessimistic'])
-        severity_prevalence = subdivide_severity(prob_severity_given_age_v2, 
+        orig_severity_prevalence = subdivide_severity(prob_severity_given_age_v3, 
                                                     prob_infection, prob_age)
+
 
         if assn_type == 'optimistic':
             assn_num = 0
@@ -35,25 +56,29 @@ class ParamConfig:
         elif assn_type == 'pessimistic':
             assn_num = 2
 
+        asymptomatic_pct_mult = (0.2/0.35, 1, 0.5/0.35)[assn_num]
+        new_asymptomatic_pct = asymptomatic_pct_mult * orig_severity_prevalence[0]
+        severity_prevalence = update_sev_prevalence(orig_severity_prevalence, new_asymptomatic_pct)
+
+
         mean_time_ID = (2.5, 3, 3.5)[assn_num]
         max_time_ID = int(5 + mean_time_ID)
 
         mean_time_Sy = (10, 12, 14)[assn_num]
         max_time_Sy = int(mean_time_Sy + 8)
 
-        daily_self_report_severe = (0.8, 0.4, 0.2)[assn_num]
+        daily_self_report_severe = 0.18
         daily_self_report_mild = 0
 
         prevalence = (0.001, 0.0025, 0.005)[assn_num]
 
+        daily_contacts = 8.3
         if time_period == 'fall':
             popsize = 34310
-            daily_contacts = (15, 20, 25)[assn_num]
             num_isolations = (0.98, 1.4, 2.0)[assn_num]
 
         elif time_period == 'june':
             popsize = 2500
-            daily_contacts = (10, 15, 20)[assn_num]
             num_isolations = (0.65, 1.1, 1.6)[assn_num]
 
         contacts_per_trace = 7
