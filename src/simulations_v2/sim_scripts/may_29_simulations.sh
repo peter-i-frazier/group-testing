@@ -62,3 +62,13 @@ python3 run_sims.py config/mild_self_reporting.yaml -w fall -a pessimistic &
 python3 run_sims.py config/prevalence.yaml -w fall -a pessimistic &
 python3 run_sims.py config/severe_self_reporting.yaml -w fall -a pessimistic &
 python3 run_sims.py config/asymptomatic_p.yaml -w fall -a pessimistic &
+
+
+#testing-specific sensitivity
+python3 run_sims.py config/testing/testing_fraction.yaml -w fall -a optimistic &
+python3 run_sims.py config/testing/testing_fraction.yaml -w fall -a pessimistic &
+python3 run_sims.py config/testing/testing_fraction.yaml -w fall -a nominal &
+
+python3 run_sims.py config/testing/testing_qfnr.yaml -w fall -a optimistic &
+python3 run_sims.py config/testing/testing_qfnr.yaml -w fall -a pessimistic &
+python3 run_sims.py config/testing/testing_qfnr.yaml -w fall -a nominal &
