@@ -78,9 +78,9 @@ class ParamConfig:
             num_isolations = (0.87, 0.92, 0.98)[assn_num]
 
         elif time_period == 'june':
-            daily_contacts = 6.225
+            daily_contacts = 4.15
             popsize = 2500
-            num_isolations = (0.65, 0.69, 0.73)[assn_num]
+            num_isolations = (0.43, 0.46, 0.49)[assn_num]
 
 
         contacts_per_trace = 7
