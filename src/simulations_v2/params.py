@@ -70,6 +70,8 @@ class ParamConfig:
         daily_self_report_severe = 0.18
         daily_self_report_mild = 0
 
+        contact_trace_testing_frac = 0.5
+
         prevalence = (0.001, 0.0025, 0.005)[assn_num]
 
         if time_period == 'fall':
@@ -138,6 +140,7 @@ class ParamConfig:
             'contact_tracing_delay': contact_delay,
             'cases_isolated_per_contact': num_isolations,
             'cases_quarantined_per_contact': num_quarantines,
+            'contact_trace_testing_frac': contact_trace_testing_frac,
             
             'pre_ID_state': 'detectable',
             
