@@ -72,14 +72,16 @@ class ParamConfig:
 
         prevalence = (0.001, 0.0025, 0.005)[assn_num]
 
-        daily_contacts = 8.3
         if time_period == 'fall':
+            daily_contacts = 8.3
             popsize = 34310
-            num_isolations = (0.98, 1.4, 2.0)[assn_num]
+            num_isolations = (0.87, 0.92, 0.98)[assn_num]
 
         elif time_period == 'june':
+            daily_contacts = 6.225
             popsize = 2500
-            num_isolations = (0.65, 1.1, 1.6)[assn_num]
+            num_isolations = (0.65, 0.69, 0.73)[assn_num]
+
 
         contacts_per_trace = 7
         num_quarantines = contacts_per_trace - num_isolations
@@ -94,7 +96,7 @@ class ParamConfig:
         test_qfpr = 0.005
         if use_testing:
             test_frequency = 1
-            test_daily_fraction = 0.07
+            test_daily_fraction = 0.2
         else:
             test_frequency = 300
             test_daily_fraction = 0
