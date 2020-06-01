@@ -63,7 +63,7 @@ key_mapping = {
 }
 
 def plot_from_folders(folder_map, param_varying, savefig_dir):
-    sim_map = {scn_name: load_sim_dir(scn_folder) for scn_name, scn_folder in folder_map.items()}
+    sim_map = {scn_name: load_sim_dir(scn_folder, verbose=False) for scn_name, scn_folder in folder_map.items()}
 
     if param_varying in key_mapping:
         sublabel = key_mapping[param_varying]
@@ -87,10 +87,10 @@ def plot_from_folders(folder_map, param_varying, savefig_dir):
                      xlabel=plot_labels[sublabel], ylabel="Percentage of Population Infected",
                      title="Nominal Parameters: Infection Percentage vs. {}".format(plot_label), 
                                q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
-                               savefig_path="{}/infection_{}".format(savefig_dir, param_varying), 
+                               savefig_path="{}/infection_{}.pdf".format(savefig_dir, param_varying), 
                              use_x_int_labels=use_x_int_labels[sublabel])
 
-def modify_tick_labels(labels, axis, use_int_labels):
+def modify_tick_labels(labels, axis, use_int_labels, max_str_length=7):
     assert(axis in ['x', 'y'])
     new_labels = []
     for label in labels:
@@ -107,6 +107,9 @@ def modify_tick_labels(labels, axis, use_int_labels):
                 newtxt = str(int(val))
             else:
                 newtxt = str(float(val))
+
+            if len(newtxt) >= max_str_length:
+                newtxt = newtxt[0:max_str_length]
             
             new_labels.append(newtxt)
     return new_labels

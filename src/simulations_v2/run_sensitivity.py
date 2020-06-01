@@ -140,7 +140,7 @@ if __name__ == "__main__":
             if verbose:
                 print("starting process for {} value {}".format(param_to_vary, param_val))
         
-    print("Running simulations across {} separate processes.".format(len(jobs)))
+    print("Running simulations for {} scenarios and {} parameter values across {} separate processes.".format(len(scenarios), len(param_values), len(jobs)))
     print("Results being saved in output directory {}.".format(sim_main_dir))
     print("Waiting for simulations to finish...")
     for p in jobs:
@@ -149,6 +149,7 @@ if __name__ == "__main__":
             
     print("Simulations done. Generating plots now...")
     plot_from_folders(scn_dirs, param_to_vary, sim_main_dir)
+    print("Saved plots to directory {}".format(sim_main_dir))
 
 
 
