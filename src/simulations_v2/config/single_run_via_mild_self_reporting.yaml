@@ -1,0 +1,4 @@
+ntrajectories: 500
+time_horizon: 112
+param_to_vary: mild_symptoms_daily_self_report_p
+parameter_values: [0]

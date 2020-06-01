@@ -1,0 +1,3 @@
+python3 run_sims.py config/testing/testing_fraction.yaml fall_realistic_updated_age_severity_testing testing_fraction_fall_realistic_updated_age_severity_testing &
+
+
