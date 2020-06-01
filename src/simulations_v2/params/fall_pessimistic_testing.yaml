@@ -1,8 +1,6 @@
-# meta-parameters pointing to additional yaml files from which to import values
-# in this case, we specify another config file from which to import the majority
-# of the base params
-_inherit_config: ./fall_nominal.yaml
-_scenario_name: Fall Nominal Testing
+_inherit_config: ./fall_pessimistic.yaml
+_scenario_name: Fall Pessimistic Testing
+
 
 # specify that this config does use asymptomatic testing
 use_asymptomatic_testing: True

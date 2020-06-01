@@ -1,0 +1,15 @@
+_inherit_config: ./fall_nominal.yaml
+_scenario_name: Fall Pessimistic
+
+initial_ID_prevalence: 0.005
+
+# 0.5 / 0.35
+asymptomatic_pct_mult: 1.4285
+
+ID_time_params: [3.5, 9]
+
+Sy_time_params: [14, 22]
+
+contact_tracing_delay: 2
+cases_isolated_per_contact: 0.98
+cases_quarantined_per_contact: 6.02
