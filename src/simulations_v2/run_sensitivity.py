@@ -8,6 +8,7 @@ from analysis_helpers import run_multiple_trajectories
 import dill
 import argparse
 from load_params import load_params
+from plotting_util import plot_from_folders
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -90,8 +91,8 @@ if __name__ == "__main__":
                 param_to_vary = param_to_vary)
     
     basedir = args.outputdir
-    ntrajectories = args.ntrajectories
-    time_horizon = args.time_horizon
+    ntrajectories = int(args.ntrajectories)
+    time_horizon = int(args.time_horizon)
     verbose = args.verbose
     if verbose:
         print("Simulation ID: {}".format(sim_id))
@@ -108,9 +109,11 @@ if __name__ == "__main__":
 
    
     jobs = []
+    scn_dirs = {} 
     for scn_name in scenarios:
         sim_scn_dir = sim_main_dir + "/" + scn_name
         os.mkdir(sim_scn_dir)
+        scn_dirs[scn_name] = sim_scn_dir
 
         if verbose:
             print("Output scenario-directory {} created".format(sim_sub_dir))
@@ -144,7 +147,8 @@ if __name__ == "__main__":
         p.join()
 
             
-
+    print("Simulations done. Generating plots now...")
+    plot_from_folders(scn_dirs, param_to_vary, sim_main_dir)
 
 
 
