@@ -102,12 +102,14 @@ class StochasticSimulation:
             self.test_pop_fraction = params['test_population_fraction']
             self.test_QFNR = params['test_protocol_QFNR']
             self.test_QFPR = params['test_protocol_QFPR']
+            self.contact_trace_testing_frac = params['contact_trace_testing_frac']
         else:
             self.days_between_tests = 300
             self.test_pop_fraction = 0
 
             self.test_QFNR = 0.19
             self.test_QFPR = 0.005
+            self.contact_trace_testing_frac = 1
 
         self.perform_contact_tracing = params['perform_contact_tracing']
         self.contact_tracing_delay = params['contact_tracing_delay']
@@ -117,16 +119,7 @@ class StochasticSimulation:
         self.cases_isolated_per_contact = params['cases_isolated_per_contact']
         self.cases_quarantined_per_contact = params['cases_quarantined_per_contact']
 
-        # old/deprecated parameters governing contact tracing
-        if 'contact_tracing_constant' in params:
-            self.contact_tracing_c = params['contact_tracing_constant']
-        if 'contact_trace_testing_frac' in params:
-            self.contact_trace_testing_frac = params['contact_trace_testing_frac']
-        else:
-            self.contact_trace_testing_frac = 1
-        if 'contact_trace_infectious_window' in params:
-            self.contact_trace_infectious_window = params['contact_trace_infectious_window']
-
+        
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
         assert(self.pre_ID_state in ['infectious','detectable'])
