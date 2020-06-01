@@ -1,0 +1,18 @@
+# meta-parameters pointing to additional yaml files from which to import values
+# in this case, we specify another config file from which to import the majority
+# of the base params
+_inherit_config: ./fall_nominal.yaml
+
+# specify that this config does use asymptomatic testing
+use_asymptomatic_testing: True
+
+# what fraction of positive cases from testing go through contact-tracing
+contact_trace_testing_frac: 0.5
+
+days_between_tests: 1
+
+test_population_fraction: 0.07
+
+test_protocol_QFNR: 0.19
+test_protocol_QFPR: 0.005
+
