@@ -1,10 +1,12 @@
-_age_severity_config: ./age_severity_config
+_age_severity_config: ./age_severity_config.yaml
 _scenario_name: June Nominal
 
 population_size: 2500
 asymptomatic_pct_mult: 1
 
 ID_time_params: [3,8]
+
+initial_ID_prevalence: 0.0025
 
 # applies to symptomatic & asymptomatic
 Sy_time_params: [12, 20]
