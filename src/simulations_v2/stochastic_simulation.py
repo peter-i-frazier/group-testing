@@ -96,10 +96,18 @@ class StochasticSimulation:
         self.severe_self_report_p = params['severe_symptoms_daily_self_report_p']
 
         # parameters governing test protocol
-        self.days_between_tests = params['days_between_tests']
-        self.test_pop_fraction = params['test_population_fraction']
-        self.test_QFNR = params['test_protocol_QFNR']
-        self.test_QFPR = params['test_protocol_QFPR']
+        use_asymptomatic_testing = params['use_asymptomatic_testing']
+        if use_asymptomatic_testing:
+            self.days_between_tests = params['days_between_tests']
+            self.test_pop_fraction = params['test_population_fraction']
+            self.test_QFNR = params['test_protocol_QFNR']
+            self.test_QFPR = params['test_protocol_QFPR']
+        else:
+            self.days_between_tests = 300
+            self.test_pop_fraction = 0
+
+            self.test_QFNR = 0.19
+            self.test_QFPR = 0.005
 
         self.perform_contact_tracing = params['perform_contact_tracing']
         self.contact_tracing_delay = params['contact_tracing_delay']
