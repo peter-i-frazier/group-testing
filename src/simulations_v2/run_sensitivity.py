@@ -12,6 +12,19 @@ from plotting_util import plot_from_folders
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
+VALID_PARAMS_TO_VARY = [
+    'contact_tracing_isolations'
+    'expected_contacts_per_day',
+    'mild_symptoms_daily_self_report_p',
+    'severe_symptoms_daily_self_report_p',
+    'initial_ID_prevalence',
+    'exposed_infection_p',
+    'asymptomatic_p',
+    'contact_tracing_delay',
+    'test_protocol_QFNR',
+    'test_population_fraction'
+    ]
+
 def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
     dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
     
@@ -75,6 +88,9 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--time-horizon', default=112,
             help='how many days to simulate for each trajectory')
 
+    parser.add_argument('-f', '--fig-dir',
+            help='specify folder where plots should be saved')
+
     args = parser.parse_args()
 
     scenarios = {}
@@ -83,6 +99,9 @@ if __name__ == "__main__":
         scenarios[scn_name] = scn_params
 
     param_to_vary = args.param_to_vary
+    if param_to_vary not in VALID_PARAMS_TO_VARY:
+        print("Received invalid parameter to vary: {}".format(param_to_vary))
+        exit()
     param_values = [float(v) for v in args.values]
 
     timestamp = time.time()
@@ -148,8 +167,12 @@ if __name__ == "__main__":
 
             
     print("Simulations done. Generating plots now...")
-    plot_from_folders(scn_dirs, param_to_vary, sim_main_dir)
-    print("Saved plots to directory {}".format(sim_main_dir))
+    if args.fig_dir == None:
+        fig_dir = sim_main_dir
+    else:
+        fig_dir = args.fig_dir
+    plot_from_folders(scn_dirs, param_to_vary, fig_dir)
+    print("Saved plots to directory {}".format(fig_dir))
 
 
 

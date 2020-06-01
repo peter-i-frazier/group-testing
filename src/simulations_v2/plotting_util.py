@@ -12,9 +12,12 @@ plot_labels = {
     'exposed_infection_p': 'Transmission Likelihood per Contact (%)',
     'contact_isolations': 'Isolations per Contact Trace',
     'contact_delay': 'Contact Trace Delay (Days)',
-    'asymptomatic_p': 'Percentage of Cases Asymptomatic (%)'
+    'asymptomatic_p': 'Percentage of Cases Asymptomatic (%)',
+    'test_protocol_QFNR': 'Testing False-Negative Rate',
+    'test_population_fraction': 'Percentage of Population Tested Daily'
 }
 
+# normalize x-axis to be a percentage 
 normalize_params = {
     'daily_contacts': False,
     'severe_self_reporting': True,
@@ -24,9 +27,12 @@ normalize_params = {
     'contact_isolations': False,
     'contact_delay': False,
     'asymptomatic_p': True,
-    'default': False
+    'default': False,
+    'test_protocol_QFNR': True,
+    'test_population_fraction': True
 }
 
+# put the x-axis on a log-scale
 plot_log_scale = {
     'daily_contacts': True,
     'severe_self_reporting': False,
@@ -36,9 +42,11 @@ plot_log_scale = {
     'contact_isolations': False,
     'contact_delay': False,
     'asymptomatic_p': True,
-    'default': False
+    'test_protocol_QFNR': False,
+    'test_population_fraction': True
 }
 
+# rount x-axis labels to int
 use_x_int_labels = {
     'daily_contacts': True,
     'severe_self_reporting': True,
@@ -48,7 +56,8 @@ use_x_int_labels = {
     'contact_isolations': False,
     'contact_delay': True,
     'asymptomatic_p': False,
-    'default': False
+    'test_protocol_QFNR': False,
+    'test_population_fraction': False
 }
 
 key_mapping = {
@@ -59,7 +68,9 @@ key_mapping = {
     'initial_ID_prevalence': 'prevalence',
     'exposed_infection_p': 'exposed_infection_p',
     'asymptomatic_p': 'asymptomatic_p',
-    'contact_tracing_delay': 'contact_delay'
+    'contact_tracing_delay': 'contact_delay',
+    'test_protocol_QFNR': 'test_protocol_QFNR',
+    'test_population_fraction': 'test_population_fraction'
 }
 
 def plot_from_folders(folder_map, param_varying, savefig_dir):
@@ -69,8 +80,7 @@ def plot_from_folders(folder_map, param_varying, savefig_dir):
         sublabel = key_mapping[param_varying]
         plot_label = plot_labels[sublabel]
     else:
-        sublabel='default'
-        plot_label = param_varying
+        raise(Exception("could not find parameter {} in the list of acceptable keys".format(param_varying)))
 
     plot_many_dfs_quantiles(sim_map, 
                             cum_severe_quantiles,
