@@ -22,7 +22,8 @@ VALID_PARAMS_TO_VARY = [
     'asymptomatic_p',
     'contact_tracing_delay',
     'test_protocol_QFNR',
-    'test_population_fraction'
+    'test_population_fraction',
+    'daily_outside_infection_p'
     ]
 
 def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
@@ -152,6 +153,7 @@ if __name__ == "__main__":
             dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
             # start new process
             fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
+            #run_background_sim(*fn_args)
             proc = multiprocessing.Process(target = run_background_sim, args=fn_args)
             #proc.daemon = True
             jobs.append(proc)

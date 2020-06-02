@@ -195,6 +195,7 @@ class StochasticSimulation:
         self.R_severe = SyID_severe_sample[0]
 
 
+        self.cumulative_outside_infections = 0
         var_labels = self.get_state_vector_labels()
         self.sim_df = pd.DataFrame(columns=var_labels)
         self._append_sim_df()
@@ -474,6 +475,7 @@ class StochasticSimulation:
         
         # sample number of new E cases from 'outside' infection
         new_E_from_outside = np.random.binomial(self.S - new_E_from_inside, self.daily_outside_infection_p)
+        self.cumulative_outside_infections += new_E_from_outside
 
         new_E = new_E_from_inside + new_E_from_outside
         self.S -= new_E
@@ -593,7 +595,7 @@ class StochasticSimulation:
         assert(self.QI_mild + self.QI_severe == self.QI)
         assert(self.R_mild + self.R_severe == self.R)
         assert(min(self.QI_mild, self.QI_severe, self.R_mild, self.R_severe) >= 0)
-        if abs(sum(data) - sum(data[-2:]) - self.pop_size) > 0.0001:
+        if abs(sum(data) - sum(data[-3:]) - self.pop_size) > 0.0001:
             raise(Exception("population has shrunk"))
         if np.sum(data < 0) > 0:
             raise(Exception("negative category size"))
@@ -639,7 +641,7 @@ class StochasticSimulation:
         return np.concatenate([
             [self.S], [self.QS], [self.QI], [self.R],
             self.E, self.pre_ID, self.ID, self.SyID_mild, self.SyID_severe,
-            [self.cumulative_mild], [self.cumulative_severe]
+            [self.cumulative_mild], [self.cumulative_severe], [self.cumulative_outside_infections]
             ])
 
     def get_state_vector_labels(self):
@@ -649,7 +651,7 @@ class StochasticSimulation:
                 ['ID_{}'.format(x) for x in range(self.max_time_ID)] + \
                 ['SyID_mild_{}'.format(x) for x in range(self.max_time_SyID_mild)] + \
                 ['SyID_severe_{}'.format(x) for x in range(self.max_time_SyID_severe)] + \
-                ['cumulative_mild', 'cumulative_severe']
+                ['cumulative_mild', 'cumulative_severe', 'cumulative_outside_infections']
 
 
     def generate_cumulative_stats(self):
