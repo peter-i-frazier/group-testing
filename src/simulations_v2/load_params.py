@@ -72,9 +72,8 @@ def load_params(param_file, param_file_stack=[]):
     if '_inherit_config' in params:
         if len(param_file_stack) >= MAX_DEPTH:
             raise(Exception("yaml config dependency depth exceeded max depth"))
-        param_file_stack.append(param_file)
         new_param_file = params['_inherit_config']
-        scenario_name, base_params = load_params(new_param_file, param_file_stack)
+        scenario_name, base_params = load_params(new_param_file, param_file_stack + [param_file])
     else:
         scenario_name = None
         base_params = {}
@@ -89,7 +88,9 @@ def load_params(param_file, param_file_stack=[]):
     if '_scenario_name' in params:
         scenario_name = params['_scenario_name']
     else:
-        raise(Exception("need to specify a _scenario_name value"))
+        # the top-level param-file needs a name
+        if len(param_file_stack) == 0:
+            raise(Exception("need to specify a _scenario_name value"))
     
     # change working-directory back
     os.chdir(cwd)

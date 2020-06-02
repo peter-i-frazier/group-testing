@@ -538,6 +538,49 @@ class StochasticSimulation:
         self.current_day += 1
 
 
+    ## add new_E people to the infections queue from the S queue.
+    ## this function is written to support the companion multi-group simulation
+    def add_new_infections(self, new_E):
+
+        new_E = min(self.S, new_E)
+
+        self.S = self.S - new_E
+
+        # in theory it is possible for someone to go from new_E to R in a single step,
+        # so we have to pass through all the states...
+        new_E_times = self.sample_E_times(new_E)
+        new_pre_ID = new_E_times[0]
+        self.E = self.E + new_E_times[1:]
+
+        # sample times of new pre-ID cases / update pre-ID queue/ record new ID cases
+        new_pre_ID_times = self.sample_pre_ID_times(new_pre_ID)
+        new_ID =  new_pre_ID_times[0]
+        self.pre_ID = self.pre_ID + new_pre_ID_times[1:]
+
+
+        # sample times of new ID cases / update ID queue/ record new SyID cases
+        new_ID_times = self.sample_ID_times(new_ID)
+        new_SyID = new_ID_times[0]
+        self.ID = self.ID + new_ID_times[1:]
+
+        # decompose new_SyID into mild and severe
+        new_SyID_mild = np.random.binomial(new_SyID, self.mild_symptoms_p)
+        new_SyID_severe = new_SyID - new_SyID_mild
+
+        # samples times of new SyID mild cases/ update mild queue/ record new R cases
+        new_SyID_mild_times = self.sample_SyID_mild_times(new_SyID_mild)
+        new_R_from_mild = new_SyID_mild_times[0]
+        self.SyID_mild = self.SyID_mild + new_SyID_mild_times[1:]
+
+        # same as above, but for the severe symptom queue
+        new_SyID_severe_times = self.sample_SyID_severe_times(new_SyID_severe)
+        new_R_from_severe = new_SyID_severe_times[0]
+        self.SyID_severe = self.SyID_severe + new_SyID_severe_times[1:]
+
+        self.R += new_R_from_mild + new_R_from_severe
+        self.R_mild += new_R_from_mild
+        self.R_severe += new_R_from_severe
+
 
     def _append_sim_df(self):
         self.generate_cumulative_stats()
