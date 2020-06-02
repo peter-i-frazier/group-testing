@@ -33,6 +33,8 @@ E_time_params: [2,4]
 exposed_infection_p: 0.026
 expected_contacts_per_day: 8.3
 
+daily_outside_infection_p: 0.001
+
 # parameters governing self-reporting behaviour
 asymptomatic_daily_self_report_p: 0
 symptomatic_daily_self_report_p: 0.18

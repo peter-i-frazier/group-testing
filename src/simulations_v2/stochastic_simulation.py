@@ -84,6 +84,9 @@ class StochasticSimulation:
         self.exposed_infection_p = params['exposed_infection_p']
         self.daily_contacts_lambda = params['expected_contacts_per_day']
 
+        # probability that a susceptible individual gets infected from the 'outside' on any given day
+        self.daily_outside_infection_p = params['daily_outside_infection_p']
+
         # mild_severity_levels is the number of severity levels that are contained within the mild class.
         # We assume that they are the first entries in teh severity_prevalence array
         # severity_prevalence is an array that has the distribution of severity levels for any infected patient
@@ -466,8 +469,13 @@ class StochasticSimulation:
         n_contacts = np.random.poisson(poisson_param)
         #n_contacts = int(free_infectious * free_susceptible / free_tot * np.random.geometric(1/self.daily_contacts_lambda))
 
-        # sample number of new E cases
-        new_E = min(np.random.binomial(n_contacts, self.exposed_infection_p), self.S)
+        # sample number of new E cases from 'inside' contacts
+        new_E_from_inside = min(np.random.binomial(n_contacts, self.exposed_infection_p), self.S)
+        
+        # sample number of new E cases from 'outside' infection
+        new_E_from_outside = np.random.binomial(self.S - new_E_from_inside, self.daily_outside_infection_p)
+
+        new_E = new_E_from_inside + new_E_from_outside
         self.S -= new_E
 
         # update E queue and record new pre-ID cases

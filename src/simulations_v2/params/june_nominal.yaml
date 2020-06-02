@@ -18,6 +18,7 @@ exposed_infection_p: 0.026
 
 expected_contacts_per_day: 4.15
 
+daily_outside_infection_p: 0.001
 
 # parameters governing self-reporting behaviour
 asymptomatic_daily_self_report_p: 0

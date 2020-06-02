@@ -1,0 +1,16 @@
+_inherit_config: ./fall_nominal_no_outside_infections.yaml
+_scenario_name: Fall Nominal Testing Without Outside Infections
+
+# specify that this config does use asymptomatic testing
+use_asymptomatic_testing: True
+
+# what fraction of positive cases from testing go through contact-tracing
+contact_trace_testing_frac: 0.5
+
+days_between_tests: 1
+
+test_population_fraction: 0.2
+
+test_protocol_QFNR: 0.19
+test_protocol_QFPR: 0.005
+
