@@ -2,7 +2,7 @@ import yaml
 from subdivide_severity import subdivide_severity
 import os
 import numpy as np
-from analysis_helpers import poisson_waiting_function
+from analysis_helpers import poisson_waiting_function, binomial_exit_function
 
 # upper bound on how far the recursion can go in the yaml-depency tree
 MAX_DEPTH=5
@@ -131,10 +131,10 @@ def load_params(param_file, param_file_stack=[]):
             base_params['severe_symptoms_daily_self_report_p'] = val
 
         elif yaml_key == 'daily_leave_QI_p':
-            base_params['sample_QI_exit_function'] = (lambda n: np.random.binomial(n, val))
+            base_params['sample_QI_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
 
         elif yaml_key == 'daily_leave_QS_p':
-            base_params['sample_QS_exit_function'] = (lambda n: np.random.binomial(n, val))
+            base_params['sample_QS_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
 
         elif yaml_key == 'asymptomatic_pct_mult':
             if 'severity_prevalence' not in base_params:

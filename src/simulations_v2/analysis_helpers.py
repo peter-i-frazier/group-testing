@@ -50,6 +50,9 @@ def plot_many_dfs_threshold(dfs_dict, threshold=0.1, xlabel="", title="", figsiz
 def poisson_waiting_function(max_time, mean_time):
     return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
 
+def binomial_exit_function(p):
+    return (lambda n: np.random.binomial(n,p))
+
 def run_sensitivity_sims(base_params, param_to_vary, param_values, 
                             time_horizon=150, trajectories_per_config=100, verbose=True):
     """ run simulations, varying param_to_vary, setting it equal to each value in the list param_values """
