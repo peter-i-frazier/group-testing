@@ -7,6 +7,15 @@ from analysis_helpers import poisson_waiting_function
 # upper bound on how far the recursion can go in the yaml-depency tree
 MAX_DEPTH=5
 
+# simulation parameters which can be included as yaml-keys but are not required
+# they are set to a default value of 0 if not included in the yaml-config
+DEFAULT_ZERO_PARAMS = ['initial_E_count',
+                        'initial_pre_ID_count',
+                        'initial_ID_count',
+                        'initial_SyID_mild_count',
+                        'initial_SyID_severe_count']
+
+
 # yaml-keys which share the same key as the simulation parameter, and
 # can be copied over one-to-one
 COPY_DIRECTLY_YAML_KEYS = ['exposed_infection_p', 'expected_contacts_per_day', 
@@ -14,13 +23,8 @@ COPY_DIRECTLY_YAML_KEYS = ['exposed_infection_p', 'expected_contacts_per_day',
                             'cases_isolated_per_contact', 'cases_quarantined_per_contact',
             'use_asymptomatic_testing', 'contact_trace_testing_frac', 'days_between_tests',
             'test_population_fraction','test_protocol_QFNR','test_protocol_QFPR',
-            'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p']
-
-DEFAULT_ZERO_PARAMS = ['initial_E_count',
-                        'initial_pre_ID_count',
-                        'initial_ID_count',
-                        'initial_SyID_mild_count',
-                        'initial_SyID_severe_count']
+            'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p'] + \
+            DEFAULT_ZERO_PARAMS
 
 def update_sev_prevalence(curr_prevalence_dist, new_asymptomatic_pct):
     new_dist = [new_asymptomatic_pct]
