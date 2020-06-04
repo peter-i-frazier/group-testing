@@ -1,0 +1,11 @@
+_inherit_config: ./fall_nominal.yaml
+_scenario_name: Fall Re-Open Additional Ithaca Infections
+
+# this parameter specifies prevalence as a percentage
+initial_ID_prevalence: 0
+
+# this parameter specifies prevalence as a count
+initial_ID_count: 6
+
+#
+initial_E_count: 7
