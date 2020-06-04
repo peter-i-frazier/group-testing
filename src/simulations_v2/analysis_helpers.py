@@ -101,7 +101,7 @@ def plot_aip_vs_t(dfs, figsize=(10,6), color='blue',
                     alpha=0.1, linewidth=10, xlabel='Day', ylabel='Active Infection Percent', title=None):
     plt.figure(figsize=figsize)
     aip_cols = list(get_active_infection_cols(dfs[0]))
-    pop_size = dfs[0].iloc[0].sum()
+    pop_size = get_pop_size(dfs[0])
     for df in dfs:
         aip = df[aip_cols].sum(axis=1) / pop_size
         plt.plot(aip, linewidth=linewidth, alpha=alpha, color=color)
@@ -115,7 +115,7 @@ def plot_cip_vs_t(dfs, figsize=(10,6), color='blue',
                     alpha=0.1, linewidth=10, xlabel='Day', ylabel='Cumulative Infection Percent', title=None):
     plt.figure(figsize=figsize)
     cip_cols = list(get_cumulative_infection_cols(dfs[0]))
-    pop_size = dfs[0].iloc[0].sum()
+    pop_size = get_pop_size(dfs[0])
     for df in dfs:
         cip = df[cip_cols].sum(axis=1) / pop_size
         plt.plot(cip, linewidth=linewidth, alpha=alpha, color=color)
@@ -124,16 +124,25 @@ def plot_cip_vs_t(dfs, figsize=(10,6), color='blue',
     if title:
         plt.title(title)
     plt.show()
+
+def get_pop_size(df):
+    main_cols = list(get_main_cols(df))
+    return df[main_cols].iloc[0].sum()
        
+def get_main_cols(df):
+    all_cols = set(df.columns)
+    added_columns = set([c for c in all_cols if 'cumulative' in c or 'severity_' in c])
+    return all_cols - added_columns
+
 def get_active_infection_cols(df):
     """ return the list of columns of df corresponding to an active infection state"""
-    all_cols = set(df.columns)
-    return all_cols - set(['S','QS','R'])
+    main_cols = get_main_cols(df)
+    return main_cols - set(['S','QS','R'])
 
 def get_cumulative_infection_cols(df):
     """ return the list of columns of df corresponding to a cumulative infection state"""
-    all_cols = set(df.columns)
-    return all_cols - set(['S','QS'])
+    main_cols = get_main_cols(df)
+    return main_cols - set(['S','QS'])
 
 def extract_cips(dfs):
     """ given a list of dataframes, return a list o"""
