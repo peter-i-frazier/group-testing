@@ -7,5 +7,8 @@ initial_ID_prevalence: 0
 # this parameter specifies prevalence as a count
 initial_ID_count: 6
 
-#
+# specify prevalence in E as a count
 initial_E_count: 7
+
+# reset daily outside infections to 0
+daily_outside_infection_p: 0
