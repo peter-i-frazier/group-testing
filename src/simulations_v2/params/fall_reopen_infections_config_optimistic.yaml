@@ -1,5 +1,5 @@
 _inherit_config: ./fall_nominal.yaml
-_scenario_name: Fall Re-Open Additional Ithaca Infections with returning population = 10000
+_scenario_name: Fall Re-Open Additional Ithaca Infections with returning population = 8000
 
 # this parameter specifies prevalence as a percentage
 initial_ID_prevalence: 0
@@ -18,14 +18,14 @@ days_between_tests: 1
 
 test_population_fraction: 0.2
 
-test_protocol_QFNR: 0.12
-test_protocol_QFPR: 0.001
+test_protocol_QFNR: 0.10
+test_protocol_QFPR: 0.0002
 
 # this parameter specifies prevalence as a count
-initial_ID_count: 5
+initial_ID_count: 3
 
 # specify prevalence in E as a count
-initial_E_count: 6
+initial_E_count: 3
 
 # parameters governing rate at which people leave quarantine/isolation
 daily_leave_QI_p: 0
