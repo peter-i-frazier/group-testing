@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import ticker
 from analysis_helpers import load_sim_dir
 from textwrap import wrap
+from multiparam_output_loader import MultiParamOutputLoader
 
 plot_labels = {
     'daily_contacts': 'Average Contacts per Person per Day',
@@ -79,7 +80,45 @@ key_mapping = {
     'daily_outside_infection_p': 'daily_outside_infection_p'
 }
 
-def plot_from_folders(folder_map, param_varying, savefig_dir):
+def plot_from_folder(folder, savefig_dir):
+    sim_output = MultiParamOutputLoader(folder)
+    if len(sim_output.varying_params) != 1:
+        raise(Exception("Can only make sensitivity plots for single-parameter varying simulations"))
+
+    param_varying = sim_output.varying_params[0]
+    if param_varying in key_mapping:
+        sublabel = key_mapping[param_varying]
+        plot_label = plot_labels[sublabel]
+    else:
+        raise(Exception("could not find parameter {} in the list of acceptable keys".format(param_varying)))
+
+    plot_many_dfs_quantiles(sim_output.sim_results, 
+                            cum_severe_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Hospitalized",
+                     title="Nominal Parameters: Hospitalization Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                               savefig_path="{}/hospitalization_{}.pdf".format(savefig_dir, param_varying), 
+                             use_x_int_labels=use_x_int_labels[sublabel])
+    
+    plot_many_dfs_quantiles(sim_output.sim_results, 
+                            cum_infection_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Infected",
+                     title="Nominal Parameters: Infection Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                               savefig_path="{}/infection_{}.pdf".format(savefig_dir, param_varying), 
+                             use_x_int_labels=use_x_int_labels[sublabel])
+    plot_many_dfs_quantiles(sim_output.sim_results, 
+                            cum_non_outside_infection_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Infected (from Non-Outside Interaction)",
+                     title="Nominal Parameters: Non-Outside Infection Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                               savefig_path="{}/infection_non_outside_{}.pdf".format(savefig_dir, param_varying), 
+                             use_x_int_labels=use_x_int_labels[sublabel])
+
+def plot_from_folders_legacy(folder_map, param_varying, savefig_dir):
     sim_map = {scn_name: load_sim_dir(scn_folder, verbose=False) for scn_name, scn_folder in folder_map.items()}
 
     if param_varying in key_mapping:
@@ -254,7 +293,13 @@ def plot_many_dfs_quantiles(sim_output_dict, yaxisfn, normalize_x_axis, x_log_sc
         q_high_vals = []
         for sim_parameter_name, dfs in sim_output.items():
             # compute x-value assuming that sim_param_name is of form 'varied_param_name-value'
-            param_val = float('-'.join(sim_parameter_name.split('-')[1:]))
+            if type(sim_parameter_name) == str:
+                param_val = float('-'.join(sim_parameter_name.split('-')[1:]))
+            elif type(sim_parameter_name) == tuple:
+                assert(len(sim_parameter_name)) == 1
+                param_val = sim_parameter_name[0]
+            else:
+                raise(Exception("unrecognized type for sim_parameter_name"))
             if normalize_x_axis:
                 xs.append(param_val * 100)
             else:

@@ -9,7 +9,7 @@ from analysis_helpers import run_multiple_trajectories
 import dill
 import argparse
 from load_params import load_params
-from plotting_util import plot_from_folders
+from plotting_util import plot_from_folder
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         fig_dir = sim_main_dir
     else:
         fig_dir = args.fig_dir
-    plot_from_folders(scn_dirs, param_to_vary, fig_dir)
+    plot_from_folder(sim_main_dir, fig_dir)
     print("Saved plots to directory {}".format(fig_dir))
 
 
