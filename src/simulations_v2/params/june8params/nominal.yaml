@@ -4,7 +4,7 @@ _scenario_name: Nominal Parameters
 
 population_size: 34310
 
-initial_ID_prevalence: 0.00223
+initial_ID_prevalence: 0.0009
 
 
 asymptomatic_pct_mult: 1
