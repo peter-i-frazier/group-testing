@@ -1,0 +1,5 @@
+_inherit_config: ../../fall_reopen_june8_quarantine_nominal_interpolation.yaml
+_scenario_name: Fall Reopen Quarantine Sensitivity Total Twenty
+
+# 6.08 + 13
+cases_quarantined_per_contact: 19.08
