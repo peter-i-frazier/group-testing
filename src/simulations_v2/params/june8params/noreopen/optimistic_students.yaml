@@ -1,0 +1,5 @@
+_inherit_config: ./optimistic_faculty.yaml
+_scenario_name: Optimistic Student Parameters
+
+population_size: 7000
+use_asymptomatic_testing: False

@@ -1,0 +1,5 @@
+_inherit_config: ./pessimistic_faculty.yaml
+_scenario_name: Pessimistic Student Parameters
+
+population_size: 11000
+use_asymptomatic_testing: False

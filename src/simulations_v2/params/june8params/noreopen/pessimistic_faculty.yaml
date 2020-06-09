@@ -1,0 +1,4 @@
+_inherit_config: ../pessimistic.yaml
+_scenario_name: Pessimistic Faculty and Staff Parameters
+
+population_size: 15000

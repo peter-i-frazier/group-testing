@@ -1,0 +1,4 @@
+_inherit_config: ../optimistic.yaml
+_scenario_name: Optimistic Faculty and Staff Parameters
+
+population_size: 15000
