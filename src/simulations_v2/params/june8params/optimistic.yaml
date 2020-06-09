@@ -1,0 +1,19 @@
+# inherit values from the fall-nominal params, so we
+# only have to specify the parameter values that change
+_inherit_config: ./nominal.yaml
+_scenario_name: Optimistic Parameters
+
+# scale the asymptomatic-pct severity probability by this factor
+# fewer asymptomatic --> easier to detect
+asymptomatic_pct_mult: 0.5714 # 0.2 / 0.35
+
+ID_time_params: [2.5, 8]
+
+Sy_time_params: [10,18]
+
+initial_ID_prevalence: 0.000825
+
+cases_isolated_per_contact: 0.87
+cases_quarantined_per_contact: 6.13
+
+daily_outside_infection_p: 0.00005489

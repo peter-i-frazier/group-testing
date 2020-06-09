@@ -1,0 +1,8 @@
+_inherit_config: ./fall_nominal.yaml
+
+_scenario_name: Fall Nominal (No Contact Tracing)
+
+perform_contact_tracing: False
+daily_outside_infection_p: 0
+initial_ID_prevalence: 0
+initial_ID_count: 1
