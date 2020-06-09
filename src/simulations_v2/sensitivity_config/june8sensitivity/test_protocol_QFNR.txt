@@ -1,0 +1,11 @@
+# specify the parameter scenario files (assuming that the working dir is src/simulations_v2)
+--scenarios params/june8params/nominal.yaml params/june8params/optimistic.yaml params/june8params/pessimistic.yaml 
+
+# specify the parameter to vary
+--param-to-vary test_protocol_QFNR
+
+# specify the values the parameter takes
+--values 0.05 0.1 0.15 0.2 0.25 0.3
+
+# specify the directory where plots should be saved to
+--fig-dir /nfs01/covid_figs/june8figs/
