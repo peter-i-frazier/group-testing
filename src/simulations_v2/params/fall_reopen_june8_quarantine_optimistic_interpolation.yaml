@@ -1,0 +1,15 @@
+_inherit_config: ./june8params/optimistic.yaml
+_scenario_name: Fall Re-Open Quarantine Optimistic with Interpolation
+
+# this parameter specifies prevalence as a percentage
+initial_ID_prevalence: 0
+
+# this parameter specifies prevalence as a count
+initial_ID_count: 4 # 1 * 34310 / 8000
+
+# specify prevalence in E as a count
+initial_E_count: 13 # 3 * 34310 / 8000
+
+# parameters governing rate at which people leave quarantine/isolation
+daily_leave_QI_p: 0
+daily_leave_QS_p: 0
