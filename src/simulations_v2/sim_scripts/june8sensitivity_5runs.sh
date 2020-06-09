@@ -1,0 +1,10 @@
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/asymptomatic_p.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/contact_tracing_delay.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/contact_tracing_isolations.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/daily_outside_infection_p.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/expected_contacts_per_day.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/exposed_infection_p.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/initial_ID_prevalence.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/symptomatic_daily_self_report_p.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/test_population_fraction.txt -n 5 &
+bash run_sensitivity.sh sensitivity_config/june8sensitivity/test_protocol_QFNR.txt -n 5 &
