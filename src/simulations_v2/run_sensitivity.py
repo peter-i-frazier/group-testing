@@ -136,7 +136,10 @@ if __name__ == "__main__":
         if param_to_vary not in VALID_PARAMS_TO_VARY:
             print("Received invalid parameter to vary: {}".format(param_to_vary))
             exit()
-        param_values[param_to_vary] = [float(v) for v in values]
+        if param_to_vary == 'contact_tracing_delay':
+            param_values[param_to_vary] = [int(v) for v in values]
+        else:
+            param_values[param_to_vary] = [float(v) for v in values]
 
     
 

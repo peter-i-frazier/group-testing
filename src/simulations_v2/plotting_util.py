@@ -69,8 +69,8 @@ use_x_int_labels = {
 key_mapping = {
     'contact_tracing_isolations': 'contact_isolations',
     'expected_contacts_per_day': 'daily_contacts',
-    'mild_symptoms_daily_self_report_p': 'mild_self_reporting',
-    'severe_symptoms_daily_self_report_p': 'severe_self_reporting',
+    'asymptomatic_daily_self_report_p': 'mild_self_reporting',
+    'symptomatic_daily_self_report_p': 'severe_self_reporting',
     'initial_ID_prevalence': 'prevalence',
     'exposed_infection_p': 'exposed_infection_p',
     'asymptomatic_p': 'asymptomatic_p',
