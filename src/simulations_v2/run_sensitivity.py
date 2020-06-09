@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     if len(params_to_vary) == 1:
         sim_id = "{timestamp}-{param_to_vary}".format(
-                    timestamp=str(time.time()).split('.')[0], 
+                    timestamp=str(time.time()), 
                     param_to_vary = params_to_vary[0])
     else:
         sim_id = "{timestamp}-multiparam".format(
