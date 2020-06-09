@@ -11,7 +11,7 @@ ID_time_params: [2.5, 8]
 
 Sy_time_params: [10,18]
 
-initial_ID_prevalence: 0.0004
+initial_ID_prevalence: 0.0005
 
 cases_isolated_per_contact: 0.87
 cases_quarantined_per_contact: 6.13

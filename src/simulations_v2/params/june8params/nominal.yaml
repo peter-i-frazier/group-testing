@@ -51,7 +51,7 @@ contact_trace_testing_frac: 0.5
 
 days_between_tests: 1
 
-test_population_fraction: 0.143
+test_population_fraction: 0.2
 
 test_protocol_QFNR: 0.10
 test_protocol_QFPR: 0.001
