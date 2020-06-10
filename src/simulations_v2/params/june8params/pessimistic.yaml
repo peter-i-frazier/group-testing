@@ -11,7 +11,5 @@ ID_time_params: [3.5, 9]
 Sy_time_params: [14, 22]
 
 contact_tracing_delay: 2
-cases_isolated_per_contact: 0.98
-cases_quarantined_per_contact: 6.02
 
 daily_outside_infection_p: 0.00068616
