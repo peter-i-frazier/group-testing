@@ -29,7 +29,8 @@ VALID_PARAMS_TO_VARY = [
     'initial_pre_ID_count',
     'initial_ID_count',
     'initial_SyID_mild_count',
-    'initial_SyID_severe_count'
+    'initial_SyID_severe_count',
+    'population_size'
     ]
 
 def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):

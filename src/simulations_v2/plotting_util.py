@@ -17,7 +17,8 @@ plot_labels = {
     'asymptomatic_p': 'Percentage of Cases Asymptomatic (%)',
     'test_protocol_QFNR': 'Testing False-Negative Rate',
     'test_population_fraction': 'Percentage of Population Tested Daily',
-    'daily_outside_infection_p': 'Daily Individual Probability of Outside Infection (%)'
+    'daily_outside_infection_p': 'Daily Individual Probability of Outside Infection (%)',
+    'population_size': 'Population Size'
 }
 
 # normalize x-axis to be a percentage 
@@ -34,6 +35,7 @@ normalize_params = {
     'test_protocol_QFNR': True,
     'test_population_fraction': True,
     'daily_outside_infection_p': True,
+    'population_size': False,
 }
 
 # put the x-axis on a log-scale
@@ -48,7 +50,8 @@ plot_log_scale = {
     'asymptomatic_p': True,
     'test_protocol_QFNR': False,
     'test_population_fraction': True,
-    'daily_outside_infection_p': True
+    'daily_outside_infection_p': True,
+    'population_size': False
 }
 
 # rount x-axis labels to int
@@ -63,7 +66,8 @@ use_x_int_labels = {
     'asymptomatic_p': False,
     'test_protocol_QFNR': False,
     'test_population_fraction': False,
-    'daily_outside_infection_p': False
+    'daily_outside_infection_p': False,
+    'population_size': False
 }
 
 key_mapping = {
@@ -77,7 +81,8 @@ key_mapping = {
     'contact_tracing_delay': 'contact_delay',
     'test_protocol_QFNR': 'test_protocol_QFNR',
     'test_population_fraction': 'test_population_fraction',
-    'daily_outside_infection_p': 'daily_outside_infection_p'
+    'daily_outside_infection_p': 'daily_outside_infection_p',
+    'population_size': 'population_size'
 }
 
 def plot_from_folder(folder, savefig_dir):

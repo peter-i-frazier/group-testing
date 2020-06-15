@@ -1,0 +1,4 @@
+-s params/june8params/noreopen/nominal_faculty.yaml params/june8params/noreopen/optimistic_faculty.yaml params/june8params/noreopen/pessimistic_faculty.yaml params/june8params/noreopen/nominal_students_v2.yaml params/june8params/noreopen/optimistic_students_v2.yaml params/june8params/noreopen/pessimistic_students.yaml 
+
+
+-p asymptomatic_daily_self_report_p -v 0
