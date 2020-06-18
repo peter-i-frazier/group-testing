@@ -1,6 +1,6 @@
 -s params/fall_nominal_no_trace.yaml
 -p asymptomatic_p -v 0.2 0.3 0.4 0.5 0.6
 -p initial_ID_count -v 1 5 25 125
--p expected_contacts_per_day -v 6 7 8 9 10
+-p expected_contacts_per_day -v 2 3.5  5 6.5 8 9.5 
 -p symptomatic_daily_self_report_p -v 0.1 0.2 0.3 0.4
 
