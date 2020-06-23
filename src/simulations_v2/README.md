@@ -10,7 +10,7 @@ different institution or under a different set of parameters: please feel free t
 we'd be happy to help get that set up.
 
 For a complete description of the simulation model and assumptions see the associated writeup 
-located in the `report/` folder.
+located in the `reports/` folder.
 
 **Disclaimer:** This codebase is rapidly evolving and some of the information below might soon become
 out-of-date.  We will try to keep this README accurate, but if you notice anything is amiss please let
