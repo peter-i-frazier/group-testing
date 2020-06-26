@@ -26,6 +26,11 @@ class MultiGroupSimulation:
         """
         self.sims = [StochasticSimulation(params) for params in group_params]
         self.N = len(group_params)
+        self.interaction_matrix = interaction_matrix
+
+    def reset_initial_state(self):
+        for sim in self.sims:
+            sim.reset_initial_state()
 
     def get_free_total(self, i):
         # get the free-total count from group i
@@ -56,7 +61,7 @@ class MultiGroupSimulation:
         # do inter-group interactions first, so that no updates happen after each sim adds
         # a row to their dataframe
         new_E_holder = [0]* self.N
-        for i range(self.N):
+        for i in range(self.N):
             for j in range(self.N):
                 if i == j:
                     continue

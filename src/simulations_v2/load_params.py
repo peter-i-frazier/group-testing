@@ -58,14 +58,11 @@ def load_age_sev_params(param_file):
     return subdivide_severity(prob_severity_given_age, prob_infection, prob_age)
 
 
-# reads stochastic-simulation parameters from a yaml config file
-# supports depence between config files, so that one param file
-# can point to another file and params from the pointed-to-file
-# are loaded first
-def load_params(param_file, param_file_stack=[]):
+# reads multigroup stochastic sim parameters from a yaml config file
+def load_multigroup_params(param_file):
     with open(param_file) as f:
         params = yaml.load(f)
-    
+
     # go through params that point to other directories: start by changing
     # the current working directory so that relative file paths can be parsed
     cwd = os.getcwd()
@@ -73,6 +70,81 @@ def load_params(param_file, param_file_stack=[]):
     nwd = os.path.dirname(os.path.realpath(param_file))
     os.chdir(nwd)
 
+    # read mandatory arguments
+    assert('_num_groups' in params)
+    num_groups = params['_num_groups']
+    assert('_scenario_name' in params)
+    scenario_name = params['_scenario_name']
+
+
+    # load multi-group inputs
+    group_params = []
+    group_names = []
+
+    # first get individual-group param dicts
+    if '_group_configs' not in params:
+        raise(Exception("file {} missing _group_configs argument".format(param_file)))
+
+    group_configs = params['_group_configs']
+
+    for i in range(num_groups):
+        group_key = '_group_{}'.format(i)
+        if group_key not in group_configs:
+            raise(Exception("file {} _group_configs argument missing {} specifier".format(param_file, group_key)))
+        group_config = group_configs[group_key]
+
+        group_name, group_config_parsed = load_params(additional_params = group_config)
+        group_params.append(group_config_parsed)
+        group_names.append(group_name)
+
+    # change working-directory back
+    os.chdir(cwd)
+
+    # next get inter-group interaction constants
+    if '_inter_group_expected_contacts' not in params:
+        raise(Exception("file {} missing _inter_group_expected_contacts argument".format(param_file)))
+
+    intergroup_contacts = params['_inter_group_expected_contacts']
+
+    interactions_mtx = np.zeros((num_groups, num_groups))
+    for i in range(num_groups):
+        interactions_mtx[i,i] = group_params[i]['expected_contacts_per_day']
+
+        key_i = '_group_{}'.format(i)
+        if key_i in intergroup_contacts:
+            for j in range(num_groups):
+                key_j = '_group_{}'.format(j)
+                if key_j in intergroup_contacts[key_i]:
+                    interactions_mtx[i, j] = intergroup_contacts[key_i][key_j]
+            
+    return group_params, group_names, interactions_mtx
+
+
+    
+
+
+
+
+# reads stochastic-simulation parameters from a yaml config file
+# supports depence between config files, so that one param file
+# can point to another file and params from the pointed-to-file
+# are loaded first
+def load_params(param_file=None, param_file_stack=[], additional_params = {}):
+    if param_file != None:
+        assert(len(additional_params) == 0)
+        with open(param_file) as f:
+            params = yaml.load(f)
+        # go through params that point to other directories: start by changing
+        # the current working directory so that relative file paths can be parsed
+        cwd = os.getcwd()
+
+        nwd = os.path.dirname(os.path.realpath(param_file))
+        os.chdir(nwd)
+
+    else:
+        params = additional_params
+    
+    
     if '_inherit_config' in params:
         if len(param_file_stack) >= MAX_DEPTH:
             raise(Exception("yaml config dependency depth exceeded max depth"))
@@ -96,10 +168,12 @@ def load_params(param_file, param_file_stack=[]):
         if len(param_file_stack) == 0:
             raise(Exception("need to specify a _scenario_name value"))
     
-    # change working-directory back
-    os.chdir(cwd)
+    if param_file != None:
+        # change working-directory back
+        os.chdir(cwd)
 
-    # process the main params loaded from yaml, and store them in base_params 
+    # process the main params loaded from yaml, as well as the additional_params
+    # optionally passed as an argument, and store them in base_params 
     for yaml_key, val in params.items():
         # skip the meta-params
         if yaml_key[0] == '_': 

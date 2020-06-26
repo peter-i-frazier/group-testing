@@ -8,16 +8,20 @@ _num_groups: 2
 # _group_configs is a list of single-group scenario configs
 _group_configs:
     _group_0:
-        _scenario_name: Undergrads
-        _inherit_config: ../fall_nominal_testing.yaml
-        population_size: 15000
-        expected_contacts_per_day: 12
+        _scenario_name: Off-campus Community
+        _inherit_config: ../june8params/noreopen/nominal_students.yaml
+        population_size: 5000
+        use_asymptomatic_testing: True
+        test_population_fraction: 0.05
+        expected_contacts_per_day: 7.3
 
     _group_1:
-        _scenario_name: Non-Undergrads
-        _inherit_config: ../fall_nominal_testing.yaml
-        population_size: 19000
-        expected_contacts_per_day: 4
+        _scenario_name: On-campus Community
+        _inherit_config: ../june8params/noreopen/nominal_faculty.yaml
+        use_asymptomatic_testing: True
+        test_population_fraction: 0.2
+        expected_contacts_per_day: 7.3
+
 
 # _inter_group_expected_contacts is a list of lists, such that (group_x, group_y) value
 # specifies poisson-parameter governing number of group_y interactions per day
@@ -25,9 +29,9 @@ _group_configs:
 # all missing values default to 0
 _inter_group_expected_contacts:
     _group_0:
-        _group_1: 2
+        _group_1: 1
 
     _group_1:
-        _group_0: 0.2
+        _group_0: 1
 
 
