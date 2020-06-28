@@ -85,6 +85,36 @@ key_mapping = {
     'population_size': 'population_size'
 }
 
+def plot_from_sim_results(sim_results, param_varying):
+    if param_varying in key_mapping:
+        sublabel = key_mapping[param_varying]
+        plot_label = plot_labels[sublabel]
+    else:
+        raise(Exception("could not find parameter {} in the list of acceptable keys".format(param_varying)))
+
+    plot_many_dfs_quantiles(sim_results, 
+                            cum_severe_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Hospitalized",
+                     title="Nominal Parameters: Hospitalization Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                             use_x_int_labels=use_x_int_labels[sublabel])
+    
+    plot_many_dfs_quantiles(sim_results, 
+                            cum_infection_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Infected",
+                     title="Nominal Parameters: Infection Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                             use_x_int_labels=use_x_int_labels[sublabel])
+    plot_many_dfs_quantiles(sim_results, 
+                            cum_non_outside_infection_quantiles,
+                            normalize_params[sublabel], x_log_scale=plot_log_scale[sublabel],
+                     xlabel=plot_labels[sublabel], ylabel="Percentage of Population Infected (from Non-Outside Interaction)",
+                     title="Nominal Parameters: Non-Outside Infection Percentage vs. {}".format(plot_label), 
+                               q_low=0.1, q_high=0.9, alpha=0.1, y_min = 0, y_max=5, y_log_scale=True,
+                             use_x_int_labels=use_x_int_labels[sublabel])
+
 def plot_from_folder(folder, savefig_dir):
     sim_output = MultiParamOutputLoader(folder)
     if len(sim_output.varying_params) != 1:
@@ -363,3 +393,5 @@ def plot_many_dfs_quantiles(sim_output_dict, yaxisfn, normalize_x_axis, x_log_sc
     plt.tight_layout()
     if savefig_path:
         plt.savefig(savefig_path)
+    else:
+        plt.show()
