@@ -28,6 +28,15 @@ class MultiGroupSimulation:
         self.N = len(group_params)
         self.interaction_matrix = interaction_matrix
 
+
+    def get_interaction_mtx(self):
+        return self.interaction_matrix 
+    
+
+    def set_interaction_mtx(self, interaction_mtx):
+        self.interaction_matrix = interaction_mtx
+
+
     def reset_initial_state(self):
         for sim in self.sims:
             sim.reset_initial_state()
