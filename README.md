@@ -1,5 +1,9 @@
-This repository contains python code for simulating group testing protocols. 
-It is a companion to the google sheet calculator 
-https://docs.google.com/spreadsheets/d/16jpj3xVAThuwsBPOxmThIv5zdSsi7BTc8BuBAi24zlw/edit#gid=0 
+This repository contains a python-based epidemic model.
 
-It was used to verify calculations done there, and can also be used to do more sophisticated simulations.
+It was used to study reopening Cornell University in this report:
+https://people.orie.cornell.edu/pfrazier/COVID_19_Modeling_Jun15.pdf
+
+It was also used to study national-level group screening protocols in this whitepaper:
+https://docs.google.com/document/d/1joxMjHdWWo9XLFqfTdNXPQRAfeMjHYEyvVljqNCaKyE/
+
+It is called "group-testing" because the original purpose was to study group testing protocols. 
