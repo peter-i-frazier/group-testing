@@ -5,10 +5,10 @@ _scenario_name: Fall Re-Open Quarantine Nominal 4-0
 initial_ID_prevalence: 0
 
 # this parameter specifies prevalence as a count
-initial_ID_count: 40
+initial_ID_count: 137 #40
 
 # specify prevalence in E as a count
-initial_E_count: 6
+initial_E_count: 21 #s6
 
 # parameters governing rate at which people leave quarantine/isolation
 daily_leave_QI_p: 0
