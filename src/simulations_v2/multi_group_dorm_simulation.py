@@ -17,18 +17,24 @@ class MultiGroupDormSimulation(MultiGroupSimulation):
             inter_non_dorm_contacts, # how many contacts/day does a non-dorm person have with non-dorm people
             dorm_test_rate, # % of each dorm tested each day
             non_dorm_test_rate, # % of non-dorm tested each day
-            quarantine_leakage_contacts_dorm, # dorm -> dorm contacts/day after a dorm is quarantined
-            quarantine_leakage_contacts_non_dorm, # dorm -> non-dorm contacts/day after a dorm is quarantined
+            quarantine_contacts_multiplier=0.1, # what to multiply the rate-of-contacts by after a dorm goes into quarantine
             quarantine_test_fraction=1.0, #testing fraction after dorm goes into quarantine
             initial_dorm_prevalence=None,
             dorm_outside_infection_p=0,
+            safe_days_until_unquarantine=3,
             base_config="/home/jmc678/covid_data/group-testing/src/simulations_v2/params/june8params/nominal.yaml"):
         
-        self.quarantine_leakage_contacts_dorm = quarantine_leakage_contacts_dorm
-        self.quarantine_leakage_contacts_non_dorm = quarantine_leakage_contacts_non_dorm
         self.quarantined_dorms = set()
         self.num_dorms = num_dorms
         self.quarantine_test_fraction = quarantine_test_fraction
+
+        self.quarantine_contacts_multiplier = quarantine_contacts_multiplier
+
+        self.dorm_test_rate = dorm_test_rate
+
+        self.safe_days_until_unquarantine = safe_days_until_unquarantine
+        # this dict records the number of days since a dorm has seen a positive test
+        self.days_since_last_positive = {i:0 for i in range(num_dorms)}
 
         _, base_params = load_params(base_config)
 
@@ -46,7 +52,8 @@ class MultiGroupDormSimulation(MultiGroupSimulation):
             grp_params['expected_contacts_per_day'] = intra_dorm_contacts
             grp_params['population_size'] = dorm_pop_size
             grp_params['test_population_fraction'] = dorm_test_rate
-            grp_params['daily_outside_infection_p'] = dorm_outside_infection_p
+            if dorm_outside_infection_p != None:
+                grp_params['daily_outside_infection_p'] = dorm_outside_infection_p
             if initial_dorm_prevalence != None:
                 grp_params['initial_ID_prevalence'] = initial_dorm_prevalence
             grp_params_list.append(grp_params)
@@ -81,33 +88,53 @@ class MultiGroupDormSimulation(MultiGroupSimulation):
         quarantined_dorm_counts = []
         for _ in range(T):
             self.step()
-            self.quarantine_infected_dorms()
+            self.update_quarantine_status()
             quarantined_dorm_counts.append(len(self.quarantined_dorms))
         return quarantined_dorm_counts
 
-
-    def quarantine_infected_dorms(self):
-        interaction_mtx = self.get_interaction_mtx()
+    
+    def update_quarantine_status(self):
+        self.update_days_since_last_positive()
         for i in range(self.num_dorms):
-            if i in self.quarantined_dorms:
-                continue
-            if self.sims[i].QI > 0:
-                interaction_mtx[i,:] = np.array(
-                        [self.quarantine_leakage_contacts_dorm / (self.num_dorms - 1)] * self.num_dorms + \
-                                               [self.quarantine_leakage_contacts_non_dorm])
-                self.quarantined_dorms.add(i)
-                self.sims[i].test_pop_fraction = self.quarantine_test_fraction
+            if self.days_since_last_positive[i] == 0 and i not in self.quarantined_dorms:
+                self.quarantine_dorm(i)
+            elif i in self.quarantined_dorms and self.days_since_last_positive[i] >= self.safe_days_until_unquarantine:
+                self.unquarantine_dorm(i)
+    
+
+    def update_days_since_last_positive(self):
+        for i in range(self.num_dorms):
+            if self.sims[i].new_QI_from_self_reports > 0 or self.sims[i].new_QI_from_last_test > 0:
+                self.days_since_last_positive[i] = 0
+            else:
+                self.days_since_last_positive[i] += 1
+
+
+    def quarantine_dorm(self, i):
+        assert(i not in self.quarantined_dorms)
+        interaction_mtx = self.get_interaction_mtx()
+        for j in range(self.num_dorms+1):
+            interaction_mtx[i,j] = self.quarantine_contacts_multiplier * interaction_mtx[i,j]
+            if i != j:
+                interaction_mtx[j,i] = self.quarantine_contacts_multiplier * interaction_mtx[j,i]
+
+        self.sims[i].test_pop_fraction = self.quarantine_test_fraction
+
+        self.quarantined_dorms.add(i) 
         self.set_interaction_mtx(interaction_mtx)
 
 
+    def unquarantine_dorm(self, i):
+        assert(i in self.quarantined_dorms)
+        interaction_mtx = self.get_interaction_mtx()
+        for j in range(self.num_dorms+1):
+            interaction_mtx[i,j] = interaction_mtx[i,j] / self.quarantine_contacts_multiplier 
+            if i != j:
+                interaction_mtx[j,i] = interaction_mtx[j,i] / self.quarantine_contacts_multiplier 
 
+        self.sims[i].test_pop_fraction = self.dorm_test_rate
 
-
-
-
-
-
-
-
+        self.quarantined_dorms.remove(i)
+        self.set_interaction_mtx(interaction_mtx)
 
 

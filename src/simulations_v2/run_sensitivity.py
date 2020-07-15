@@ -106,7 +106,6 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--scenarios', nargs='+', required=True,
             help='list of YAML config files specifying base sets of scenario parameters to use')
 
-    # TODO: make a list somewhere of all allowable values of param-to-vary
     parser.add_argument('-p', '--param-to-vary', action='append',
             help='which param(s) should be varied in the corresponding sensitivity sims', required=True)
     

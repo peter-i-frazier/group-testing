@@ -201,6 +201,8 @@ class StochasticSimulation:
         self._append_sim_df()
         self.current_day = 0
         self.last_test_day = -1
+        self.new_QI_from_last_test = 0
+        self.new_QI_from_self_reports = 0
 
     def run_new_trajectory(self, T):
         self.reset_initial_state()
@@ -409,6 +411,7 @@ class StochasticSimulation:
         self.QI_mild += new_QI_mild
         self.QI_severe += new_QI_severe
 
+        self.new_QI_from_last_test = new_QI
         return new_QI
 
 
@@ -427,6 +430,7 @@ class StochasticSimulation:
         self.QI_mild += new_QI_mild
         self.QI_severe += new_QI_severe
 
+        self.new_QI_from_self_reports = new_QI
         return new_QI
 
 
@@ -466,7 +470,10 @@ class StochasticSimulation:
         if self.pre_ID_state == 'detectable':
             free_tot += sum(self.pre_ID)
 
-        poisson_param = free_infectious * self.daily_contacts_lambda * free_susceptible / free_tot
+        if free_tot == 0:
+            poisson_param = 0
+        else:
+            poisson_param = free_infectious * self.daily_contacts_lambda * free_susceptible / free_tot
         n_contacts = np.random.poisson(poisson_param)
         #n_contacts = int(free_infectious * free_susceptible / free_tot * np.random.geometric(1/self.daily_contacts_lambda))
 
