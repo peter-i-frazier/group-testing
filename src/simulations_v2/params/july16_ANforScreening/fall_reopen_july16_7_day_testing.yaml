@@ -1,0 +1,5 @@
+_inherit_config: ../june8params/nominal.yaml 
+_scenario_name: Fall Re-Open AN screening 7 day testing
+
+# change frequency to 7-day testing
+test_population_fraction: 0.142857
