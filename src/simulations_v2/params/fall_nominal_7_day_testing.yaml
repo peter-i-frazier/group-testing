@@ -1,0 +1,4 @@
+_inherit_config: ./fall_nominal_testing.yaml
+_scenario_name: Fall Nominal Testing (7-day frequency)
+
+test_population_fraction: 0.142857
