@@ -1,3 +1,3 @@
--s params/fall_nominal.yaml params/fall_nominal_7_day_testing.yaml
+-s params/june8params/fall_nominal.yaml 
 -p test_protocol_QFNR
 -v 0.1 0.19 0.2 0.28 0.36 0.36 0.44
