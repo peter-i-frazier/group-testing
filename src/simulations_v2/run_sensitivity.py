@@ -10,6 +10,7 @@ import dill
 import argparse
 from load_params import load_params
 from plotting_util import plot_from_folder
+from analysis_helpers import poisson_waiting_function, binomial_exit_function
 
 BASE_DIRECTORY="/nfs01/covid_sims/"
 
@@ -34,6 +35,25 @@ VALID_PARAMS_TO_VARY = [
     ]
 
 def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
+
+    vals = sim_params['ID_time_function_vals']
+    sim_params['ID_time_function'] = poisson_waiting_function(vals[0], vals[1])
+
+    vals = sim_params['exposed_time_function_vals']
+    sim_params['exposed_time_function'] = poisson_waiting_function(vals[1], vals[0])
+
+    vals = sim_params['SyID_mild_time_function_vals']
+    sim_params['SyID_mild_time_function'] = poisson_waiting_function(vals[1], vals[0])
+
+    vals = sim_params['SyID_severe_time_function_vals']
+    sim_params['SyID_severe_time_function'] = poisson_waiting_function(vals[1], vals[0])
+
+    val = sim_params['sample_QS_exit_function_val']
+    sim_params['sample_QS_exit_function'] = binomial_exit_function(val)
+
+    val = sim_params['sample_QI_exit_function_val']
+    sim_params['sample_QI_exit_function'] = binomial_exit_function(val)
+
     dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
     
     # record output

@@ -184,19 +184,19 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
             mean_time_ID = val[0]
             max_time_ID = val[1]
             base_params['max_time_ID'] = max_time_ID
-            base_params['ID_time_function'] = poisson_waiting_function(max_time_ID, mean_time_ID)
+            base_params['ID_time_function_vals'] = (max_time_ID, mean_time_ID)#poisson_waiting_function(max_time_ID, mean_time_ID)
 
         elif yaml_key == 'E_time_params':
             assert(len(val) == 2)
             base_params['max_time_exposed'] = val[1]
-            base_params['exposed_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['exposed_time_function_vals'] = val#poisson_waiting_function(val[1], val[0])
 
         elif yaml_key == 'Sy_time_params':
             assert(len(val) == 2)
             base_params['max_time_SyID_mild'] = val[1]
-            base_params['SyID_mild_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['SyID_mild_time_function_vals'] = val# = poisson_waiting_function(val[1], val[0])
             base_params['max_time_SyID_severe'] = val[1]
-            base_params['SyID_severe_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['SyID_severe_time_function_vals'] = val# poisson_waiting_function(val[1], val[0])
 
         elif yaml_key == 'asymptomatic_daily_self_report_p':
             base_params['mild_symptoms_daily_self_report_p'] = val
@@ -205,10 +205,10 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
             base_params['severe_symptoms_daily_self_report_p'] = val
 
         elif yaml_key == 'daily_leave_QI_p':
-            base_params['sample_QI_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
+            base_params['sample_QI_exit_function_val'] = val#binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
 
         elif yaml_key == 'daily_leave_QS_p':
-            base_params['sample_QS_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
+            base_params['sample_QS_exit_function_val'] = val#binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
 
         elif yaml_key == 'asymptomatic_pct_mult':
             if 'severity_prevalence' not in base_params:
