@@ -11,7 +11,7 @@ import argparse
 from load_params import load_params
 from plotting_util import plot_from_folder
 
-BASE_DIRECTORY="/nfs01/covid_sims/"
+BASE_DIRECTORY="/Users/stevewangen/projects/COVID/uw_reopening/src/simulations_v2/sim_output/"
 
 VALID_PARAMS_TO_VARY = [
     'contact_tracing_isolations',

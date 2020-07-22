@@ -8,4 +8,4 @@
 --values  0.0000001 0.0000005 0.000001 0.000005 0.00001 0.00005 0.0001 0.00015 0.0002 0.00025 0.0003 0.00035 0.0004 0.00045 0.0005 0.00055 0.0006 0.00065 0.0007 0.00075 0.0008 0.00085 0.0009 0.00095 0.001
 
 # specify the directory where plots should be saved to
---fig-dir /nfs01/covid_figs/june8figs/
+--fig-dir /Users/stevewangen/projects/COVID/uw_reopening/src/simulations_v2/sim_output/covid_figs/june8figs/
