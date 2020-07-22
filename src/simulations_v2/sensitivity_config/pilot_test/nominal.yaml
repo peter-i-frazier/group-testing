@@ -2,9 +2,18 @@ _age_severity_config: ../age_severity_config.yaml
 
 _scenario_name: Nominal Parameters
 
-population_size: 34310
+population_size: 8000
 
+# % of population initialized to the ID (infectious and detectable) state
+# Prevelance referenced in the report (figure 1 caption)
+# initial_ID_prevalence: 0.00274
+
+# 0.0274% prevelence (indicated by M. Ferris)
+# initial_ID_prevalence: 0.000274
+
+# original value
 initial_ID_prevalence: 0.0009
+
 
 
 asymptomatic_pct_mult: 1
@@ -51,7 +60,10 @@ contact_trace_testing_frac: 0.5
 
 days_between_tests: 1
 
-test_population_fraction: 0.2
+# fortnightly -> daily (8000/8000/14) = 0.07142857143
+# 500 every week -> daily (500/80000/7) = 0.008928571429
+# Cornell (every 5 days) -> 8000/8000/5) = 0.2
+test_population_fraction: 0.07142857143
 
 test_protocol_QFNR: 0.10
 test_protocol_QFPR: 0.001
