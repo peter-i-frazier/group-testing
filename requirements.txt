@@ -1,2 +1,4 @@
+install:
+numpy
 dill
 pyyaml
