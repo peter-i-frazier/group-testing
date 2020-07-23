@@ -14,7 +14,7 @@ class MultiGroupSimulation:
                         group_names=[]):
         """
         group_params: A list of dictionaries of length N.  Each dictionary is
-                    used as the config for a different individual-group 
+                    used as the config for a different individual-group
                     StochasticSimulation object.
         interaction_matrix: A N x N matrix such that the (i,j) element indicates
                     the rate at which members of group i are exposed to members of
@@ -30,8 +30,8 @@ class MultiGroupSimulation:
 
 
     def get_interaction_mtx(self):
-        return self.interaction_matrix 
-    
+        return self.interaction_matrix
+
 
     def set_interaction_mtx(self, interaction_mtx):
         self.interaction_matrix = interaction_mtx
@@ -40,6 +40,7 @@ class MultiGroupSimulation:
     def reset_initial_state(self):
         for sim in self.sims:
             sim.reset_initial_state()
+
 
     def get_free_total(self, i):
         # get the free-total count from group i
@@ -50,7 +51,7 @@ class MultiGroupSimulation:
 
         free_total += self.sims[i].S + self.sims[i].R + sum(self.sims[i].E)
         return free_total
-        
+
 
     def get_free_infectious(self, i):
         # get the free-infectious total from group j
@@ -60,12 +61,21 @@ class MultiGroupSimulation:
         else:
             free_infectious = 0
 
-        free_infectious += sum(self.sims[i].ID) 
+        free_infectious += sum(self.sims[i].ID)
         free_infectious += sum(self.sims[i].SyID_mild)
         free_infectious += sum(self.sims[i].SyID_severe)
 
         return free_infectious
 
+
+    def get_quarantine_susceptible(self, i):
+        return sum(self.sims[i].QI)
+
+
+    def get_quarantine_infected(self, i):
+        return sum(self.sim[i].QS)
+
+        
     def step(self):
         # do inter-group interactions first, so that no updates happen after each sim adds
         # a row to their dataframe
@@ -83,7 +93,7 @@ class MultiGroupSimulation:
 
                 poisson_param = free_susceptible_i * interactions_lambda_i_j * \
                                     free_infectious_j / free_total_j
-                
+
                 n_susceptible_infectious_contacts = np.random.poisson(poisson_param)
 
                 new_E = np.random.binomial(n_susceptible_infectious_contacts, self.sims[i].exposed_infection_p)
@@ -95,29 +105,3 @@ class MultiGroupSimulation:
         # do individual-group steps
         for sim in self.sims:
             sim.step()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
