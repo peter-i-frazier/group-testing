@@ -69,13 +69,13 @@ class MultiGroupSimulation:
 
 
     def get_quarantine_susceptible(self, i):
-        return sum(self.sims[i].QI)
+        return self.sims[i].QI
 
 
     def get_quarantine_infected(self, i):
-        return sum(self.sim[i].QS)
+        return self.sim[i].QS
 
-        
+
     def step(self):
         # do inter-group interactions first, so that no updates happen after each sim adds
         # a row to their dataframe
