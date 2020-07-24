@@ -23,3 +23,5 @@ _group_configs:
 # specifies poisson-parameter governing number of group_y interactions per day
 # that a free individual from group_x encounters
 # all missing values default to 0
+_inter_group_expected_contacts:
+    _group_0:
