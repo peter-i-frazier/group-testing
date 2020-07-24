@@ -73,7 +73,7 @@ class MultiGroupSimulation:
 
 
     def get_quarantine_infected(self, i):
-        return self.sim[i].QS
+        return self.sims[i].QS
 
 
     def step(self):
