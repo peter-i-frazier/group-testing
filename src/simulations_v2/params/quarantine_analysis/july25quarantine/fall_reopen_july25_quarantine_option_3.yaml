@@ -1,4 +1,4 @@
-_inherit_config: ../june8params/nominal.yaml
+_inherit_config: ../../june8params/nominal.yaml
 _scenario_name: Fall Re-Open Quarantine Nominal Option 3
 
 population_size: 30399
