@@ -1,0 +1,9 @@
+_inherit_config: ../june8params/nominal.yaml
+_scenario_name: Fall Re-Open Quarantine Nominal Option 3
+
+population_size: 30399
+initial_ID_prevalence: 0.00241
+daily_outside_infection_p: 0.000128
+daily_leave_QI_p: 0
+daily_leave_QS_p: 0
+test_protocol_QFNR: 0.40
