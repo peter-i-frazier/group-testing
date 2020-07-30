@@ -5,26 +5,27 @@ import numpy as np
 from analysis_helpers import poisson_waiting_function, binomial_exit_function
 
 # upper bound on how far the recursion can go in the yaml-depency tree
-MAX_DEPTH=5
+MAX_DEPTH = 5
 
 # simulation parameters which can be included as yaml-keys but are not required
 # they are set to a default value of 0 if not included in the yaml-config
 DEFAULT_ZERO_PARAMS = ['initial_E_count',
-                        'initial_pre_ID_count',
-                        'initial_ID_count',
-                        'initial_SyID_mild_count',
-                        'initial_SyID_severe_count']
+                       'initial_pre_ID_count',
+                       'initial_ID_count',
+                       'initial_SyID_mild_count',
+                       'initial_SyID_severe_count']
 
 
 # yaml-keys which share the same key as the simulation parameter, and
 # can be copied over one-to-one
 COPY_DIRECTLY_YAML_KEYS = ['exposed_infection_p', 'expected_contacts_per_day', 
-                            'perform_contact_tracing', 'contact_tracing_delay', 
-                            'cases_isolated_per_contact', 'cases_quarantined_per_contact',
-            'use_asymptomatic_testing', 'contact_trace_testing_frac', 'days_between_tests',
-            'test_population_fraction','test_protocol_QFNR','test_protocol_QFPR',
-            'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p'] + \
+                           'perform_contact_tracing', 'contact_tracing_delay', 
+                           'cases_isolated_per_contact', 'cases_quarantined_per_contact',
+                           'use_asymptomatic_testing', 'contact_trace_testing_frac', 'days_between_tests',
+                           'test_population_fraction','test_protocol_QFNR','test_protocol_QFPR',
+                           'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p'] + \
             DEFAULT_ZERO_PARAMS
+
 
 def update_sev_prevalence(curr_prevalence_dist, new_asymptomatic_pct):
     new_dist = [new_asymptomatic_pct]
@@ -116,21 +117,16 @@ def load_multigroup_params(param_file):
                 key_j = '_group_{}'.format(j)
                 if key_j in intergroup_contacts[key_i]:
                     interactions_mtx[i, j] = intergroup_contacts[key_i][key_j]
-            
+
     return group_params, group_names, interactions_mtx
-
-
-    
-
-
 
 
 # reads stochastic-simulation parameters from a yaml config file
 # supports depence between config files, so that one param file
 # can point to another file and params from the pointed-to-file
 # are loaded first
-def load_params(param_file=None, param_file_stack=[], additional_params = {}):
-    if param_file != None:
+def load_params(param_file=None, param_file_stack=[], additional_params={}):
+    if param_file is not None:
         assert(len(additional_params) == 0)
         with open(param_file) as f:
             params = yaml.load(f)
@@ -143,8 +139,7 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
 
     else:
         params = additional_params
-    
-    
+
     if '_inherit_config' in params:
         if len(param_file_stack) >= MAX_DEPTH:
             raise(Exception("yaml config dependency depth exceeded max depth"))
@@ -167,8 +162,8 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
         # the top-level param-file needs a name
         if len(param_file_stack) == 0:
             raise(Exception("need to specify a _scenario_name value"))
-    
-    if param_file != None:
+
+    if param_file is not None:
         # change working-directory back
         os.chdir(cwd)
 
@@ -176,27 +171,35 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
     # optionally passed as an argument, and store them in base_params 
     for yaml_key, val in params.items():
         # skip the meta-params
-        if yaml_key[0] == '_': 
+        if yaml_key[0] == '_':
             continue
 
         if yaml_key == 'ID_time_params':
-            assert(len(val)==2)
+            assert(len(val) == 2)
+
             mean_time_ID = val[0]
             max_time_ID = val[1]
+
+            base_params['mean_time_ID'] = mean_time_ID
             base_params['max_time_ID'] = max_time_ID
-            base_params['ID_time_function'] = poisson_waiting_function(max_time_ID, mean_time_ID)
+            # base_params['ID_time_function'] = poisson_waiting_function(max_time_ID, mean_time_ID)
 
         elif yaml_key == 'E_time_params':
             assert(len(val) == 2)
             base_params['max_time_exposed'] = val[1]
-            base_params['exposed_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['mean_time_exposed'] = val[0]
+            # base_params['exposed_time_function'] = poisson_waiting_function(val[1], val[0])
 
         elif yaml_key == 'Sy_time_params':
             assert(len(val) == 2)
             base_params['max_time_SyID_mild'] = val[1]
-            base_params['SyID_mild_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['mean_time_SyID_mild'] = val[0]
+            # base_params['max_time_SyID_mild'] = val[1]
+            # base_params['SyID_mild_time_function'] = poisson_waiting_function(val[1], val[0])
             base_params['max_time_SyID_severe'] = val[1]
-            base_params['SyID_severe_time_function'] = poisson_waiting_function(val[1], val[0])
+            base_params['mean_time_SyID_severe'] = val[0]
+            # base_params['max_time_SyID_severe'] = val[1]
+            # base_params['SyID_severe_time_function'] = poisson_waiting_function(val[1], val[0])
 
         elif yaml_key == 'asymptomatic_daily_self_report_p':
             base_params['mild_symptoms_daily_self_report_p'] = val
@@ -205,17 +208,21 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
             base_params['severe_symptoms_daily_self_report_p'] = val
 
         elif yaml_key == 'daily_leave_QI_p':
-            base_params['sample_QI_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
+            # base_params['sample_QI_exit_function'] = binomial_exit_function(val)  # (lambda n: np.random.binomial(n, val))
+            base_params['sample_QI_exit_function_param'] = val
+            # change to just pass value and reference binomial_exit_function later -sw
 
         elif yaml_key == 'daily_leave_QS_p':
-            base_params['sample_QS_exit_function'] = binomial_exit_function(val)#(lambda n: np.random.binomial(n, val))
+            # base_params['sample_QS_exit_function'] = binomial_exit_function(val)  # (lambda n: np.random.binomial(n, val))
+            base_params['sample_QS_exit_function_param'] = val
+            # change to just pass value and reference binomial_exit_function later -sw
 
         elif yaml_key == 'asymptomatic_pct_mult':
             if 'severity_prevalence' not in base_params:
                 raise(Exception("encountered asymptomatic_pct_mult with no corresponding severity_dist to modify"))
             new_asymptomatic_p = val * base_params['severity_prevalence'][0]
-            base_params['severity_prevalence'] = update_sev_prevalence(base_params['severity_prevalence'], 
-                                                                            new_asymptomatic_p)
+            base_params['severity_prevalence'] = update_sev_prevalence(base_params['severity_prevalence'],
+                                                                       new_asymptomatic_p)
 
         elif yaml_key in COPY_DIRECTLY_YAML_KEYS:
             base_params[yaml_key] = val
@@ -223,12 +230,10 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
         else:
             raise(Exception("encountered unknown parameter {}".format(yaml_key)))
 
-
-
     # the pre-ID state is not being used atm so fill it in with some default params here
     if 'max_time_pre_ID' not in base_params:
         base_params['max_time_pre_ID'] = 4
-        base_params['pre_ID_time_function'] = poisson_waiting_function(max_time=4, mean_time=0)
+        # base_params['pre_ID_time_function'] = poisson_waiting_function(max_time=4, mean_time=0)
 
     # the following 'initial_count' variables are all defaulted to 0
     for paramname in DEFAULT_ZERO_PARAMS:
@@ -242,4 +247,3 @@ def load_params(param_file=None, param_file_stack=[], additional_params = {}):
         base_params['mild_severity_levels'] = 1
 
     return scenario_name, base_params
-

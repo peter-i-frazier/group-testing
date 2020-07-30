@@ -105,8 +105,14 @@ def iter_param_variations(base_params, params_to_vary, param_values):
 # Pooling
 
 def create_scenario_dict(args):
+    '''
+    Load the parameter values for each scenario from file, return a dictionary
+    containing each parameter set keyed by the scenario name.
+    '''
     scenarios = {}
     for scenario_file in args.scenarios:
+        # scn_params object is a dictionary of parameters loaded into the
+        # 'base_parms' object in load_params.py
         scn_name, scn_params = load_params(scenario_file)
         scenarios[scn_name] = scn_params
     return scenarios
@@ -158,7 +164,7 @@ def create_directories(args):
 def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_main_dir, args):
     """
     Trying to package up simulation run into a single function that can be
-    passed to the pool.map() call -SW
+    passed to the pool.map(). Scenario = {}
     """
     params_to_vary = args.param_to_vary
 
@@ -211,7 +217,7 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
         print("{} of {} simulations complete!".format(get_counter, job_counter))
 
     # wrap up
-    if len(args.params_to_vary) > 1:
+    if len(params_to_vary) > 1:
         print("Simulations done. Not auto-generating plots because > 1 parameter was varied")
         print("Exiting now...")
         exit()
@@ -233,7 +239,7 @@ def simulate(args):
 
     sim_main_dir = create_directories(args)
 
-    run_simulations(scenarios, args.ntrajectories, args.time_horizon, param_values, sim_main_dir, args)
+    run_simulations(scenarios, int(args.ntrajectories), args.time_horizon, param_values, sim_main_dir, args)
 
 
 def old_simulate(args):

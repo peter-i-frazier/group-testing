@@ -8,6 +8,13 @@ import numpy as np
 import pandas as pd
 from math import ceil
 from scipy.stats import poisson
+import pdb
+# from analysis_helpers import binomial_exit_function
+
+
+def binomial_exit_function(p):
+    return (lambda n: np.random.binomial(n, p))
+
 
 def poisson_pmf(max_time, mean_time):
     pmf = list()
@@ -16,8 +23,14 @@ def poisson_pmf(max_time, mean_time):
     pmf.append(1-np.sum(pmf))
     return np.array(pmf)
 
+
 def poisson_waiting_function(max_time, mean_time):
     return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
+
+
+def poisson_waiting_function2(n, max_time, mean_time):
+    return np.random.multinomial(n, poisson_pmf(max_time, mean_time))
+
 
 class StochasticSimulation:
     def __init__(self, params):
@@ -42,42 +55,52 @@ class StochasticSimulation:
         # (However, the length of the corresponding queue arrays will just be max_time_X,
         # not max_time_X + 1)
         # We assume that sum(times) == n
+
         if 'mean_time_E' in params:
             mean_time = params['mean_time_E']
             self.sample_E_times = poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
         else:
-            self.sample_E_times = params['exposed_time_function']
+            # self.sample_E_times = params['exposed_time_function']
+            self.sample_E_times = poisson_waiting_function(max_time=params['max_time_exposed'], mean_time=params['mean_time_exposed'])
 
         if 'mean_time_pre_ID' in params:
             mean_time = params['mean_time_pre_ID']
             self.sample_pre_ID_times = poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
         else:
-            self.sample_pre_ID_times = params['pre_ID_time_function']
+            # self.sample_pre_ID_times = params['pre_ID_time_function']
+            self.sample_pre_ID_times = poisson_waiting_function(max_time=4, mean_time=0)  # copied over from load_params.py
 
         if 'mean_time_ID' in params:
             mean_time = params['mean_time_ID']
-            self.sample_ID_times = poisson_waiting_function(max_time = self.max_time_ID, mean_time = mean_time)
+            self.sample_ID_times = poisson_waiting_function(max_time=self.max_time_ID, mean_time=mean_time)
         else:
-            self.sample_ID_times = params['ID_time_function']
+            # self.sample_ID_times = params['ID_time_function']
+            self.sample_ID_times = poisson_waiting_function(params['max_time_ID'], params['mean_time_ID'])
 
         if 'mean_time_SyID_mild' in params:
             mean_time = params['mean_time_SyID_mild']
-            self.sample_SyID_mild_times = poisson_waiting_function(max_time = self.max_time_SyID_mild, mean_time = mean_time)
+            self.sample_SyID_mild_times = poisson_waiting_function(max_time=self.max_time_SyID_mild, mean_time = mean_time)
         else:
-            self.sample_SyID_mild_times = params['SyID_mild_time_function']
+            # self.sample_SyID_mild_times = params['SyID_mild_time_function']
+            self.sample_SyID_mild_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         if 'mean_time_SyID_severe' in params:
             mean_time = params['mean_time_SyID_severe']
-            self.sample_SyID_severe_times = poisson_waiting_function(max_time = self.max_time_SyID_severe, mean_time = mean_time)
+            self.sample_SyID_severe_times = poisson_waiting_function(max_time=self.max_time_SyID_severe, mean_time=mean_time)
         else:
-            self.sample_SyID_severe_times = params['SyID_severe_time_function']
+            # self.sample_SyID_severe_times = params['SyID_severe_time_function']
+            self.sample_SyID_severe_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         # assumption: sample_QI_exit_count(n) returns a number m <= n
         #             indicating the number of people in the state QI
         #             who exit quarantine, given than n people initially
         #             start there
-        self.sample_QI_exit_count = params['sample_QI_exit_function']
-        self.sample_QS_exit_count = params['sample_QS_exit_function']
+        # self.sample_QI_exit_count = params['sample_QI_exit_function']
+        # self.sample_QS_exit_count = params['sample_QS_exit_function']
+
+        # update so reference in params doesn't include a lambda -sw
+        self.sample_QI_exit_count = binomial_exit_function(params['sample_QI_exit_function_param'])
+        self.sample_QS_exit_count = binomial_exit_function(params['sample_QS_exit_function_param'])
 
         # parameters governing distribution over transition out of
         # each infection state
@@ -122,7 +145,6 @@ class StochasticSimulation:
         self.cases_isolated_per_contact = params['cases_isolated_per_contact']
         self.cases_quarantined_per_contact = params['cases_quarantined_per_contact']
 
-        
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
         assert(self.pre_ID_state in ['infectious','detectable'])
@@ -142,12 +164,13 @@ class StochasticSimulation:
             self.init_ID_prevalence_stochastic = False
 
         self.init_S_count = self.pop_size - self.init_E_count - \
-                        self.init_pre_ID_count - self.init_ID_count - \
-                        self.init_SyID_mild_count - self.init_SyID_severe_count
+            self.init_pre_ID_count - self.init_ID_count - \
+            self.init_SyID_mild_count - self.init_SyID_severe_count
         assert(self.init_S_count >= 0)
 
         # instantiate state variables and relevant simulation variables
         self.reset_initial_state()
+
 
     def reset_initial_state(self):
         if self.init_ID_prevalence:
@@ -193,7 +216,6 @@ class StochasticSimulation:
         self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
         self.R_mild = SyID_mild_sample[0]
         self.R_severe = SyID_severe_sample[0]
-
 
         self.cumulative_outside_infections = 0
         var_labels = self.get_state_vector_labels()
