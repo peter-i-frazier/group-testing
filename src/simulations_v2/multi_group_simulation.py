@@ -104,6 +104,9 @@ class MultiGroupSimulation:
                 self.step_lockdown_status()
             lockdown_statuses.append(self.lockdown_in_effect)
 
+        for sim in self.sims:
+            sim.update_severity_levels()
+
         sim_df = self.sims[0].sim_df
         for sim in self.sims[1:]:
             sim_df = sim_df.add(sim.sim_df)
