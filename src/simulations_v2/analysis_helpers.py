@@ -23,7 +23,7 @@ def load_sim_dir(sim_dir, verbose=True):
     return sim_dfs
 
 
-#@functools.lru_cache(maxsize=128)
+@functools.lru_cache(maxsize=128)
 def poisson_pmf(max_time, mean_time):
     pmf = list()
     for i in range(max_time):

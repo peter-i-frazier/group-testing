@@ -9,6 +9,9 @@ import pandas as pd
 from math import ceil
 from scipy.stats import poisson
 
+import functools
+
+@functools.lru_cache(maxsize=128)
 def poisson_pmf(max_time, mean_time):
     pmf = list()
     for i in range(max_time):
@@ -202,6 +205,7 @@ class StochasticSimulation:
         self.current_day = 0
         self.last_test_day = -1
         self.new_QI_from_last_test = 0
+        self.new_QS_from_last_test = 0
         self.new_QI_from_self_reports = 0
 
     def run_new_trajectory(self, T):
@@ -412,6 +416,7 @@ class StochasticSimulation:
         self.QI_severe += new_QI_severe
 
         self.new_QI_from_last_test = new_QI
+        self.new_QS_from_last_test = new_QS_from_S
         return new_QI
 
 
