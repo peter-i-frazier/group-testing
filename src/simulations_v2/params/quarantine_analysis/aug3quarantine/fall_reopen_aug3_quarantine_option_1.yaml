@@ -7,3 +7,5 @@ daily_outside_infection_p: 0.00001414
 daily_leave_QI_p: 0
 daily_leave_QS_p: 0
 test_protocol_QFNR: 0.10
+exposed_infection_p: 0.017
+expected_contacts_per_day: 10.1685 # 11 - 0.8315
