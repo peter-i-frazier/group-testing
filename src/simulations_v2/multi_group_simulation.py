@@ -28,9 +28,53 @@ class MultiGroupSimulation:
         self.N = len(group_params)
         self.interaction_matrix = interaction_matrix
 
+        self.original_interaction_matrix = interaction_matrix
+        self.original_daily_contacts = [sim.daily_contacts_lambda for sim in self.sims]
+        self.lockdown_in_effect = False
+        self.simulate_lockdown = False
+
+
+    def configure_lockdown(self, 
+                            post_lockdown_interaction_matrix,
+                            new_cases_threshold, # observed new cases found by testing / self-reporting that trigger lockdown
+                                                # specified as proportion of total population (i.e. the value should be between 0 and 1)
+                            new_cases_time_window # number of days over which new cases are computed for the previous threshold
+                            ):
+        self.simulate_lockdown = True
+        self.post_lockdown_interaction_matrix = post_lockdown_interaction_matrix
+        self.new_cases_threshold = new_cases_threshold
+        self.new_cases_time_window = new_cases_time_window
+        self.new_case_counts = [0] * new_cases_time_window
+
+
+    def step_lockdown_status(self):
+        assert(self.simulate_lockdown)
+        self.update_case_counts()
+        if sum(self.new_case_counts) >= self.new_cases_threshold * self.get_total_population():
+            self.lockdown_in_effect = True
+            self.interaction_matrix = self.post_lockdown_interaction_matrix
+            for i in range(self.N):
+                self.sims[i].daily_contacts_lambda = self.post_lockdown_interaction_matrix[i,i]
+
+
+    def update_case_counts(self):
+        new_cases_today = 0
+        for sim in self.sims:
+            new_cases_today += sim.new_QS_from_last_test
+            new_cases_today += sim.new_QI_from_last_test
+            new_cases_today += sim.new_QI_from_self_reports
+
+        #shift case count array down
+        self.new_case_counts.pop(0)
+        self.new_case_counts.append(new_cases_today)
+
 
     def get_interaction_mtx(self):
         return self.interaction_matrix
+    
+
+    def get_total_population(self):
+        return sum([sim.pop_size for sim in self.sims])
 
 
     def set_interaction_mtx(self, interaction_mtx):
@@ -38,8 +82,32 @@ class MultiGroupSimulation:
 
 
     def reset_initial_state(self):
+        self.lockdown_in_effect = False
+        self.interaction_matrix = self.original_interaction_matrix
+
+        if self.simulate_lockdown:
+            self.new_case_counts = [0] * self.new_cases_time_window
+            for sim, contacts in zip(self.sims, self.original_daily_contacts):
+                sim.daily_contacts_lambda = contacts
+
+
         for sim in self.sims:
             sim.reset_initial_state()
+    
+
+    def run_new_trajectory(self, T):
+        self.reset_initial_state()
+        lockdown_statuses = []
+        for _ in range(T):
+            self.step()
+            if self.simulate_lockdown:
+                self.step_lockdown_status()
+            lockdown_statuses.append(self.lockdown_in_effect)
+
+        sim_df = self.sims[0].sim_df
+        for sim in self.sims[1:]:
+            sim_df = sim_df.add(sim.sim_df)
+        return lockdown_statuses, sim_df
 
 
     def get_free_total(self, i):
