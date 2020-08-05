@@ -2,7 +2,7 @@ _age_severity_config: age_severity_config.yaml
 
 _scenario_name: Nominal Parameters
 
-population_size: 8000
+population_size: 3650
 
 # % of population initialized to the ID (infectious and detectable) state
 # Prevelance referenced in the report (figure 1 caption)

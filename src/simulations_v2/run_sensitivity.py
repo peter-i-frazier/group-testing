@@ -10,7 +10,7 @@ import dill
 import argparse
 from load_params import load_params
 from plotting_util import plot_from_folder
-import pdb
+from dask.distributed import Client
 
 BASE_DIRECTORY = os.path.abspath(os.path.join('')) + "/sim_output/"
 

@@ -1,0 +1,10 @@
+# specify the parameter scenario files (assuming that the working dir is src/simulations_v2)
+--scenarios params/june8params/nominal.yaml
+# specify the parameter to vary
+--param-to-vary initial_ID_prevalence
+
+# specify the values the parameter takes
+--values 0.000274 0.0009 0.00274 0.009
+
+# specify the directory where plots should be saved to
+--fig-dir /Users/stevewangen/projects/COVID/uw_reopening/src/simulations_v2/sim_output/covid_figs/pilot_figs/
