@@ -5,5 +5,5 @@ _scenario_name: Undergrad (off campus) Parameters
 population_size: 3468
 expected_contacts_per_day: 8
 daily_outside_infection_p: 0.000012
-test_population_fraction: 0.25
-initial_ID_prevalence: 0.00238
+test_population_fraction: 0.05714
+initial_ID_prevalence: 0.0019
