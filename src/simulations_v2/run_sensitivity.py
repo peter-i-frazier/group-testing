@@ -10,7 +10,7 @@ import dill
 import argparse
 from load_params import load_params
 from plotting_util import plot_from_folder
-from dask.distributed import Client
+from dask.distributed import Client, LocalCluster
 
 BASE_DIRECTORY = os.path.abspath(os.path.join('')) + "/sim_output/"
 
@@ -35,7 +35,14 @@ VALID_PARAMS_TO_VARY = [
     ]
 
 
-def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
+# def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
+def run_background_sim(input_tuple):
+    
+    output_dir = input_tuple[0]
+    sim_params = input_tuple[1]
+    ntrajectories = input_tuple[2]
+    time_horizon = input_tuple[3]
+
     dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
 
     # record output
@@ -101,8 +108,10 @@ def iter_param_variations(base_params, params_to_vary, param_values):
 
         yield param_specifier, base_params
 
+
 #################################
 # Pooling
+
 
 def create_scenario_dict(args):
     '''
@@ -121,7 +130,7 @@ def create_scenario_dict(args):
 def ready_params(args):
     param_values = {}
     params_to_vary = args.param_to_vary
-    
+
     for param_to_vary, values in zip(params_to_vary, args.values):
         if param_to_vary not in VALID_PARAMS_TO_VARY:
             print("Received invalid parameter to vary: {}".format(param_to_vary))
@@ -169,7 +178,12 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     params_to_vary = args.param_to_vary
 
     # create multiprocessing pool
-    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
+    # pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
+
+    # create dask client
+    # client = Client()
+    cluster = LocalCluster(multiprocessing.cpu_count() - 1)
+    client = Client(cluster)
 
     # initialize counter
     job_counter = 0
@@ -204,16 +218,26 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
             fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
 
             # proc = multiprocessing.Process(target=run_background_sim, args=fn_args)
-            results.append(pool.apply_async(run_background_sim, fn_args))
+            # results.append(pool.apply_async(run_background_sim, fn_args))
+            results.append(client.submit(run_background_sim, fn_args))
 
             # keep track of how many jobs were submitted
             job_counter += 1
 
     # iterate over all results to know when they all complete
+
     get_counter = 0
+
     for result in results:
-        result.get()
+
+        # pool approach
+        # result.get()
+
+        # dask approach
+        result.result()
+
         get_counter += 1
+
         print("{} of {} simulations complete!".format(get_counter, job_counter))
 
     # wrap up
