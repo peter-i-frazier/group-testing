@@ -1,5 +1,5 @@
-_inherit_config: ../nominal.yaml
-_age_severity_config: ../ithaca_age_severity_config.yaml
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./ithaca_age_severity_config.yaml
 _scenario_name: Ithaca Community Parameters
 
 population_size: 62000

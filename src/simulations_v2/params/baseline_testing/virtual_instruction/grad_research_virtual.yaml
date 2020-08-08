@@ -1,5 +1,5 @@
-_inherit_config: ../nominal.yaml
-_age_severity_config: ../student_age_severity_config.yaml
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./student_age_severity_config.yaml
 _scenario_name: Grad student research Parameters
 
 population_size: 1594
