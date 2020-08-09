@@ -1,8 +1,8 @@
-_age_severity_config: ../../../age_severity_config.yaml
+_age_severity_config: ../../age_severity_config.yaml
 
 _scenario_name: Nominal Parameters
 
-population_size: 34310
+population_size: 28889
 
 initial_ID_prevalence: 0.0009
 
@@ -25,17 +25,17 @@ E_time_params: [2,7]
 
 # parameters governing disease transmission/progression
 exposed_infection_p: 0.017
-expected_contacts_per_day: 8.3
+expected_contacts_per_day: 11
 
-daily_outside_infection_p: 0.00015244
+daily_outside_infection_p: 0.000012
 
 # parameters governing self-reporting behaviour
 asymptomatic_daily_self_report_p: 0
 symptomatic_daily_self_report_p: 0.18
 
 # parameters governing rate at which people leave quarantine/isolation
-daily_leave_QI_p: 0.0714285
-daily_leave_QS_p: 0.0714285
+daily_leave_QI_p: 0
+daily_leave_QS_p: 0
 
 # contact-trace parameters
 perform_contact_tracing: True
@@ -54,4 +54,4 @@ days_between_tests: 1
 test_population_fraction: 0.2
 
 test_protocol_QFNR: 0.55
-test_protocol_QFPR: 0.001
+test_protocol_QFPR: 0
