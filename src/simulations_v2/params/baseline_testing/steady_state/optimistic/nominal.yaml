@@ -1,4 +1,4 @@
-_age_severity_config: ../../age_severity_config.yaml
+_age_severity_config: ../../../age_severity_config.yaml
 
 _scenario_name: Nominal Parameters
 
