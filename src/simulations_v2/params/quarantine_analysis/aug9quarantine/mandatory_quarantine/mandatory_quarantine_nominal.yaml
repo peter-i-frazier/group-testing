@@ -9,7 +9,7 @@ _num_groups: 4
 _group_configs:
     _group_0:
         _scenario_name: Non-quarantined students already in Ithaca
-        _inherit_config: ../../june8params/noreopen/nominal_students.yaml
+        _inherit_config: ./nominal.yaml
         population_size: 4087
         use_asymptomatic_testing: False
         test_population_fraction: 0
@@ -22,7 +22,7 @@ _group_configs:
 
     _group_1:
         _scenario_name: Faculty/staff in Ithaca
-        _inherit_config: ../../june8params/noreopen/nominal_students.yaml
+        _inherit_config: ./nominal.yaml
         population_size: 10283
         use_asymptomatic_testing: False
         test_population_fraction: 0
@@ -35,7 +35,7 @@ _group_configs:
 
     _group_2:
         _scenario_name: Ithaca community
-        _inherit_config: ../../june8params/noreopen/nominal_students.yaml
+        _inherit_config: ./nominal.yaml
         population_size: 62000
         use_asymptomatic_testing: False
         test_population_fraction: 0
@@ -48,7 +48,7 @@ _group_configs:
 
     _group_3:
         _scenario_name: Students that require mandatory self-quarantine
-        _inherit_config: ../../june8params/noreopen/nominal_students.yaml
+        _inherit_config: ./nominal.yaml
         population_size: 3748
         use_asymptomatic_testing: False
         test_population_fraction: 0
