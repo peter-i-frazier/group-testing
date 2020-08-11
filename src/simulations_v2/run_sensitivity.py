@@ -3,11 +3,13 @@ import itertools
 import numpy as np
 import yaml
 import time
+import pdb
 import os
 import multiprocessing
 from analysis_helpers import run_multiple_trajectories
 import dill
 import argparse
+import socket
 from load_params import load_params
 from plotting_util import plot_from_folder
 from dask.distributed import Client, LocalCluster
@@ -170,20 +172,26 @@ def create_directories(args):
     return sim_main_dir
 
 
+def get_cluster():
+    if socket.gethostname() == 'submit3.chtc.wisc.edu':
+        # CHTC execution
+        cluster = CHTCCluster(job_extra = {"accounting_group": "COVID19_AFIDSI"})
+        cluster.adapt(minimum = 10, maximum = 20)
+    else:
+        # local execution
+        cluster = LocalCluster(multiprocessing.cpu_count() - 1)
+    
+    return cluster
+
+
+
 def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_main_dir, args):
     """
     Trying to package up simulation run into a single function that can be
-    passed to the pool.map(). Scenario = {}
+    passed to dask
     """
+    
     params_to_vary = args.param_to_vary
-
-    # create multiprocessing pool
-    # pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
-
-    # create dask client
-    # client = Client()
-    cluster = LocalCluster(multiprocessing.cpu_count() - 1)
-    client = Client(cluster)
 
     # initialize counter
     job_counter = 0
@@ -191,68 +199,69 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     # collect results in array (just so we know when everything is done)
     results = []
 
-    for scn_name, scn_params in scenarios.items():
-        # create directories for each scenario name
-        sim_scn_dir = sim_main_dir + "/" + scn_name
-        os.mkdir(sim_scn_dir)
+    with get_cluster() as cluster, Client(cluster) as client:
+        
+        for scn_name, scn_params in scenarios.items():
+            # create directories for each scenario name
+            sim_scn_dir = sim_main_dir + "/" + scn_name
+            os.mkdir(sim_scn_dir)
 
-        # dump params into a dill file
-        dill.dump(scn_params, open("{}/scn_params.dill".format(sim_scn_dir), "wb"))
+            # dump params into a dill file
+            dill.dump(scn_params, open("{}/scn_params.dill".format(sim_scn_dir), "wb"))
 
-        for param_specifier, sim_params in iter_param_variations(scn_params, params_to_vary, param_values):
+            for param_specifier, sim_params in iter_param_variations(scn_params, params_to_vary, param_values):
 
-            # create the relevant subdirectory
-            sim_sub_dir = "{}/simulation-{}".format(sim_scn_dir, job_counter)
-            os.mkdir(sim_sub_dir)
+                # create the relevant subdirectory
+                sim_sub_dir = "{}/simulation-{}".format(sim_scn_dir, job_counter)
+                os.mkdir(sim_sub_dir)
 
-            # job_counter += 1
+                # job_counter += 1
 
-            with open('{}/param_specifier.yaml'.format(sim_sub_dir), 'w') as outfile:
-                yaml.dump(param_specifier, outfile, default_flow_style=False)
-            if args.verbose:
-                print("Created directory {} to save output".format(sim_sub_dir))
+                with open('{}/param_specifier.yaml'.format(sim_sub_dir), 'w') as outfile:
+                    yaml.dump(param_specifier, outfile, default_flow_style=False)
+                if args.verbose:
+                    print("Created directory {} to save output".format(sim_sub_dir))
 
-            dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
+                dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
 
-            # start new process
-            fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
+                # start new process
+                fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
 
-            # proc = multiprocessing.Process(target=run_background_sim, args=fn_args)
-            # results.append(pool.apply_async(run_background_sim, fn_args))
-            results.append(client.submit(run_background_sim, fn_args))
+                # proc = multiprocessing.Process(target=run_background_sim, args=fn_args)
+                # results.append(pool.apply_async(run_background_sim, fn_args))
+                results.append(client.submit(run_background_sim, fn_args))
 
-            # keep track of how many jobs were submitted
-            job_counter += 1
+                # keep track of how many jobs were submitted
+                job_counter += 1
 
-    # iterate over all results to know when they all complete
+        # iterate over all results to know when they all complete
+        get_counter = 0
 
-    get_counter = 0
+        for result in results:
 
-    for result in results:
+            # pool approach
+            # result.get()
 
-        # pool approach
-        # result.get()
+            # dask approach
+            result.result()
 
-        # dask approach
-        result.result()
+            get_counter += 1
 
-        get_counter += 1
+            print("{} of {} simulations complete!".format(get_counter, job_counter))
 
-        print("{} of {} simulations complete!".format(get_counter, job_counter))
+        # wrap up
+        if len(params_to_vary) > 1:
+            print("Simulations done. Not auto-generating plots because > 1 parameter was varied")
+            print("Exiting now...")
+            exit()
 
-    # wrap up
-    if len(params_to_vary) > 1:
-        print("Simulations done. Not auto-generating plots because > 1 parameter was varied")
-        print("Exiting now...")
-        exit()
-
-    print("Simulations done. Generating plots now...")
-    if args.fig_dir is None:
-        fig_dir = sim_main_dir
-    else:
-        fig_dir = args.fig_dir
-    plot_from_folder(sim_main_dir, fig_dir)
-    print("Saved plots to directory {}".format(fig_dir))
+        print("Simulations done. Generating plots now...")
+        if args.fig_dir is None:
+            fig_dir = sim_main_dir
+        else:
+            fig_dir = args.fig_dir
+        plot_from_folder(sim_main_dir, fig_dir)
+        print("Saved plots to directory {}".format(fig_dir))
 
 
 def simulate(args):
