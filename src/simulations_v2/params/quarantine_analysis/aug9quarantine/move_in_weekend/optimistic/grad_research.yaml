@@ -6,4 +6,4 @@ population_size: 2895
 expected_contacts_per_day: 4
 daily_outside_infection_p: 0.000012
 test_population_fraction: 0.142857
-initial_ID_prevalence: 0.00115
+initial_ID_prevalence: 0.001273
