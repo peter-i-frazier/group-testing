@@ -45,13 +45,14 @@ def run_background_sim(input_tuple):
     sim_params = input_tuple[1]
     ntrajectories = input_tuple[2]
     time_horizon = input_tuple[3]
-    dfs = input_tuple[4]
-    # dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
 
+    dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
+
+    return output_dir, dfs
     # record output
-    for idx, df in enumerate(dfs):
-        df_file_name = "{}/{}.csv".format(output_dir, idx)
-        df.to_csv(df_file_name)
+    # for idx, df in enumerate(dfs):
+    #     df_file_name = "{}/{}.csv".format(output_dir, idx)
+    #     df.to_csv(df_file_name)
 
 
 def update_params(sim_params, param_to_vary, param_val):
@@ -173,16 +174,19 @@ def create_directories(args):
     return sim_main_dir
 
 
-def get_cluster():
+def get_client():
     if socket.gethostname() == 'submit3.chtc.wisc.edu':
         # CHTC execution
-        cluster = CHTCCluster(job_extra = {"accounting_group": "COVID19_AFIDSI"})
-        cluster.adapt(minimum = 10, maximum = 20)
+        cluster = CHTCCluster(job_extra={"accounting_group": "COVID19_AFIDSI"})
+        cluster.adapt(minimum=10, maximum=20)
+        client = Client(cluster)
+        client.upload_file('analysis_helpers.py')
+        client.upload_file('stochastic_simulation.py')
     else:
         # local execution
         cluster = LocalCluster(multiprocessing.cpu_count() - 1)
-
-    return cluster
+        client = Client(cluster)
+    return client
 
 
 def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_main_dir, args):
@@ -201,7 +205,7 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     # collect results in array (just so we know when everything is done)
     results = []
 
-    with get_cluster() as cluster, Client(cluster) as client:
+    with get_client() as client:
 
         for scn_name, scn_params in scenarios.items():
             # create directories for each scenario name
@@ -247,7 +251,14 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
             # result.get()
 
             # dask approach
-            result.result()
+            output = result.result()
+
+            output_dir = output[0]
+            dfs = output[1]
+
+            for idx, df in enumerate(dfs):
+                df_file_name = "{}/{}.csv".format(output_dir, idx)
+                df.to_csv(df_file_name)
 
             get_counter += 1
 
