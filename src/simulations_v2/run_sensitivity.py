@@ -15,7 +15,7 @@ from plotting_util import plot_from_folder
 from dask.distributed import Client, LocalCluster
 from dask_chtc import CHTCCluster
 
-BASE_DIRECTORY = os.path.abspath(os.path.join('')) + "/sim_output/"
+BASE_DIRECTORY = os.path.abspath(os.path.join('../..')) + "/sim_output/"
 
 VALID_PARAMS_TO_VARY = [
     'contact_tracing_isolations',
