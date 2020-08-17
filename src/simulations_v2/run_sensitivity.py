@@ -45,8 +45,8 @@ def run_background_sim(input_tuple):
     sim_params = input_tuple[1]
     ntrajectories = input_tuple[2]
     time_horizon = input_tuple[3]
-
-    dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
+    dfs = input_tuple[4]
+    # dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
 
     # record output
     for idx, df in enumerate(dfs):
@@ -226,8 +226,10 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
 
                 dill.dump(sim_params, open("{}/sim_params.dill".format(sim_sub_dir), "wb"))
 
+                dfs = run_multiple_trajectories(sim_params, ntrajectories, time_horizon)
+
                 # start new process
-                fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon)
+                fn_args = (sim_sub_dir, sim_params, ntrajectories, time_horizon, dfs)
 
                 # proc = multiprocessing.Process(target=run_background_sim, args=fn_args)
                 # results.append(pool.apply_async(run_background_sim, fn_args))
