@@ -13,6 +13,7 @@ import socket
 from load_params import load_params
 from plotting_util import plot_from_folder
 from dask.distributed import Client, LocalCluster
+from dask_chtc import CHTCCluster
 
 BASE_DIRECTORY = os.path.abspath(os.path.join('')) + "/sim_output/"
 
@@ -39,7 +40,7 @@ VALID_PARAMS_TO_VARY = [
 
 # def run_background_sim(output_dir, sim_params, ntrajectories=150, time_horizon=112):
 def run_background_sim(input_tuple):
-    
+
     output_dir = input_tuple[0]
     sim_params = input_tuple[1]
     ntrajectories = input_tuple[2]
@@ -180,9 +181,8 @@ def get_cluster():
     else:
         # local execution
         cluster = LocalCluster(multiprocessing.cpu_count() - 1)
-    
-    return cluster
 
+    return cluster
 
 
 def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_main_dir, args):
@@ -190,7 +190,9 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     Trying to package up simulation run into a single function that can be
     passed to dask
     """
-    
+
+    print('{}: submitting jobs...'.format(time.ctime()))
+
     params_to_vary = args.param_to_vary
 
     # initialize counter
@@ -200,7 +202,7 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     results = []
 
     with get_cluster() as cluster, Client(cluster) as client:
-        
+
         for scn_name, scn_params in scenarios.items():
             # create directories for each scenario name
             sim_scn_dir = sim_main_dir + "/" + scn_name
@@ -247,7 +249,7 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
 
             get_counter += 1
 
-            print("{} of {} simulations complete!".format(get_counter, job_counter))
+            print("{}: {} of {} simulations complete!".format(time.ctime(), get_counter, job_counter))
 
         # wrap up
         if len(params_to_vary) > 1:
