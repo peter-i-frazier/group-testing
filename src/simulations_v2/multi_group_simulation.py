@@ -36,33 +36,58 @@ class MultiGroupSimulation:
 
     def configure_lockdown(self, 
                             post_lockdown_interaction_matrix,
+                            new_case_sims_list,
                             new_cases_threshold, # observed new cases found by testing / self-reporting that trigger lockdown
-                                                # specified as proportion of total population (i.e. the value should be between 0 and 1)
-                            new_cases_time_window # number of days over which new cases are computed for the previous threshold
+                                                # specified as raw number of cases
+                            new_cases_time_window, # number of days over which new cases are computed for the previous threshold
+                            use_second_derivative=False,
+                            second_derivative_threshold=None
                             ):
         self.simulate_lockdown = True
+        self.new_case_sims_list = new_case_sims_list
+        assert(len(self.new_case_sims_list) == len(self.sims))
         self.post_lockdown_interaction_matrix = post_lockdown_interaction_matrix
         self.new_cases_threshold = new_cases_threshold
         self.new_cases_time_window = new_cases_time_window
-        self.new_case_counts = [0] * new_cases_time_window
+        self.new_case_counts = [0] * new_cases_time_window * 2
+
+        self.use_second_derivative = use_second_derivative
+        self.second_deriv_threshold = second_derivative_threshold
 
 
-    def step_lockdown_status(self):
+    def step_lockdown_status(self, t):
         assert(self.simulate_lockdown)
         self.update_case_counts()
-        if sum(self.new_case_counts) >= self.new_cases_threshold * self.get_total_population():
+        new_cases = self.get_new_case_counts()
+        second_deriv = self.second_derivative_estimate()
+        # Note - changing new_cases_threshold to raw number rather than a proportion
+        if new_cases >= self.new_cases_threshold or \
+                (t >= self.new_cases_time_window * 2 and self.use_second_derivative and second_deriv >= self.second_deriv_threshold):
             self.lockdown_in_effect = True
             self.interaction_matrix = self.post_lockdown_interaction_matrix
             for i in range(self.N):
                 self.sims[i].daily_contacts_lambda = self.post_lockdown_interaction_matrix[i,i]
 
+    def get_new_case_counts(self):
+        return sum(self.new_case_counts[self.new_cases_time_window:2*self.new_cases_time_window])
+
+    def second_derivative_estimate(self):
+        # new_case_counts ~ Y(t) - Y(t-window)
+        # so derivative = new_case_counts / window
+        first_deriv = self.get_new_case_counts() / self.new_cases_time_window
+
+        prev_first_deriv = sum(self.new_case_counts[0:self.new_cases_time_window]) / self.new_cases_time_window
+
+        return (first_deriv - prev_first_deriv) / self.new_cases_time_window
+
 
     def update_case_counts(self):
         new_cases_today = 0
-        for sim in self.sims:
-            new_cases_today += sim.new_QS_from_last_test
-            new_cases_today += sim.new_QI_from_last_test
-            new_cases_today += sim.new_QI_from_self_reports
+        for sim, include in zip(self.sims, self.new_case_sims_list):
+            if include:
+                new_cases_today += sim.new_QS_from_last_test
+                new_cases_today += sim.new_QI_from_last_test
+                new_cases_today += sim.new_QI_from_self_reports
 
         #shift case count array down
         self.new_case_counts.pop(0)
@@ -86,7 +111,7 @@ class MultiGroupSimulation:
         self.interaction_matrix = self.original_interaction_matrix
 
         if self.simulate_lockdown:
-            self.new_case_counts = [0] * self.new_cases_time_window
+            self.new_case_counts = [0] * self.new_cases_time_window * 2
             for sim, contacts in zip(self.sims, self.original_daily_contacts):
                 sim.daily_contacts_lambda = contacts
 
@@ -98,10 +123,10 @@ class MultiGroupSimulation:
     def run_new_trajectory(self, T):
         self.reset_initial_state()
         lockdown_statuses = []
-        for _ in range(T):
+        for t in range(T):
             self.step()
             if self.simulate_lockdown:
-                self.step_lockdown_status()
+                self.step_lockdown_status(t)
             lockdown_statuses.append(self.lockdown_in_effect)
 
         for sim in self.sims:
