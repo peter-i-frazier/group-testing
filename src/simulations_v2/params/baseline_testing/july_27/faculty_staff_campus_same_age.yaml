@@ -1,0 +1,8 @@
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./faculty_age_severity_config.yaml
+_scenario_name: Faculty Staff Campus (same age) Parameters
+
+population_size: 8117
+expected_contacts_per_day: 3
+daily_outside_infection_p: 0.0004205496839
+test_population_fraction: 0.142857

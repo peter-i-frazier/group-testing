@@ -1,0 +1,6 @@
+_inherit_config: ./nominal_faculty.yaml
+_age_severity_config: ./student_age_severity_config.yaml
+_scenario_name: Nominal Student Parameters
+
+population_size: 9000
+use_asymptomatic_testing: False

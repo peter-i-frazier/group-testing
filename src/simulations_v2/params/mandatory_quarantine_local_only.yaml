@@ -1,0 +1,11 @@
+# Every multi-group parameter config still needs a _scenario_name field
+_scenario_name: Non-quarantined students already in Ithaca
+_inherit_config: ./june8params/noreopen/nominal_students.yaml
+population_size: 5748
+use_asymptomatic_testing: False
+test_population_fraction: 0
+expected_contacts_per_day: 7.3
+daily_outside_infection_p: 0.0000642
+initial_ID_prevalence: 0.001
+daily_leave_QI_p: 0
+daily_leave_QS_p: 0

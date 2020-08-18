@@ -59,7 +59,10 @@ class MultiGroupDormSimulation(MultiGroupSimulation):
             grp_params_list.append(grp_params)
 
             # create next row of interactions matrix
-            dorm_interactions = [inter_dorm_contacts / (num_dorms - 1)] * num_dorms + [inter_non_dorm_contacts]
+            if num_dorms > 1:
+                dorm_interactions = [inter_dorm_contacts / (num_dorms - 1)] * num_dorms + [inter_non_dorm_contacts]
+            else:
+                dorm_interactions = [0, inter_non_dorm_contacts]
             dorm_interactions[i] = intra_dorm_contacts
             interactions_mtx[i,:] = np.array(dorm_interactions)
             
@@ -68,18 +71,23 @@ class MultiGroupDormSimulation(MultiGroupSimulation):
 
         # instantiate non-dorm group
         grp_params = copy(base_params)
-        grp_params['expected_contacts_per_day'] = intra_non_dorm_contacts
-        grp_params['population_size'] = non_dorm_population
-        grp_params['test_population_fraction'] = non_dorm_test_rate
-        grp_params_list.append(grp_params)
+        if non_dorm_population > 0:
+            grp_params['expected_contacts_per_day'] = intra_non_dorm_contacts
+            grp_params['population_size'] = non_dorm_population
+            grp_params['test_population_fraction'] = non_dorm_test_rate
+            grp_params_list.append(grp_params)
 
         # solve for the non-dorm -> dorm contacts/day based on the corresponding
         # population sizes and the dorm -> non-dorm rate (assuming symmetric contacts)
-        non_dorm_to_dorm_contacts = (dorm_pop_size / non_dorm_population) * inter_non_dorm_contacts
+        if non_dorm_population > 0:
+            non_dorm_to_dorm_contacts = (dorm_pop_size / non_dorm_population) * inter_non_dorm_contacts
+        else:
+            non_dorm_to_dorm_contacts = 0
         non_dorm_interactions = [non_dorm_to_dorm_contacts] * num_dorms + [intra_non_dorm_contacts]
         interactions_mtx[num_grps - 1, :] = np.array(non_dorm_interactions)
 
-        grp_names_list.append("non_dorm_group")
+        if non_dorm_population > 0:
+            grp_names_list.append("non_dorm_group")
 
         super().__init__(grp_params_list, interactions_mtx, grp_names_list)
 
