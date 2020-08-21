@@ -6,5 +6,4 @@ population_size: 24254
 expected_contacts_per_day: 7.2
 daily_outside_infection_p: 0.000012
 test_population_fraction: 0.002945022323      # 500 samples from 24254 students every 7
-initial_ID_prevalence: 0.002939793039
-arrival_testing_proportion: 1
+initial_ID_prevalence: 0.085

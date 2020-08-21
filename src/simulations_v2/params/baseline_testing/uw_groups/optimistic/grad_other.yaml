@@ -7,4 +7,3 @@ expected_contacts_per_day: 7.2
 daily_outside_infection_p: 0.000012
 test_population_fraction: 0.002987018418
 initial_ID_prevalence: 0.03297328789
-arrival_testing_proportion: 1
