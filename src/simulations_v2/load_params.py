@@ -23,7 +23,7 @@ COPY_DIRECTLY_YAML_KEYS = ['exposed_infection_p', 'expected_contacts_per_day',
                            'cases_isolated_per_contact', 'cases_quarantined_per_contact',
                            'use_asymptomatic_testing', 'contact_trace_testing_frac', 'days_between_tests',
                            'test_population_fraction','test_protocol_QFNR','test_protocol_QFPR',
-                           'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p'] + \
+                           'initial_ID_prevalence', 'population_size', 'daily_outside_infection_p', 'arrival_testing_proportion'] + \
             DEFAULT_ZERO_PARAMS
 
 

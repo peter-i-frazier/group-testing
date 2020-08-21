@@ -8,10 +8,12 @@ makes the following assumptions:
 from stochastic_simulation import StochasticSimulation
 import numpy as np
 
+
 class MultiGroupSimulation:
-    def __init__(self, group_params,
-                        interaction_matrix,
-                        group_names=[]):
+    def __init__(self,
+                 group_params,
+                 interaction_matrix,
+                 group_names=[]):
         """
         group_params: A list of dictionaries of length N.  Each dictionary is
                     used as the config for a different individual-group
@@ -33,16 +35,15 @@ class MultiGroupSimulation:
         self.lockdown_in_effect = False
         self.simulate_lockdown = False
 
-
-    def configure_lockdown(self, 
-                            post_lockdown_interaction_matrix,
-                            new_case_sims_list,
-                            new_cases_threshold, # observed new cases found by testing / self-reporting that trigger lockdown
-                                                # specified as raw number of cases
-                            new_cases_time_window, # number of days over which new cases are computed for the previous threshold
-                            use_second_derivative=False,
-                            second_derivative_threshold=None
-                            ):
+    def configure_lockdown(self,
+                           post_lockdown_interaction_matrix,
+                           new_case_sims_list,
+                           new_cases_threshold,  # observed new cases found by testing / self-reporting that trigger lockdown
+                                                 # specified as raw number of cases
+                           new_cases_time_window,  # number of days over which new cases are computed for the previous threshold
+                           use_second_derivative=False,
+                           second_derivative_threshold=None
+                           ):
         self.simulate_lockdown = True
         self.new_case_sims_list = new_case_sims_list
         assert(len(self.new_case_sims_list) == len(self.sims))
@@ -53,7 +54,6 @@ class MultiGroupSimulation:
 
         self.use_second_derivative = use_second_derivative
         self.second_deriv_threshold = second_derivative_threshold
-
 
     def step_lockdown_status(self, t):
         assert(self.simulate_lockdown)
@@ -80,7 +80,6 @@ class MultiGroupSimulation:
 
         return (first_deriv - prev_first_deriv) / self.new_cases_time_window
 
-
     def update_case_counts(self):
         new_cases_today = 0
         for sim, include in zip(self.sims, self.new_case_sims_list):
@@ -93,18 +92,14 @@ class MultiGroupSimulation:
         self.new_case_counts.pop(0)
         self.new_case_counts.append(new_cases_today)
 
-
     def get_interaction_mtx(self):
         return self.interaction_matrix
-    
 
     def get_total_population(self):
         return sum([sim.pop_size for sim in self.sims])
 
-
     def set_interaction_mtx(self, interaction_mtx):
         self.interaction_matrix = interaction_mtx
-
 
     def reset_initial_state(self):
         self.lockdown_in_effect = False
@@ -115,10 +110,8 @@ class MultiGroupSimulation:
             for sim, contacts in zip(self.sims, self.original_daily_contacts):
                 sim.daily_contacts_lambda = contacts
 
-
         for sim in self.sims:
             sim.reset_initial_state()
-    
 
     def run_new_trajectory(self, T):
         self.reset_initial_state()
@@ -137,7 +130,6 @@ class MultiGroupSimulation:
             sim_df = sim_df.add(sim.sim_df)
         return lockdown_statuses, sim_df
 
-
     def get_free_total(self, i):
         # get the free-total count from group i
         free_total = self.get_free_infectious(i)
@@ -147,7 +139,6 @@ class MultiGroupSimulation:
 
         free_total += self.sims[i].S + self.sims[i].R + sum(self.sims[i].E)
         return free_total
-
 
     def get_free_infectious(self, i):
         # get the free-infectious total from group j
@@ -163,14 +154,11 @@ class MultiGroupSimulation:
 
         return free_infectious
 
-
     def get_quarantine_susceptible(self, i):
         return self.sims[i].QS
 
-
     def get_quarantine_infected(self, i):
         return self.sims[i].QI
-
 
     def step(self):
         # do inter-group interactions first, so that no updates happen after each sim adds
@@ -188,7 +176,7 @@ class MultiGroupSimulation:
                 free_total_j = self.get_free_total(j)
 
                 poisson_param = free_susceptible_i * interactions_lambda_i_j * \
-                                    free_infectious_j / free_total_j
+                    free_infectious_j / free_total_j
 
                 n_susceptible_infectious_contacts = np.random.poisson(poisson_param)
 
