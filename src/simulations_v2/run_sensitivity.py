@@ -180,7 +180,7 @@ def get_client():
     if socket.gethostname() == 'submit3.chtc.wisc.edu':
         # CHTC execution
         from dask_chtc import CHTCCluster
-        cluster = CHTCCluster(job_extra={"accounting_group": "COVID19_AFIDSI"})
+        cluster = CHTCCluster(job_extra={"accounting_group": "COVID19_AFIDSI"}, log_directory='/home/srwangen/COVID/cornell_model/logs')
         cluster.adapt(minimum=10, maximum=20)
         client = Client(cluster)
         client.upload_file('analysis_helpers.py')
