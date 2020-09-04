@@ -402,40 +402,6 @@ def run_multiple_trajectories(sim_params, ntrajectories=100, time_horizon=150):
 
 
 #################################
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='Run multiple simulations using multiprocessing')
-    parser.add_argument('-o', '--outputdir', default=BASE_DIRECTORY, 
-                        help='directory to store simulation output')
-    parser.add_argument('-V', '--verbose', action='store_true', help='include verbose output')
-    parser.add_argument('-s', '--scenarios', nargs='+', required=True,
-                        help='list of YAML config files specifying base sets of scenario parameters to use')
-
-    parser.add_argument('-p', '--param-to-vary', action='append',
-                        help='which param(s) should be varied in the corresponding sensitivity sims', required=True)
-
-    parser.add_argument('-v', '--values', required=True, nargs='+', action='append',
-                        help='what values should the varying parameter(s) take')
-
-    parser.add_argument('-n', '--ntrajectories', default=500,
-                        help='how many trajectories to simulate for each (scenario, value) pair')
-    parser.add_argument('-t', '--time-horizon', default=112,
-                        help='how many days to simulate for each trajectory')
-
-    parser.add_argument('-f', '--fig-dir',
-                        help='specify folder where plots should be saved')
-
-    args = parser.parse_args()
-
-    # multithreading process method
-    # old_simulate(args)
-
-    # multithreading.pool method
-    simulate(args)
-
-
-#################################
 # Dump entire class in here to alleviate importing from worker processes
 #################################
 
@@ -1157,4 +1123,38 @@ class StochasticSimulation:
             else:
                 self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * (self.severity_prevalence[i] / (1 - self.mild_symptoms_p))
 
+
+
+#################################
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Run multiple simulations using multiprocessing')
+    parser.add_argument('-o', '--outputdir', default=BASE_DIRECTORY, 
+                        help='directory to store simulation output')
+    parser.add_argument('-V', '--verbose', action='store_true', help='include verbose output')
+    parser.add_argument('-s', '--scenarios', nargs='+', required=True,
+                        help='list of YAML config files specifying base sets of scenario parameters to use')
+
+    parser.add_argument('-p', '--param-to-vary', action='append',
+                        help='which param(s) should be varied in the corresponding sensitivity sims', required=True)
+
+    parser.add_argument('-v', '--values', required=True, nargs='+', action='append',
+                        help='what values should the varying parameter(s) take')
+
+    parser.add_argument('-n', '--ntrajectories', default=500,
+                        help='how many trajectories to simulate for each (scenario, value) pair')
+    parser.add_argument('-t', '--time-horizon', default=112,
+                        help='how many days to simulate for each trajectory')
+
+    parser.add_argument('-f', '--fig-dir',
+                        help='specify folder where plots should be saved')
+
+    args = parser.parse_args()
+
+    # multithreading process method
+    # old_simulate(args)
+
+    # multithreading.pool method
+    simulate(args)
 
