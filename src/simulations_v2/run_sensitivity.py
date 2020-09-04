@@ -211,6 +211,7 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
     with get_client() as client:
 
         for scn_name, scn_params in scenarios.items():
+
             # create directories for each scenario name
             sim_scn_dir = sim_main_dir + "/" + scn_name
             os.mkdir(sim_scn_dir)
@@ -244,6 +245,10 @@ def run_simulations(scenarios, ntrajectories, time_horizon, param_values, sim_ma
 
                 # keep track of how many jobs were submitted
                 job_counter += 1
+
+                print('submitted job #{} to dask client'.format(job_counter))
+
+        print('All jobs submitted!')
 
         # iterate over all results to know when they all complete
         get_counter = 0
