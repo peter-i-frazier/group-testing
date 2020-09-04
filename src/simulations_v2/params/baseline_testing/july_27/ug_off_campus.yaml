@@ -1,0 +1,8 @@
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./student_age_severity_config.yaml
+_scenario_name: Undergrad (off campus) Parameters
+
+population_size: 8123
+expected_contacts_per_day: 7.2
+daily_outside_infection_p: 0.000012
+test_population_fraction: 0.25

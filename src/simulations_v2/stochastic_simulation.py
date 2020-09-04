@@ -16,6 +16,9 @@ def binomial_exit_function(p):
     return (lambda n: np.random.binomial(n, p))
 
 
+import functools
+
+@functools.lru_cache(maxsize=128)
 def poisson_pmf(max_time, mean_time):
     pmf = list()
     for i in range(max_time):
@@ -163,6 +166,11 @@ class StochasticSimulation:
         else:
             self.init_ID_prevalence_stochastic = False
 
+        if 'arrival_testing_proportion' in params:
+            self.arrival_testing_proportion = params['arrival_testing_proportion']
+        else:
+            self.arrival_testing_proportion = self.test_pop_fraction
+
         self.init_S_count = self.pop_size - self.init_E_count - \
             self.init_pre_ID_count - self.init_ID_count - \
             self.init_SyID_mild_count - self.init_SyID_severe_count
@@ -224,6 +232,7 @@ class StochasticSimulation:
         self.current_day = 0
         self.last_test_day = -1
         self.new_QI_from_last_test = 0
+        self.new_QS_from_last_test = 0
         self.new_QI_from_self_reports = 0
 
     def run_new_trajectory(self, T):
@@ -364,15 +373,26 @@ class StochasticSimulation:
             idx += 1
         self.contact_trace_queue[self.contact_tracing_delay] = 0
 
-
     def run_test(self):
-        """ execute one step of the testing logic """
-        #infectious_test_pop = free_infectious * self.test_pop_fraction
-        #fluid_new_QI = infectious_test_pop * (1 - self.test_QFNR)
+        """
+        Execute one step of the testing logic.
+        """
+
+        # infectious_test_pop = free_infectious * self.test_pop_fraction
+        # fluid_new_QI = infectious_test_pop * (1 - self.test_QFNR)
 
         # the probability that a free infected individual is quarantined
-        # on this round of testing
-        new_QI_p = self.test_pop_fraction * (1 - self.test_QFNR)
+        # on this round of testing.
+
+        # If arrival testing is specified, uses that on frist day, otherwise
+        # all test_pop_fractions default to self.test_pop_fraction (configured in
+        # param reads -SW)
+        if self.current_day == 0:
+            test_pop_fraction = self.arrival_testing_proportion
+        else:
+            test_pop_fraction = self.test_pop_fraction
+
+        new_QI_p = test_pop_fraction * (1 - self.test_QFNR)
 
         # sample the number of free infected people who end up quarantined
         new_QI_from_ID = np.random.binomial(self.ID, new_QI_p)
@@ -402,7 +422,7 @@ class StochasticSimulation:
 
         # add to QI individuals from E, and from pre-ID (if state is 'infectious'), using
         # the false-positive rate for undetectable individuals
-        new_QI_undetectable_p = self.test_pop_fraction * self.test_QFPR
+        new_QI_undetectable_p = test_pop_fraction * self.test_QFPR
 
         new_QI_from_E = np.random.binomial(self.E, new_QI_undetectable_p)
         new_QI_from_E_mild = np.random.binomial(new_QI_from_E, self.mild_symptoms_p)
@@ -422,7 +442,7 @@ class StochasticSimulation:
             new_QI_severe += sum(new_QI_from_pre_ID_severe)
 
         # add to QS individuals from S, due to false positives
-        new_QS_p = self.test_pop_fraction *  self.test_QFPR
+        new_QS_p = test_pop_fraction * self.test_QFPR
         # sample number of free susceptible people who become quarantined
         new_QS_from_S = np.random.binomial(self.S, new_QS_p)
         self.S = self.S - new_QS_from_S
@@ -434,6 +454,8 @@ class StochasticSimulation:
         self.QI_severe += new_QI_severe
 
         self.new_QI_from_last_test = new_QI
+        self.new_QS_from_last_test = new_QS_from_S
+
         return new_QI
 
 
@@ -692,3 +714,11 @@ class StochasticSimulation:
         #     self.severity.append((self.severity_prevalence[i] / self.mild_symptoms_p ) * self.cumulative_mild)
         # for i in range(len(self.severity_prevalence) - self.mild_severity_levels):
         #     self.severity.append((self.severity_prevalence[i + self.mild_severity_levels]) / (1 - self.mild_symptoms_p) * self.cumulative_severe)
+
+    def update_severity_levels(self):
+        for i in range(len(self.severity_prevalence)):
+            if i < self.mild_severity_levels:
+                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_mild'] * (self.severity_prevalence[i] / self.mild_symptoms_p)
+            else:
+                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * (self.severity_prevalence[i] / (1 - self.mild_symptoms_p))
+

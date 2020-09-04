@@ -1,0 +1,5 @@
+_inherit_config: ../nominal.yaml
+_age_severity_config: ./faculty_age_severity_config.yaml
+_scenario_name: Nominal Faculty and Staff Parameters
+
+population_size: 15000
