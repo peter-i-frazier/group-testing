@@ -419,28 +419,24 @@ import functools
 import pdb
 
 
-@functools.lru_cache(maxsize=128)
-def poisson_pmf(max_time, mean_time):
-    pmf = list()
-    for i in range(max_time):
-        pmf.append(poisson.pmf(i, mean_time))
-    pmf.append(1-np.sum(pmf))
-    return np.array(pmf)
-
-
-def binomial_exit_function(p):
-    return (lambda n: np.random.binomial(n, p))
-
-
-def poisson_waiting_function(max_time, mean_time):
-    return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
-
-
-def poisson_waiting_function2(n, max_time, mean_time):
-    return np.random.multinomial(n, poisson_pmf(max_time, mean_time))
-
-
 class StochasticSimulation:
+    @functools.lru_cache(maxsize=128)
+    def poisson_pmf(self, max_time, mean_time):
+        pmf = list()
+        for i in range(max_time):
+            pmf.append(poisson.pmf(i, mean_time))
+        pmf.append(1-np.sum(pmf))
+        return np.array(pmf)
+
+    def binomial_exit_function(self, p):
+        return (lambda n: np.random.binomial(n, p))
+
+    def poisson_waiting_function(self, max_time, mean_time):
+        return (lambda n: np.random.multinomial(n, self.poisson_pmf(max_time, mean_time)))
+
+    def poisson_waiting_function2(self, n, max_time, mean_time):
+        return np.random.multinomial(n, self.poisson_pmf(max_time, mean_time))
+
     def __init__(self, params):
 
         # Meta-parameters governing the maximum number of days an
@@ -466,38 +462,38 @@ class StochasticSimulation:
 
         if 'mean_time_E' in params:
             mean_time = params['mean_time_E']
-            self.sample_E_times = poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
+            self.sample_E_times = self.poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
         else:
             # self.sample_E_times = params['exposed_time_function']
-            self.sample_E_times = poisson_waiting_function(max_time=params['max_time_exposed'], mean_time=params['mean_time_exposed'])
+            self.sample_E_times = self.poisson_waiting_function(max_time=params['max_time_exposed'], mean_time=params['mean_time_exposed'])
 
         if 'mean_time_pre_ID' in params:
             mean_time = params['mean_time_pre_ID']
-            self.sample_pre_ID_times = poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
+            self.sample_pre_ID_times = self.poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
         else:
             # self.sample_pre_ID_times = params['pre_ID_time_function']
-            self.sample_pre_ID_times = poisson_waiting_function(max_time=4, mean_time=0)  # copied over from load_params.py
+            self.sample_pre_ID_times = self.poisson_waiting_function(max_time=4, mean_time=0)  # copied over from load_params.py
 
         if 'mean_time_ID' in params:
             mean_time = params['mean_time_ID']
-            self.sample_ID_times = poisson_waiting_function(max_time=self.max_time_ID, mean_time=mean_time)
+            self.sample_ID_times = self.poisson_waiting_function(max_time=self.max_time_ID, mean_time=mean_time)
         else:
             # self.sample_ID_times = params['ID_time_function']
-            self.sample_ID_times = poisson_waiting_function(params['max_time_ID'], params['mean_time_ID'])
+            self.sample_ID_times = self.poisson_waiting_function(params['max_time_ID'], params['mean_time_ID'])
 
         if 'mean_time_SyID_mild' in params:
             mean_time = params['mean_time_SyID_mild']
-            self.sample_SyID_mild_times = poisson_waiting_function(max_time=self.max_time_SyID_mild, mean_time = mean_time)
+            self.sample_SyID_mild_times = self.poisson_waiting_function(max_time=self.max_time_SyID_mild, mean_time = mean_time)
         else:
             # self.sample_SyID_mild_times = params['SyID_mild_time_function']
-            self.sample_SyID_mild_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
+            self.sample_SyID_mild_times = self.poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         if 'mean_time_SyID_severe' in params:
             mean_time = params['mean_time_SyID_severe']
-            self.sample_SyID_severe_times = poisson_waiting_function(max_time=self.max_time_SyID_severe, mean_time=mean_time)
+            self.sample_SyID_severe_times = self.poisson_waiting_function(max_time=self.max_time_SyID_severe, mean_time=mean_time)
         else:
             # self.sample_SyID_severe_times = params['SyID_severe_time_function']
-            self.sample_SyID_severe_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
+            self.sample_SyID_severe_times = self.poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         # assumption: sample_QI_exit_count(n) returns a number m <= n
         #             indicating the number of people in the state QI
@@ -507,8 +503,8 @@ class StochasticSimulation:
         # self.sample_QS_exit_count = params['sample_QS_exit_function']
 
         # update so reference in params doesn't include a lambda -sw
-        self.sample_QI_exit_count = binomial_exit_function(params['sample_QI_exit_function_param'])
-        self.sample_QS_exit_count = binomial_exit_function(params['sample_QS_exit_function_param'])
+        self.sample_QI_exit_count = self.binomial_exit_function(params['sample_QI_exit_function_param'])
+        self.sample_QS_exit_count = self.binomial_exit_function(params['sample_QS_exit_function_param'])
 
         # parameters governing distribution over transition out of
         # each infection state
@@ -583,6 +579,7 @@ class StochasticSimulation:
 
         # instantiate state variables and relevant simulation variables
         self.reset_initial_state()
+
 
     def reset_initial_state(self):
         if self.init_ID_prevalence:
