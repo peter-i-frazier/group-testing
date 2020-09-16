@@ -1,0 +1,9 @@
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./faculty_age_severity_config.yaml
+_scenario_name: Faculty Staff non-student facing Campus (same age) Parameters
+
+population_size: 1907
+expected_contacts_per_day: 1.8
+daily_outside_infection_p: 0.000006
+test_population_fraction: 0.142857
+initial_ID_prevalence: 0.0005
