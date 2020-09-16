@@ -4,6 +4,9 @@ from math import exp
 
 GAMMA_A_PARAM = 8 # semi-arbitrarily chosen based on values in kaplan paper
 MAX_INFECTION_LENGTH = 30 #also arbitrary
+
+NB_R_DEFAULT = 2 # with beta-params (3,3) the expected value of contacts/day is 3/2 * R = 3
+
 class Infection:
     """
     implements infection dynamics for a single agent
@@ -48,19 +51,28 @@ class Agent:
 
     def __init__(self, 
             contact_vec_dim = 20,
-            infectivity_alpha = 1):
+            nb_r_multiplier = 1,
+            nb_conjugate_beta_params=(3,3),
+            contact_recall_window=4,
+            use_pessimistic_detectability_curve=False):
+        self.use_pessimistic_detectability_curve=use_pessimistic_detectability_curve
         # ensure first coordinate is 1 so no chance of the zero vector
         self.contact_vec = np.array([1] + [1 if np.random.uniform() < 0.5 else 0 
                                             for _ in range(contact_vec_dim - 1)])
         norm = np.linalg.norm(self.contact_vec)
         self.contact_vec = self.contact_vec / norm
 
-        self.contact_magnitude = np.random.beta(2,2)
+        self.contact_recall_window = contact_recall_window
+        self.previous_contacts = [set([]) for _ in range(contact_recall_window)]
+        
+        alpha, beta = nb_conjugate_beta_params
+        self.nb_p = np.random.beta(alpha, beta)
 
         self.is_in_isolation = False
+        self.is_isolated_for_followup = False
         self.time_in_isolation = -1
         
-        self.infectivity_alpha = infectivity_alpha
+        self.nb_r = NB_R_DEFAULT * nb_r_multiplier
 
         self.infection = Infection()
 
@@ -69,7 +81,16 @@ class Agent:
 
     def sample_num_contacts(self):
         # higher contact magnitude => lower # contacts ... need to improve terminology here
-        return np.random.geometric(self.contact_magnitude)
+        return np.random.negative_binomial(self.nb_r, self.nb_p)
+
+
+    def record_contacts(self, contacts):
+        self.previous_contacts.pop(0)
+        self.previous_contacts.append(contacts)
+
+
+    def get_avg_contacts(self):
+        return self.nb_p * self.nb_r / (1 - self.nb_p)
     
 
     def is_free_and_susceptible(self):
@@ -77,7 +98,7 @@ class Agent:
 
 
     def get_infectivity(self, t):
-        return self.infection.get_infectivity(t) * self.infectivity_alpha
+        return self.infection.get_infectivity(t)
     
 
     def get_detectability(self, t):
@@ -87,7 +108,10 @@ class Agent:
             viral_load = self.infection.get_infectivity(t)
             # sigmoid function with hand-tuned parameters... see design doc for now
             # for a brief justification of these parameters... future work: standardize these params
-            return 1 / (1 + 1.5 * exp(-30 * (viral_load - 0.04)))
+            if self.use_pessimistic_detectability_curve:
+                return 1 / (1 + 1.5 * exp(-30 * (viral_load - 0.04)))
+            else:
+                return 1 / (1 + 1.25 * exp(-100 * (viral_load - 0.02)))
 
 
     def get_non_compliance(self):
@@ -116,9 +140,22 @@ class Agent:
 
     def isolate(self):
         self.is_in_isolation=True
+        self.is_isolated_for_followup = False
+
+
+    def isolate_for_followup(self):
+        self.is_isolated_for_followup = True
+        self.is_in_isolation = True
+
+
+    def remove_from_followup_isolation(self):
+        if not any(self.past_three_results) and self.is_isolated_for_followup:
+            self.remove_from_isolation()
 
 
     def remove_from_isolation(self):
+        assert(not any(self.past_three_results))
         self.is_in_isolation=False
+        self.is_isolated_for_followup = False
 
 

@@ -1,37 +1,38 @@
 import numpy as np
 
 def debug(txt):
-    print(txt)
+    pass
+    #print(txt)
+
+def sample_delay(distn):
+    values = list(range(len(distn)))
+    return np.random.choice(values, 1, p=distn)[0]
 
 class SurveillanceTesting:
     
     def __init__(self, 
             agents,
             test_FNR,
-            mean_test_delay, # params governing the distribution of test-delay-times
-            mean_contact_trace_delay,
+            surveillance_test_delay_distn, # params governing the distribution of test-delay-times
+            contact_trace_delay_distn,
             test_schedule_proportions, # a dict (a,b,...c) => z
                 #the first components specify days of the week to be tested, the final component specifies the proportion of agents
                 # who get this test schedule
             non_compliance_params, # a length-2 tuple (a,b) parameterizing a Beta distribution which governs each individual's non-compliance rate
-            contact_trace_time_window,
-            contact_trace_recall_pct, # how many contacts can we recall (this param also controls double-counting in the simple formula for how many contacts a person has) -- this is really a rate, not a pct
             adaptive_testing_time_window,
-            mean_adaptive_testing_delay,
-            adaptive_testing_recall_pct,
+            adaptive_testing_delay_distn,
+            adaptive_testing_recall_rate,
             contact_inner_products
                 ):
 
         self.adaptive_testing_time_window = adaptive_testing_time_window
-        self.mean_adaptive_testing_delay = mean_adaptive_testing_delay
-        self.adaptive_testing_recall_pct = adaptive_testing_recall_pct
+        self.adaptive_testing_delay_distn = adaptive_testing_delay_distn
+        self.adaptive_testing_recall_rate = adaptive_testing_recall_rate
         self.adaptive_testing_queue = {} 
 
-        self.contact_trace_recall_pct = contact_trace_recall_pct
-        self.contact_trace_time_window = contact_trace_time_window
         self.test_FNR = test_FNR
-        self.mean_test_delay = mean_test_delay
-        self.mean_contact_trace_delay = mean_contact_trace_delay
+        self.surveillance_test_delay_distn = surveillance_test_delay_distn
+        self.contact_trace_delay_distn = contact_trace_delay_distn
         self.test_FPR = 0 # currently not using this but writing it here to call attention to that fact
         self.agents = agents
 
@@ -91,13 +92,9 @@ class SurveillanceTesting:
 
         debug("performed {} tests on day {}".format(len(test_results), t))
 
-        return self.step_test_result_reporting(t, test_results)
-
-
-    def step_test_result_reporting(self, t, test_results):
         # record results for future
         for agent_id, result in test_results:
-            delay = np.random.geometric(1/(self.mean_test_delay+1)) - 1
+            delay = sample_delay(self.surveillance_test_delay_distn)
             new_t = t + delay
             if new_t not in self.test_reporting:
                 self.test_reporting[new_t] = []
@@ -119,74 +116,88 @@ class SurveillanceTesting:
 
 
     def step_adaptive_testing(self, t, new_positives):
-        # mean of a geometric
-        avg_daily_contacts = 1 / self.agents[agent_id].contact_magnitude
+        agents_for_followup = set([])
 
-        contacts_to_recall = int(avg_daily_contacts * self.adaptive_testing_time_window)
 
-        self.step_followup_testing(t, new_positives,
+        for agent_id in new_positives:
+            num_contacts_in_net = int(self.agents[agent_id].get_avg_contacts() * self.adaptive_testing_time_window)
+            contacts = [contact_idx for contact_idx in self.sorted_contacts[agent_id][0:num_contacts_in_net] \
+                            if np.random.uniform() < self.adaptive_testing_recall_rate]
+            agents_for_followup = agents_for_followup.union(set(contacts))
+
+
+        num_tests_processed = self.step_followup_testing(t, 
                                     self.adaptive_testing_queue,
-                                    self.mean_adaptive_testing_delay,
-                                    contacts_to_recall,
-                                    self.adaptive_testing_recall_pct)
+                                    self.adaptive_testing_delay_distn,
+                                    agents_for_followup,
+                                    force_test_compliance=True)
+
+        debug("adaptive testing on day {}: submitted {} new agents to adaptive testing queue, performed {} followup tests".format(t, 
+                len(agents_for_followup), num_tests_processed))
 
 
     def step_contact_trace(self, t, new_positives):
-        # start by getting closest contacts
-        # mean of a geometric
-        avg_daily_contacts = 1 / self.agents[agent_id].contact_magnitude
+        
+        new_agents_for_followup = set([])
+        for agent_id in new_positives:
+            for contact_set in self.agents[agent_id].previous_contacts:
+                new_agents_for_followup = new_agents_for_followup.union(contact_set)
+        
 
-        contacts_to_recall = int(avg_daily_contacts * self.contact_trace_time_window)
-
-        self.step_followup_testing(t, new_positives,
+        num_tests_processed = self.step_followup_testing(t, 
                                     self.contact_tracing,
-                                    self.mean_contact_trace_delay,
-                                    contacts_to_recall,
-                                    self.contact_trace_recall_pct)
+                                    self.contact_trace_delay_distn,
+                                    new_agents_for_followup,
+                                    isolate_for_followup=True)
+        
+        debug("contact tracing on day {}: submitted {} new agents to the contact trace queue, performed {} followup tests".format(t, 
+                len(new_agents_for_followup), num_tests_processed))
 
                 
-    def step_followup_testing(self, t, new_positives, 
+    def step_followup_testing(self, t,
                                 followup_test_queue, 
-                                mean_delay,
-                                contacts_to_recall,
-                                recall_pct):
+                                delay_distn,
+                                new_agents_for_followup,
+                                isolate_for_followup=False,
+                                force_test_compliance=False
+                                ):
         # add people to followup-test queue (either contact-trace or adaptive testing)
-        for agent_id in new_positives:
-            if self.agents[agent_id].is_in_isolation:
+        for agent_id in new_agents_for_followup:
+            if self.agents[agent_id].is_in_isolation and not self.agents[agent_id].is_isolated_for_followup:
                 continue
             
-            contacts = [contact_idx for contact_idx in self.sorted_contacts[agent_id][0:contacts_to_recall] \
-                            if np.random.uniform() < recall_pct]
+            if isolate_for_followup:
+                self.agents[agent_id].isolate_for_followup()
      
-            for contact_idx in contacts:
-                delay = np.random.geometric(1/(mean_delay + 1)) - 1
-                new_t = t + delay
-                if new_t not in followup_test_queue:
-                    followup_test_queue[new_t] = []
-                followup_test_queue[new_t].append(contact_idx)
+            delay = sample_delay(delay_distn)
+            new_t = t + delay
+            if new_t not in followup_test_queue:
+                followup_test_queue[new_t] = []
+            followup_test_queue[new_t].append(agent_id)
 
 
         # process today's followup tests
         followup_tests_for_today = followup_test_queue.pop(t, [])
         for agent_id in set(followup_tests_for_today):
-            self.run_followup_test(t, agent_id)
+            result = self.get_test_result(t, agent_id, force_compliance=force_test_compliance)
+            if result == None:
+                return
+            self.agents[agent_id].record_test_result(result)
+            if result:
+                self.agents[agent_id].isolate()
+            else:
+                self.agents[agent_id].remove_from_followup_isolation()
 
-
-    def run_followup_test(self, t, agent_id):
-        if self.agents[contact_idx].is_in_isolation:
-            return
-        result = self.get_test_result(t, agent_id)
-        if result == None:
-            return
-        self.agents[agent_id].record_test_result(result)
-        if result:
-            self.agents[agent_id].isolate()
+        return len(set(followup_tests_for_today))
 
                 
 
-    def get_test_result(self, t, agent_id):
+    def get_test_result(self, t, agent_id, force_compliance=False):
         detectability = self.agents[agent_id].get_detectability(t)
-        non_compliance = self.agents[agent_id].get_non_compliance()
+        if force_compliance:
+            non_compliance = -1
+        else:
+            non_compliance = self.agents[agent_id].get_non_compliance()
         if np.random.uniform() > non_compliance:
             prob_of_detection = detectability * (1-self.test_FNR)
             result = np.random.uniform() < prob_of_detection

@@ -12,34 +12,35 @@ TODO:
 import numpy as np
 
 from agent import Agent
-from surveillance_testing import SurveillanceTesting
+from surveillance_testing import SurveillanceTesting, debug
  
 class MultiAgentSim:
 
     def __init__(self, 
             n_agents, 
             init_infection_p,
-            mean_test_delay=1,
-            mean_contact_trace_delay=1,
-            contact_trace_time_window = 7,
-            adaptive_testing_delay=2,
-            mean_adaptive_testing_delay=2,
-            adaptive_testing_time_window=14,
-            adaptive_testing_recall_pct=0.75,
-            contact_trace_recall_pct = 0.5,
+            surveillance_test_delay_distn=[0.2,0.7,0.1],
+            contact_tracing_delay_distn=[0.2,0.5,0.3],
+            contact_tracing_recall_window = 4,
+            adaptive_testing_delay_distn=[0.2,0.3,0.3,0.2],
+            adaptive_testing_time_window=10,
+            adaptive_testing_recall_rate=0.75,
             test_FPR=0,
             test_FNR=0.1, # realized FNR will be 1 - (1 - test_FNR) * detectability
             test_schedule_proportions={(3,6): 0.3, (2,5): 0.3, (1,4): 0.3},
             non_compliance_params=(1,10), # expected non-compliance of 9%
-            infectivity_alpha=1,
+            nb_r_multiplier=1,
             use_contact_trace=True,
             use_testing=True,
-            use_adaptive_testing=True):
+            use_adaptive_testing=True,
+            use_pessimistic_detectability_curve=False):
         self.use_contact_trace = use_contact_trace
         self.use_testing = use_testing
         self.use_adaptive_testing = use_adaptive_testing
         self.agent_ids = list(range(n_agents))
-        self.agents = {i:Agent(infectivity_alpha=infectivity_alpha) for i in self.agent_ids}
+        self.agents = {i:Agent(nb_r_multiplier=nb_r_multiplier, 
+                                use_pessimistic_detectability_curve=use_pessimistic_detectability_curve) 
+                                for i in self.agent_ids}
 
         for i in self.agents:
             if np.random.uniform() < init_infection_p:
@@ -51,15 +52,13 @@ class MultiAgentSim:
 
         self.testing = SurveillanceTesting(self.agents, 
                                             test_FNR,
-                                            mean_test_delay,
-                                            mean_contact_trace_delay,
+                                            surveillance_test_delay_distn,
+                                            contact_tracing_delay_distn,
                                             test_schedule_proportions, 
                                             non_compliance_params, 
-                                            contact_trace_time_window,
-                                            contact_trace_recall_pct,
                                             adaptive_testing_time_window,
-                                            mean_adaptive_testing_delay,
-                                            adaptive_testing_recall_pct,
+                                            adaptive_testing_delay_distn,
+                                            adaptive_testing_recall_rate,
                                             self.contact_inner_products)
         self.curr_time_period = 0
 
@@ -95,22 +94,31 @@ class MultiAgentSim:
         return contact_ids
     
 
+    def get_free_infected_agents(self):
+        return [i for i in self.agents if self.agents[i].has_infection() and not self.agents[i].is_in_isolation]
+
+
     def get_infected_agents(self):
         return [i for i in self.agents if self.agents[i].has_infection()]
 
 
     def step_interactions(self, t):
-        infected_agents = self.get_infected_agents()
+        infected_agents = self.get_free_infected_agents()
+        total_contacts = 0
         for i in infected_agents:
-            contact_ids = set(self.sample_contacts(i))
+            contact_ids = set([j for j in self.sample_contacts(i) if not self.agents[j].is_in_isolation])
+            self.agents[i].record_contacts(contact_ids)
+            total_contacts += len(contact_ids)
             for j in contact_ids:
-                if not self.agents[j].is_free_and_susceptible():
+                if self.agents[j].is_in_isolation:
                     continue
 
                 infectivity = self.agents[i].get_infectivity(t)
 
                 if np.random.uniform() < infectivity:
                     self.agents[j].start_infection(t)
+        debug("interactions at time {}: there were {} free & infected agents, and they interacted with {} free individuals".format(t,
+            len(infected_agents), total_contacts))
 
 
         
