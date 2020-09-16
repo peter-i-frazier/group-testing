@@ -25,6 +25,7 @@ class MultiAgentSim:
             adaptive_testing_delay=2,
             mean_adaptive_testing_delay=2,
             adaptive_testing_time_window=14,
+            adaptive_testing_recall_pct=0.75,
             contact_trace_recall_pct = 0.5,
             test_FPR=0,
             test_FNR=0.1, # realized FNR will be 1 - (1 - test_FNR) * detectability
