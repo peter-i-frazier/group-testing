@@ -5,10 +5,7 @@ https://docs.google.com/document/d/17tm2uPOUxrcfXG-W2paw02K6pSx_iDMXY51n5RSjTMI/
 """
 """
 TODO:
-    * finish contact tracing code
-        * update parameters to SurveillanceTesting instantiation
-    * implement step_isolations(t) code
-    * debug/test basic working version of surveillance + contact tracing
+    * implement self-reporting from symptomatic individuals
     * implement adaptive testing
 """
 
@@ -25,12 +22,21 @@ class MultiAgentSim:
             mean_test_delay=1,
             mean_contact_trace_delay=1,
             contact_trace_time_window = 7,
+            adaptive_testing_delay=2,
+            mean_adaptive_testing_delay=2,
+            adaptive_testing_time_window=14,
             contact_trace_recall_pct = 0.5,
             test_FPR=0,
             test_FNR=0.1, # realized FNR will be 1 - (1 - test_FNR) * detectability
             test_schedule_proportions={(3,6): 0.3, (2,5): 0.3, (1,4): 0.3},
             non_compliance_params=(1,10), # expected non-compliance of 9%
-            infectivity_alpha=1):
+            infectivity_alpha=1,
+            use_contact_trace=True,
+            use_testing=True,
+            use_adaptive_testing=True):
+        self.use_contact_trace = use_contact_trace
+        self.use_testing = use_testing
+        self.use_adaptive_testing = use_adaptive_testing
         self.agent_ids = list(range(n_agents))
         self.agents = {i:Agent(infectivity_alpha=infectivity_alpha) for i in self.agent_ids}
 
@@ -50,6 +56,9 @@ class MultiAgentSim:
                                             non_compliance_params, 
                                             contact_trace_time_window,
                                             contact_trace_recall_pct,
+                                            adaptive_testing_time_window,
+                                            mean_adaptive_testing_delay,
+                                            adaptive_testing_recall_pct,
                                             self.contact_inner_products)
         self.curr_time_period = 0
 
@@ -57,9 +66,13 @@ class MultiAgentSim:
     def step(self):
         t = self.curr_time_period
         self.step_interactions(t)
-        new_recorded_positives = self.testing.step_test(t)
-        self.testing.step_contact_trace(t, new_recorded_positives)
-        self.step_isolation_removals(t)
+        if self.use_testing:
+            new_recorded_positives = self.testing.step_test(t)
+            if self.use_contact_trace:
+                self.testing.step_contact_trace(t, new_recorded_positives)
+            if self.use_adaptive_testing:
+                self.testing.step_adaptive_testing(t, new_recorded_positives)
+            self.step_isolation_removals(t)
         self.curr_time_period += 1
 
     def step_isolation_removals(self, t):
