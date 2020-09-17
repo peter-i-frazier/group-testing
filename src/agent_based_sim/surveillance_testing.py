@@ -1,8 +1,8 @@
 import numpy as np
 
 def debug(txt):
-    pass
-    #print(txt)
+    #pass
+    print(txt)
 
 def sample_delay(distn):
     values = list(range(len(distn)))
@@ -15,6 +15,7 @@ class SurveillanceTesting:
             test_FNR,
             surveillance_test_delay_distn, # params governing the distribution of test-delay-times
             contact_trace_delay_distn,
+            contact_trace_recall_rate,
             test_schedule_proportions, # a dict (a,b,...c) => z
                 #the first components specify days of the week to be tested, the final component specifies the proportion of agents
                 # who get this test schedule
@@ -33,6 +34,7 @@ class SurveillanceTesting:
         self.test_FNR = test_FNR
         self.surveillance_test_delay_distn = surveillance_test_delay_distn
         self.contact_trace_delay_distn = contact_trace_delay_distn
+        self.contact_trace_recall_rate = contact_trace_recall_rate
         self.test_FPR = 0 # currently not using this but writing it here to call attention to that fact
         self.agents = agents
 
@@ -106,7 +108,7 @@ class SurveillanceTesting:
         for agent_id, result in results_for_today:
             self.agents[agent_id].record_test_result(result)
             if result:
-                new_positives.append(result)
+                new_positives.append(agent_id)
                 self.agents[agent_id].isolate()
 
         debug("observed {} test results on day {}; {} were positive".format(len(set(results_for_today)), t, len(set(new_positives))))
@@ -141,8 +143,11 @@ class SurveillanceTesting:
         new_agents_for_followup = set([])
         for agent_id in new_positives:
             for contact_set in self.agents[agent_id].previous_contacts:
-                new_agents_for_followup = new_agents_for_followup.union(contact_set)
+                subset = set([contact for contact in contact_set if np.random.uniform() <= self.contact_trace_recall_rate])
+                new_agents_for_followup = new_agents_for_followup.union(subset)
         
+        #if len(new_positives) >= 1:
+        #    import pdb; pdb.set_trace()
 
         num_tests_processed = self.step_followup_testing(t, 
                                     self.contact_tracing,

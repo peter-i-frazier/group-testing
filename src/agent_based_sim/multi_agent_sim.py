@@ -21,6 +21,7 @@ class MultiAgentSim:
             surveillance_test_delay_distn=[0.2,0.7,0.1],
             contact_tracing_delay_distn=[0.2,0.5,0.3],
             contact_tracing_recall_window = 4,
+            contact_tracing_recall_rate=1,
             adaptive_testing_delay_distn=[0.2,0.3,0.3,0.2],
             adaptive_testing_time_window=10,
             adaptive_testing_recall_rate=0.75,
@@ -33,7 +34,10 @@ class MultiAgentSim:
             use_testing=True,
             use_adaptive_testing=True,
             use_pessimistic_detectability_curve=False,
-            record_dataset=False):
+            record_dataset=False,
+            use_norm_over_innerprod=False,
+            agent_dimensionality=20,
+            normalize_agent_vector=True):
         self.record_dataset = record_dataset
         if self.record_dataset:
             self.recorded_contacts = {}
@@ -43,21 +47,29 @@ class MultiAgentSim:
         self.use_adaptive_testing = use_adaptive_testing
         self.agent_ids = list(range(n_agents))
         self.agents = {i:Agent(nb_r_multiplier=nb_r_multiplier, 
-                                use_pessimistic_detectability_curve=use_pessimistic_detectability_curve) 
+                                use_pessimistic_detectability_curve=use_pessimistic_detectability_curve,
+                                contact_vec_dim=agent_dimensionality,
+                                normalize_agent_vector = normalize_agent_vector) 
                                 for i in self.agent_ids}
 
         for i in self.agents:
             if np.random.uniform() < init_infection_p:
                 self.agents[i].start_infection(0) # maybe in future want to initialize half-way-through infections
     
-        self.contact_inner_products = np.matrix(
-                [[np.inner(self.agents[i].contact_vec, self.agents[j].contact_vec)
-                    for j in self.agents] for i in self.agents])
+        if use_norm_over_innerprod:
+            self.contact_inner_products = np.matrix(
+                    [[1 / (0.01 + np.linalg.norm(self.agents[i].contact_vec - self.agents[j].contact_vec)) 
+                        for j in self.agents] for i in self.agents])
+        else:
+            self.contact_inner_products = np.matrix(
+                    [[np.inner(self.agents[i].contact_vec, self.agents[j].contact_vec)
+                        for j in self.agents] for i in self.agents])
 
         self.testing = SurveillanceTesting(self.agents, 
                                             test_FNR,
                                             surveillance_test_delay_distn,
                                             contact_tracing_delay_distn,
+                                            contact_tracing_recall_rate,
                                             test_schedule_proportions, 
                                             non_compliance_params, 
                                             adaptive_testing_time_window,
@@ -88,7 +100,7 @@ class MultiAgentSim:
 
     def step_isolation_removals(self, t):
         for agent in self.agents.values():
-            if agent.is_in_isolation and not any(agent.past_three_results):
+            if agent.is_in_isolation and not any(agent.past_three_results) and not agent.is_isolated_for_followup:
                 agent.remove_from_isolation()
 
 

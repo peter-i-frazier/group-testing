@@ -51,16 +51,18 @@ class Agent:
 
     def __init__(self, 
             contact_vec_dim = 20,
+            normalize_agent_vector=True,
             nb_r_multiplier = 1,
             nb_conjugate_beta_params=(3,3),
             contact_recall_window=4,
             use_pessimistic_detectability_curve=False):
         self.use_pessimistic_detectability_curve=use_pessimistic_detectability_curve
         # ensure first coordinate is 1 so no chance of the zero vector
-        self.contact_vec = np.array([1] + [1 if np.random.uniform() < 0.5 else 0 
-                                            for _ in range(contact_vec_dim - 1)])
-        norm = np.linalg.norm(self.contact_vec)
-        self.contact_vec = self.contact_vec / norm
+        self.contact_vec = np.array([np.random.uniform() for _ in range(contact_vec_dim)])
+
+        if normalize_agent_vector:
+            norm = np.linalg.norm(self.contact_vec)
+            self.contact_vec = self.contact_vec / norm
 
         self.contact_recall_window = contact_recall_window
         self.previous_contacts = [set([]) for _ in range(contact_recall_window)]
