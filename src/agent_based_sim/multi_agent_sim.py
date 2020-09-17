@@ -5,8 +5,7 @@ https://docs.google.com/document/d/17tm2uPOUxrcfXG-W2paw02K6pSx_iDMXY51n5RSjTMI/
 """
 """
 TODO:
-    * implement self-reporting from symptomatic individuals
-    * implement adaptive testing
+    * contact_trace_recall_rate
 """
 
 import numpy as np
@@ -33,7 +32,12 @@ class MultiAgentSim:
             use_contact_trace=True,
             use_testing=True,
             use_adaptive_testing=True,
-            use_pessimistic_detectability_curve=False):
+            use_pessimistic_detectability_curve=False,
+            record_dataset=False):
+        self.record_dataset = record_dataset
+        if self.record_dataset:
+            self.recorded_contacts = {}
+            self.recorded_isolation_statuses = {}
         self.use_contact_trace = use_contact_trace
         self.use_testing = use_testing
         self.use_adaptive_testing = use_adaptive_testing
@@ -65,6 +69,13 @@ class MultiAgentSim:
 
     def step(self):
         t = self.curr_time_period
+        
+        if self.record_dataset:
+            self.recorded_isolation_statuses[t] = {}
+            for agent_id in self.agents:
+                if self.agents[agent_id].is_in_isolation:
+                    self.recorded_isolation_statuses[t][agent_id] = self.agents[agent_id].is_in_isolation
+
         self.step_interactions(t)
         if self.use_testing:
             new_recorded_positives = self.testing.step_test(t)
@@ -105,10 +116,18 @@ class MultiAgentSim:
     def step_interactions(self, t):
         infected_agents = self.get_free_infected_agents()
         total_contacts = 0
+
+        if self.record_dataset:
+            self.recorded_contacts[t] = {}
+
         for i in infected_agents:
             contact_ids = set([j for j in self.sample_contacts(i) if not self.agents[j].is_in_isolation])
             self.agents[i].record_contacts(contact_ids)
             total_contacts += len(contact_ids)
+            
+            if self.record_dataset:
+                self.recorded_contacts[t][i] = contact_ids
+
             for j in contact_ids:
                 if self.agents[j].is_in_isolation:
                     continue
@@ -119,7 +138,7 @@ class MultiAgentSim:
                     self.agents[j].start_infection(t)
         debug("interactions at time {}: there were {} free & infected agents, and they interacted with {} free individuals".format(t,
             len(infected_agents), total_contacts))
-
+            
 
         
 
