@@ -80,6 +80,8 @@ class Agent:
 
         self.past_three_results = [False, False, False]
 
+        self.removed_from_isolation=False
+
 
     def sample_num_contacts(self):
         # higher contact magnitude => lower # contacts ... need to improve terminology here
@@ -159,5 +161,6 @@ class Agent:
         assert(not any(self.past_three_results))
         self.is_in_isolation=False
         self.is_isolated_for_followup = False
+        self.removed_from_isolation=True
 
 

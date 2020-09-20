@@ -18,6 +18,7 @@ class MultiAgentSim:
     def __init__(self, 
             n_agents, 
             init_infection_p,
+            deterministic_agent_count=False,
             surveillance_test_delay_distn=[0.2,0.7,0.1],
             contact_tracing_delay_distn=[0.2,0.5,0.3],
             contact_tracing_recall_window = 4,
@@ -53,12 +54,14 @@ class MultiAgentSim:
                                 for i in self.agent_ids}
 
         for i in self.agents:
-            if np.random.uniform() < init_infection_p:
+            if deterministic_agent_count and (i+1) / n_agents <= init_infection_p:
+                self.agents[i].start_infection(0)
+            elif not deterministic_agent_count and  np.random.uniform() < init_infection_p:
                 self.agents[i].start_infection(0) # maybe in future want to initialize half-way-through infections
     
         if use_norm_over_innerprod:
             self.contact_inner_products = np.matrix(
-                    [[1 / (0.01 + np.linalg.norm(self.agents[i].contact_vec - self.agents[j].contact_vec)) 
+                    [[1 / (1e-16 + np.linalg.norm(self.agents[i].contact_vec - self.agents[j].contact_vec)**16) 
                         for j in self.agents] for i in self.agents])
         else:
             self.contact_inner_products = np.matrix(
