@@ -8,6 +8,13 @@ import numpy as np
 import pandas as pd
 from math import ceil
 from scipy.stats import poisson
+import pdb
+# from analysis_helpers import binomial_exit_function
+
+
+def binomial_exit_function(p):
+    return (lambda n: np.random.binomial(n, p))
+
 
 import functools
 
@@ -19,8 +26,14 @@ def poisson_pmf(max_time, mean_time):
     pmf.append(1-np.sum(pmf))
     return np.array(pmf)
 
+
 def poisson_waiting_function(max_time, mean_time):
     return (lambda n: np.random.multinomial(n, poisson_pmf(max_time, mean_time)))
+
+
+def poisson_waiting_function2(n, max_time, mean_time):
+    return np.random.multinomial(n, poisson_pmf(max_time, mean_time))
+
 
 class StochasticSimulation:
     def __init__(self, params):
@@ -45,42 +58,52 @@ class StochasticSimulation:
         # (However, the length of the corresponding queue arrays will just be max_time_X,
         # not max_time_X + 1)
         # We assume that sum(times) == n
+
         if 'mean_time_E' in params:
             mean_time = params['mean_time_E']
             self.sample_E_times = poisson_waiting_function(max_time=self.max_time_E, mean_time=mean_time)
         else:
-            self.sample_E_times = params['exposed_time_function']
+            # self.sample_E_times = params['exposed_time_function']
+            self.sample_E_times = poisson_waiting_function(max_time=params['max_time_exposed'], mean_time=params['mean_time_exposed'])
 
         if 'mean_time_pre_ID' in params:
             mean_time = params['mean_time_pre_ID']
             self.sample_pre_ID_times = poisson_waiting_function(max_time=self.max_time_pre_ID, mean_time=mean_time)
         else:
-            self.sample_pre_ID_times = params['pre_ID_time_function']
+            # self.sample_pre_ID_times = params['pre_ID_time_function']
+            self.sample_pre_ID_times = poisson_waiting_function(max_time=4, mean_time=0)  # copied over from load_params.py
 
         if 'mean_time_ID' in params:
             mean_time = params['mean_time_ID']
-            self.sample_ID_times = poisson_waiting_function(max_time = self.max_time_ID, mean_time = mean_time)
+            self.sample_ID_times = poisson_waiting_function(max_time=self.max_time_ID, mean_time=mean_time)
         else:
-            self.sample_ID_times = params['ID_time_function']
+            # self.sample_ID_times = params['ID_time_function']
+            self.sample_ID_times = poisson_waiting_function(params['max_time_ID'], params['mean_time_ID'])
 
         if 'mean_time_SyID_mild' in params:
             mean_time = params['mean_time_SyID_mild']
-            self.sample_SyID_mild_times = poisson_waiting_function(max_time = self.max_time_SyID_mild, mean_time = mean_time)
+            self.sample_SyID_mild_times = poisson_waiting_function(max_time=self.max_time_SyID_mild, mean_time = mean_time)
         else:
-            self.sample_SyID_mild_times = params['SyID_mild_time_function']
+            # self.sample_SyID_mild_times = params['SyID_mild_time_function']
+            self.sample_SyID_mild_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         if 'mean_time_SyID_severe' in params:
             mean_time = params['mean_time_SyID_severe']
-            self.sample_SyID_severe_times = poisson_waiting_function(max_time = self.max_time_SyID_severe, mean_time = mean_time)
+            self.sample_SyID_severe_times = poisson_waiting_function(max_time=self.max_time_SyID_severe, mean_time=mean_time)
         else:
-            self.sample_SyID_severe_times = params['SyID_severe_time_function']
+            # self.sample_SyID_severe_times = params['SyID_severe_time_function']
+            self.sample_SyID_severe_times = poisson_waiting_function(max_time=params['max_time_syID_mild'], mean_time=params['mean_time_syID_mild'])
 
         # assumption: sample_QI_exit_count(n) returns a number m <= n
         #             indicating the number of people in the state QI
         #             who exit quarantine, given than n people initially
         #             start there
-        self.sample_QI_exit_count = params['sample_QI_exit_function']
-        self.sample_QS_exit_count = params['sample_QS_exit_function']
+        # self.sample_QI_exit_count = params['sample_QI_exit_function']
+        # self.sample_QS_exit_count = params['sample_QS_exit_function']
+
+        # update so reference in params doesn't include a lambda -sw
+        self.sample_QI_exit_count = binomial_exit_function(params['sample_QI_exit_function_param'])
+        self.sample_QS_exit_count = binomial_exit_function(params['sample_QS_exit_function_param'])
 
         # parameters governing distribution over transition out of
         # each infection state
@@ -125,7 +148,6 @@ class StochasticSimulation:
         self.cases_isolated_per_contact = params['cases_isolated_per_contact']
         self.cases_quarantined_per_contact = params['cases_quarantined_per_contact']
 
-        
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
         assert(self.pre_ID_state in ['infectious','detectable'])
@@ -144,13 +166,19 @@ class StochasticSimulation:
         else:
             self.init_ID_prevalence_stochastic = False
 
+        if 'arrival_testing_proportion' in params:
+            self.arrival_testing_proportion = params['arrival_testing_proportion']
+        else:
+            self.arrival_testing_proportion = self.test_pop_fraction
+
         self.init_S_count = self.pop_size - self.init_E_count - \
-                        self.init_pre_ID_count - self.init_ID_count - \
-                        self.init_SyID_mild_count - self.init_SyID_severe_count
+            self.init_pre_ID_count - self.init_ID_count - \
+            self.init_SyID_mild_count - self.init_SyID_severe_count
         assert(self.init_S_count >= 0)
 
         # instantiate state variables and relevant simulation variables
         self.reset_initial_state()
+
 
     def reset_initial_state(self):
         if self.init_ID_prevalence:
@@ -196,7 +224,6 @@ class StochasticSimulation:
         self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
         self.R_mild = SyID_mild_sample[0]
         self.R_severe = SyID_severe_sample[0]
-
 
         self.cumulative_outside_infections = 0
         var_labels = self.get_state_vector_labels()
@@ -346,15 +373,26 @@ class StochasticSimulation:
             idx += 1
         self.contact_trace_queue[self.contact_tracing_delay] = 0
 
-
     def run_test(self):
-        """ execute one step of the testing logic """
-        #infectious_test_pop = free_infectious * self.test_pop_fraction
-        #fluid_new_QI = infectious_test_pop * (1 - self.test_QFNR)
+        """
+        Execute one step of the testing logic.
+        """
+
+        # infectious_test_pop = free_infectious * self.test_pop_fraction
+        # fluid_new_QI = infectious_test_pop * (1 - self.test_QFNR)
 
         # the probability that a free infected individual is quarantined
-        # on this round of testing
-        new_QI_p = self.test_pop_fraction * (1 - self.test_QFNR)
+        # on this round of testing.
+
+        # If arrival testing is specified, uses that on frist day, otherwise
+        # all test_pop_fractions default to self.test_pop_fraction (configured in
+        # param reads -SW)
+        if self.current_day == 0:
+            test_pop_fraction = self.arrival_testing_proportion
+        else:
+            test_pop_fraction = self.test_pop_fraction
+
+        new_QI_p = test_pop_fraction * (1 - self.test_QFNR)
 
         # sample the number of free infected people who end up quarantined
         new_QI_from_ID = np.random.binomial(self.ID, new_QI_p)
@@ -384,7 +422,7 @@ class StochasticSimulation:
 
         # add to QI individuals from E, and from pre-ID (if state is 'infectious'), using
         # the false-positive rate for undetectable individuals
-        new_QI_undetectable_p = self.test_pop_fraction * self.test_QFPR
+        new_QI_undetectable_p = test_pop_fraction * self.test_QFPR
 
         new_QI_from_E = np.random.binomial(self.E, new_QI_undetectable_p)
         new_QI_from_E_mild = np.random.binomial(new_QI_from_E, self.mild_symptoms_p)
@@ -404,7 +442,7 @@ class StochasticSimulation:
             new_QI_severe += sum(new_QI_from_pre_ID_severe)
 
         # add to QS individuals from S, due to false positives
-        new_QS_p = self.test_pop_fraction *  self.test_QFPR
+        new_QS_p = test_pop_fraction * self.test_QFPR
         # sample number of free susceptible people who become quarantined
         new_QS_from_S = np.random.binomial(self.S, new_QS_p)
         self.S = self.S - new_QS_from_S
@@ -417,6 +455,7 @@ class StochasticSimulation:
 
         self.new_QI_from_last_test = new_QI
         self.new_QS_from_last_test = new_QS_from_S
+
         return new_QI
 
 

@@ -93,7 +93,7 @@ def run_sensitivity_sims_time_dist(base_params, state_sensitivity, param_avg_val
 
         
 
-def run_multiple_trajectories(sim_params, ntrajectories = 100, time_horizon=150):
+def run_multiple_trajectories(sim_params, ntrajectories=100, time_horizon=150):
     sim = StochasticSimulation(sim_params)
     dfs = []
     for _ in range(ntrajectories):
