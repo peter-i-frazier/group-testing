@@ -186,6 +186,9 @@ class MultiGroupSimulation:
 
                 free_infectious_j = self.get_free_infectious(j)
                 free_total_j = self.get_free_total(j)
+                
+                if free_total_j == 0:
+                    continue
 
                 poisson_param = free_susceptible_i * interactions_lambda_i_j * \
                                     free_infectious_j / free_total_j
