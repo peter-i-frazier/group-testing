@@ -38,7 +38,8 @@ class MultiAgentSim:
             record_dataset=False,
             use_norm_over_innerprod=False,
             agent_dimensionality=20,
-            normalize_agent_vector=True):
+            normalize_agent_vector=True,
+            network_gamma=5):
         self.record_dataset = record_dataset
         if self.record_dataset:
             self.recorded_contacts = {}
@@ -60,11 +61,11 @@ class MultiAgentSim:
                 self.agents[i].start_infection(0) # maybe in future want to initialize half-way-through infections
     
         if use_norm_over_innerprod:
-            self.contact_inner_products = np.matrix(
-                    [[1 / (1e-16 + np.linalg.norm(self.agents[i].contact_vec - self.agents[j].contact_vec)**16) 
+            self.agent_similarities = np.matrix(
+                    [[1 / (np.linalg.norm(self.agents[i].contact_vec - self.agents[j].contact_vec)**network_gamma) if i != j else 0
                         for j in self.agents] for i in self.agents])
         else:
-            self.contact_inner_products = np.matrix(
+            self.agent_similarities = np.matrix(
                     [[np.inner(self.agents[i].contact_vec, self.agents[j].contact_vec)
                         for j in self.agents] for i in self.agents])
 
@@ -78,7 +79,7 @@ class MultiAgentSim:
                                             adaptive_testing_time_window,
                                             adaptive_testing_delay_distn,
                                             adaptive_testing_recall_rate,
-                                            self.contact_inner_products)
+                                            self.agent_similarities)
         self.curr_time_period = 0
 
 
@@ -108,7 +109,7 @@ class MultiAgentSim:
 
 
     def sample_contacts(self, i):
-        inner_product_vec = np.array(self.contact_inner_products[i,:].T).flatten()
+        inner_product_vec = np.array(self.agent_similarities[i,:].T).flatten()
         inner_product_vec[i] = 0
         normalizer = sum(inner_product_vec)
         probability_vec = inner_product_vec / normalizer
@@ -116,7 +117,7 @@ class MultiAgentSim:
         n_contacts = self.agents[i].sample_num_contacts()
 
         contact_ids = np.random.choice(self.agent_ids, n_contacts, 
-                                        replace=True, p=probability_vec)
+                                        replace=False, p=probability_vec)
         return contact_ids
     
 
