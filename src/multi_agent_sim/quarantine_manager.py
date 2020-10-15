@@ -1,5 +1,5 @@
 class QuarantineManager:
-    def __init__(self, agents, max_iso_length=14):
+    def __init__(self, agents, max_iso_length=21):
         self.agents = agents
         self.max_iso_length=max_iso_length
 
