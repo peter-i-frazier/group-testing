@@ -1,0 +1,9 @@
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./student_age_severity_config.yaml
+_scenario_name: Undergrad (free) Parameters
+
+population_size: 0
+expected_contacts_per_day: 11.5
+daily_outside_infection_p: 0.000022
+test_population_fraction: 0.285714
+initial_ID_prevalence: 0
