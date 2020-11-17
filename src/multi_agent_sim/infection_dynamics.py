@@ -107,7 +107,7 @@ class InfectionDynamics:
         transmission_p = disc_gamma[day_idx]
 
         detectability_p = 1 / (1 + A * exp(-B * (transmission_p - C)))
-        return detectability_p
+        return np.random.uniform() <= detectability_p
 
 
     def infect_agent(self, agent_id, day):

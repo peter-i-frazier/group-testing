@@ -78,7 +78,7 @@ class ContactTracing:
 
         The function processes contact traces for the current day
 
-        For now the CT logic is simple - all close contacts are quarantined for 14 days 
+        For now the CT logic is simple - all close contacts are quarantined for 21 days and we never test them
         - but the code is modular and we can handle more sophisticated quarantine dynamics in the future
         """
         agents_to_trace = self.ct_start_days.get(day, [])

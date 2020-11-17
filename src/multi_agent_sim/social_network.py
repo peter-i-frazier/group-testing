@@ -37,6 +37,26 @@ class SocialNetwork:
                         for j in self.agents] 
                         for i in self.agents])
 
+
+    def get_mean_contacts(self, agent_id):
+        agent = self.agents[agent_id]
+        r = agent.get_param('nb_r')
+        p = agent.get_param('nb_p')
+        return p * r / (1 - p)
+
+
+    def get_n_closest_agents(self, agent_id, n):
+        if n == 0:
+            return []
+        similarities = np.array(self.agent_similarities[agent_idx,:].T).flatten()
+        nth_largest = sorted(similarities, reverse=True)[n-1]
+        closest_agents = []
+        for idx, similarity in enumerate(similarities):
+            if similarity >= nth_largest:
+                closest_agents.append(idx)
+        return idx
+
+
     """
     sample a subset of the population with whom a specific agent comes into contact in any time period
     pays no attention to agent isolation status or infection status
