@@ -1,5 +1,6 @@
 11/17 2:49PM:
     * need to debug code
+    * currently assuming no false positives
     * introduce realistic quarantine / isolation dynamics
     * think through long-term-maintainable structure for the top-level step() function
         * where should quarantine decisions happen?  in the top-level function or within individual components?  we should be consistent in how we address this, to avoid future confusion.

@@ -99,6 +99,8 @@ class InfectionDynamics:
 
 
     def sample_test_result(self, agent_id, curr_day):
+        if self.agents[agent_id].get_param('day_infection_started') == None:
+            return False
         A, B, C = self.detectability_params
         day_idx = curr_day - self.agents[agent_id].get_param('day_infection_started') - 1
         if day_idx >= MAX_INF_LENGTH:

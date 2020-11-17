@@ -48,13 +48,13 @@ class SocialNetwork:
     def get_n_closest_agents(self, agent_id, n):
         if n == 0:
             return []
-        similarities = np.array(self.agent_similarities[agent_idx,:].T).flatten()
+        similarities = np.array(self.agent_similarities[agent_id,:].T).flatten()
         nth_largest = sorted(similarities, reverse=True)[n-1]
         closest_agents = []
         for idx, similarity in enumerate(similarities):
             if similarity >= nth_largest:
                 closest_agents.append(idx)
-        return idx
+        return closest_agents
 
 
     """

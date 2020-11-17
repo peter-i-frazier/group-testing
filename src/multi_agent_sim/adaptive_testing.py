@@ -34,6 +34,8 @@ class AdaptiveTesting:
         closest_agents = self.social_network.get_n_closest_agents(agent_id, net_size)
 
         for agent in closest_agents:
+            if np.random.uniform() > self.recall_rate:
+                continue
             delay = sample_delay(self.delay_dist)
             test_day = day + delay
             if test_day not in self.tests_to_run_by_day:

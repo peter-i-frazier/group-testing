@@ -11,7 +11,7 @@ class SurveillanceTesting:
         self.infection_dynamics = infection_dynamics
         self.quarantine_manager = quarantine_manager
         self.testing_window = params['st_testing_window']
-        self.missed_test_rate = parmas['st_missed_test_rate']
+        self.missed_test_rate = params['st_missed_test_rate']
 
         # initialize agent test schedules
         uniform_dist = [1/self.testing_window] * self.testing_window
@@ -27,9 +27,12 @@ class SurveillanceTesting:
         for agent_id, agent in self.agents.items():
             if agent.get_param('test_day') != curr_day:
                 continue
+            if np.random.uniform() <= self.missed_test_rate:
+                continue
             if self.infection_dynamics.sample_test_result(agent_id, day):
                 positive_agent_ids.append(agent_id)
                 self.quarantine_manager.isolate_agent(agent_id, day)
+            self.num_surveillance_tests += 1
 
         return positive_agent_ids
 
