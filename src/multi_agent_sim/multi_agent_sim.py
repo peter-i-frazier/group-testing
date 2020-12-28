@@ -35,6 +35,7 @@ class MultiAgentSim:
         self.curr_day += 1
 
         # step 1: simulate contacts & transmission dynamics for the day
+        self.infection.step_outside_infections(self.curr_day)
 
         # iterate over all free & infected agents
         inf_agent_ids = self.infection.get_infected_agent_ids(self.curr_day)
@@ -73,15 +74,16 @@ class MultiAgentSim:
                 self.at.trigger_adaptive_test(self_report_id, self.curr_day)
 
         # run surveillance tests
-        st_positive_ids = self.st.step_surveillance_tests(self.curr_day)
+        if self.use_st:
+            st_positive_ids = self.st.step_surveillance_tests(self.curr_day)
 
-        if self.use_ct:
-            for agent_id in st_positive_ids:
-                self.ct.add_agent_to_trace_queue(agent_id, self.curr_day)
+            if self.use_ct:
+                for agent_id in st_positive_ids:
+                    self.ct.add_agent_to_trace_queue(agent_id, self.curr_day)
 
-        if self.use_at:
-            for agent_id in st_positive_ids:
-                self.at.trigger_adaptive_test(agent_id, self.curr_day)
+            if self.use_at:
+                for agent_id in st_positive_ids:
+                    self.at.trigger_adaptive_test(agent_id, self.curr_day)
 
         # process quarantine removals
         self.quarantine.step_isolation_removals(self.curr_day)
@@ -92,5 +94,8 @@ class MultiAgentSim:
 
         if self.use_at:
             self.at.step_adaptive_tests(self.curr_day)
+
+    def get_total_tests(self):
+        return self.st.num_surveillance_tests + self.at.num_adaptive_tests
 
 

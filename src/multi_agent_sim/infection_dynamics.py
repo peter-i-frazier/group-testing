@@ -45,6 +45,8 @@ class InfectionDynamics:
         # (the word 'delay' is a bit of a misnomer in this context)
         self.self_reporting_multiplier = params.get('self_reporting_multiplier', 0.8)
         self.self_reporting_delay = params.get('self_reporting_delay', 3)
+
+        self.outside_infection_rate = params.get('outside_infection_rate', 0)
         
         init_infection_p = params.get('init_infection_rate', 0.001)
         deterministic = params.get('use_deterministic_infection_counts', False)
@@ -56,7 +58,15 @@ class InfectionDynamics:
                 self.infect_agent(i, 0)
             elif (not deterministic) and np.random.uniform() <= init_infection_p:
                 self.infect_agent(i, 0)
-    
+
+
+    def step_outside_infections(self, day):
+        for agent_id in self.agents:
+            if self.agents[agent_id].get_param('day_infection_started') != None:
+                continue
+            if np.random.uniform() <= self.outside_infection_rate:
+                self.infect_agent(agent_id, day)
+
 
     def sample_transmissions(self, infector_id, contact_ids, day):
         infector = self.agents[infector_id]
