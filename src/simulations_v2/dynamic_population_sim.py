@@ -30,6 +30,18 @@ class DynamicPopulationSim:
         self.current_t = 0
 
 
+    def get_sim_obj(self):
+        if self.current_t >= self.movein_time_horizon:
+            return self.post_movein_sim
+        else:
+            return self.movein_sim.sims[0]
+
+
+    def add_new_infections(self, new_E):
+        sim_obj = self.get_sim_obj()
+        sim_obj.add_new_infections(new_E)
+
+
     def step(self):
 
         if self.current_t >= self.movein_time_horizon:
