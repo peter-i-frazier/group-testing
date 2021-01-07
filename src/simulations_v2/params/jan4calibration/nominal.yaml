@@ -1,0 +1,47 @@
+_age_severity_config: ../age_severity_config.yaml
+
+_scenario_name: Nominal Parameters
+
+population_size: 13000
+initial_ID_prevalence: 0
+asymptomatic_pct_mult: 1
+
+# for each of the following states we have: (mean_time_S, max_time_S)
+# the first is used as a distribution parameter, so # of days in that
+# state is Poisson(mean_time_S).  The second is used as a maximum-value,
+# (used so that we have finite state-variables), so that the true
+# number of days in a state is min(Poisson(mean_time_S), max_time_S)
+ID_time_params: [3,8]
+
+# applies to symptomatic & asymptomatic
+Sy_time_params: [12, 20]
+E_time_params: [2,7]
+
+# parameters governing disease transmission/progression
+exposed_infection_p: 0.017
+expected_contacts_per_day: 11
+daily_outside_infection_p: 0.000022
+
+# parameters governing self-reporting behaviour
+asymptomatic_daily_self_report_p: 0
+symptomatic_daily_self_report_p: 0.18
+
+# parameters governing rate at which people leave quarantine/isolation
+daily_leave_QI_p: 0.0714285
+daily_leave_QS_p: 0.0714285
+
+# contact-trace parameters
+perform_contact_tracing: True
+contact_tracing_delay: 1
+cases_isolated_per_contact: 0.5
+cases_quarantined_per_contact: 2.5
+
+# specify that this config does not use asymptomatic testing
+use_asymptomatic_testing: True
+
+# what fraction of positive cases from testing go through contact-tracing
+contact_trace_testing_frac: 1
+days_between_tests: 1
+test_population_fraction: 0.2
+test_protocol_QFNR: 0.43
+test_protocol_QFPR: 0
