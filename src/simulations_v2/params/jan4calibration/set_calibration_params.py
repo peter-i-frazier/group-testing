@@ -13,7 +13,7 @@ params_students_pre_semester_public['expected_contacts_per_day'] = 10
 params_students_pre_semester_public['initial_ID_prevalence'] = 0
 params_students_pre_semester_public['_scenario_name'] = 'Students (pre-semester) Parameters, Public'
 
-with open('student_pre_semester_public.yaml', 'w') as f:
+with open('students_pre_semester_public.yaml', 'w') as f:
     yaml.dump(params_students_pre_semester_public, f)
 
 params_students_post_movein_public = nominal_params.copy()
