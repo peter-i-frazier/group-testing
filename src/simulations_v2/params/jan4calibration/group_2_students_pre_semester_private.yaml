@@ -1,0 +1,31 @@
+E_time_params:
+- 2
+- 7
+ID_time_params:
+- 3
+- 8
+Sy_time_params:
+- 12
+- 20
+_age_severity_config: ../age_severity_config.yaml
+_scenario_name: Group 2 Students (pre-semester) Parameters, Private
+asymptomatic_daily_self_report_p: 0
+asymptomatic_pct_mult: 1
+cases_isolated_per_contact: null
+cases_quarantined_per_contact: null
+contact_trace_testing_frac: 1
+contact_tracing_delay: 1
+daily_leave_QI_p: 0.0714285
+daily_leave_QS_p: 0.0714285
+daily_outside_infection_p: 7.11e-06
+days_between_tests: 1
+expected_contacts_per_day: null
+exposed_infection_p: 0.017
+initial_ID_prevalence: 0
+perform_contact_tracing: true
+population_size: 8434
+symptomatic_daily_self_report_p: 0.18
+test_population_fraction: 0.0212
+test_protocol_QFNR: 0.43
+test_protocol_QFPR: 0
+use_asymptomatic_testing: true
