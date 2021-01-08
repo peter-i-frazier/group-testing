@@ -38,7 +38,7 @@ parameters to be updated:
 params_group_1_pre_semester = nominal_params.copy()
 params_group_1_pre_semester['population_size'] = 3533
 params_group_1_pre_semester['test_population_fraction'] = 0.0212
-params_group_1_pre_semester['expected_contacts_per_day'] = 178./125 ######## to be changed
+params_group_1_pre_semester['expected_contacts_per_day'] = 161./125 ######## to be changed
 params_group_1_pre_semester['cases_isolated_per_contact'] = 1.244 ######## to be changed
 params_group_1_pre_semester['cases_quarantined_per_contact'] = 3.5 ######## to be changed
 params_group_1_pre_semester['initial_ID_prevalence'] = 0
