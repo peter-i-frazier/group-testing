@@ -11,15 +11,15 @@ _age_severity_config: ../age_severity_config.yaml
 _scenario_name: Group 3 Students (pre-semester) Parameters, Private
 asymptomatic_daily_self_report_p: 0
 asymptomatic_pct_mult: 1
-cases_isolated_per_contact: null
-cases_quarantined_per_contact: null
+cases_isolated_per_contact: 1.244
+cases_quarantined_per_contact: 3.5
 contact_trace_testing_frac: 1
 contact_tracing_delay: 1
 daily_leave_QI_p: 0.0714285
 daily_leave_QS_p: 0.0714285
 daily_outside_infection_p: 6.45e-06
 days_between_tests: 1
-expected_contacts_per_day: null
+expected_contacts_per_day: 0.06666666666666667
 exposed_infection_p: 0.017
 initial_ID_prevalence: 0
 perform_contact_tracing: true
