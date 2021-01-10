@@ -31,9 +31,9 @@ with open('students_post_movein_public.yaml', 'w') as f:
 private calibration for students
 group 1
 parameters to be updated:
-[ ] expected_contacts_per_day
-[ ] cases_isolated_per_contact
-[ ] cases_quarantined_per_contact
+[x] expected_contacts_per_day updated 1/8
+[x] cases_isolated_per_contact updated 1/8
+[x] cases_quarantined_per_contact updated 1/8
 """
 params_group_1_pre_semester = nominal_params.copy()
 params_group_1_pre_semester['population_size'] = 3533
