@@ -103,3 +103,27 @@ params_group_3_post_movein_private['_scenario_name'] = 'Group 3 Students (post m
 
 with open('group_3_students_post_movein_private.yaml', 'w') as f:
     yaml.dump(params_group_3_post_movein_private, f)
+
+
+
+"""
+private calibration for faculty + staff
+"""
+params_faculty_staff_pre_semester_private = nominal_params.copy()
+params_faculty_staff_pre_semester_private['population_size'] = 10283
+params_faculty_staff_pre_semester_private['test_population_fraction'] = 0
+params_faculty_staff_pre_semester_private['expected_contacts_per_day'] = 10
+params_faculty_staff_pre_semester_private['initial_ID_prevalence'] = 0
+params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = (3.48 - 1) / 2 # 1.24
+params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (pre-semester) Parameters, Private'
+
+with open('faculty_staff_pre_semester_private.yaml', 'w') as f:
+    yaml.dump(params_faculty_staff_pre_semester_private, f)
+
+params_faculty_staff_pre_semester_private = params_faculty_staff_pre_semester_private.copy()
+params_faculty_staff_pre_semester_private['population_size'] = 0
+params_faculty_staff_pre_semester_private['test_population_fraction'] = 0.111
+params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (post move-in) Parameters, Private'
+
+with open('faculty_staff_post_movein_private.yaml', 'w') as f:
+    yaml.dump(params_faculty_staff_pre_semester_private, f)
