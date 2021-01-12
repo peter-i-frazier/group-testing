@@ -115,6 +115,7 @@ params_faculty_staff_pre_semester_private['population_size'] = 10283
 params_faculty_staff_pre_semester_private['test_population_fraction'] = 0
 params_faculty_staff_pre_semester_private['expected_contacts_per_day'] = 10
 params_faculty_staff_pre_semester_private['initial_ID_prevalence'] = 0
+params_faculty_staff_pre_semester_private['test_protocol_QFNR'] = 1 - 0.75 # 0.25
 params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = (3.48 - 1) / 2 # 1.24
 params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (pre-semester) Parameters, Private'
 
