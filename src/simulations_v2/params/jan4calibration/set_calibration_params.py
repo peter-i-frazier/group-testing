@@ -42,6 +42,7 @@ params_group_1_pre_semester['expected_contacts_per_day'] = 161./125 ######## to 
 params_group_1_pre_semester['cases_isolated_per_contact'] = 1.329 ######## to be changed
 params_group_1_pre_semester['cases_quarantined_per_contact'] = 3.304 ######## to be changed
 params_group_1_pre_semester['initial_ID_prevalence'] = 0
+params_group_1_pre_semester['test_protocol_QFNR'] = 1 - 0.75 * 0.95 # 0.2875
 params_group_1_pre_semester['daily_outside_infection_p'] = 1.42E-5
 params_group_1_pre_semester['_scenario_name'] = 'Group 1 Students (pre-semester) Parameters, Private'
 
