@@ -122,7 +122,7 @@ with open('faculty_staff_pre_semester_private.yaml', 'w') as f:
 
 params_faculty_staff_pre_semester_private = params_faculty_staff_pre_semester_private.copy()
 params_faculty_staff_pre_semester_private['population_size'] = 0
-params_faculty_staff_pre_semester_private['test_population_fraction'] = 0.111
+params_faculty_staff_pre_semester_private['test_population_fraction'] = 12.75/130
 params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (post move-in) Parameters, Private'
 
 with open('faculty_staff_post_movein_private.yaml', 'w') as f:

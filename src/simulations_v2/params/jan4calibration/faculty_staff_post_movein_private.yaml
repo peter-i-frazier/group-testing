@@ -25,7 +25,7 @@ initial_ID_prevalence: 0
 perform_contact_tracing: true
 population_size: 0
 symptomatic_daily_self_report_p: 0.18
-test_population_fraction: 0.111
+test_population_fraction: 0.09807692307692308
 test_protocol_QFNR: 0.43
 test_protocol_QFPR: 0
 use_asymptomatic_testing: true
