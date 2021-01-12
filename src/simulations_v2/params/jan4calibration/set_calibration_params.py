@@ -28,12 +28,16 @@ with open('students_post_movein_public.yaml', 'w') as f:
 
 
 """
-private calibration for students
-group 1
 parameters to be updated:
 [x] expected_contacts_per_day updated 1/8
-[x] cases_isolated_per_contact updated 1/11
+[x] cases_isolated_per_contact -- students: updated 1/11
 [x] cases_quarantined_per_contact updated 1/11
+[x] cases_isolated_per_contact -- faculty+staff: updated 1/12
+[x] test sensitivity updated 1/12
+
+
+private calibration for students
+group 1
 """
 params_group_1_pre_semester = nominal_params.copy()
 params_group_1_pre_semester['population_size'] = 3533
@@ -116,7 +120,7 @@ params_faculty_staff_pre_semester_private['test_population_fraction'] = 0
 params_faculty_staff_pre_semester_private['expected_contacts_per_day'] = 10
 params_faculty_staff_pre_semester_private['initial_ID_prevalence'] = 0
 params_faculty_staff_pre_semester_private['test_protocol_QFNR'] = 1 - 0.75 # 0.25
-params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = (3.48 - 1) / 2 # 1.24
+params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = 0.255
 params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (pre-semester) Parameters, Private'
 
 with open('faculty_staff_pre_semester_private.yaml', 'w') as f:

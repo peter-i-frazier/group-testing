@@ -11,7 +11,7 @@ _age_severity_config: ../age_severity_config.yaml
 _scenario_name: Faculty + Staff (pre-semester) Parameters, Private
 asymptomatic_daily_self_report_p: 0
 asymptomatic_pct_mult: 1
-cases_isolated_per_contact: 1.24
+cases_isolated_per_contact: 0.255
 cases_quarantined_per_contact: 2.5
 contact_trace_testing_frac: 1
 contact_tracing_delay: 1
