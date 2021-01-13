@@ -46,7 +46,7 @@ params_group_1_pre_semester['expected_contacts_per_day'] = 161./125 ######## to 
 params_group_1_pre_semester['cases_isolated_per_contact'] = 1.329 ######## to be changed
 params_group_1_pre_semester['cases_quarantined_per_contact'] = 3.304 ######## to be changed
 params_group_1_pre_semester['initial_ID_prevalence'] = 0
-params_group_1_pre_semester['test_protocol_QFNR'] = 1 - 0.75 * 0.95 # 0.2875
+params_group_1_pre_semester['test_protocol_QFNR'] = 1 - 0.6 * 0.95 # 0.43
 params_group_1_pre_semester['daily_outside_infection_p'] = 1.42E-5
 params_group_1_pre_semester['_scenario_name'] = 'Group 1 Students (pre-semester) Parameters, Private'
 
@@ -119,7 +119,7 @@ params_faculty_staff_pre_semester_private['population_size'] = 10283
 params_faculty_staff_pre_semester_private['test_population_fraction'] = 0
 params_faculty_staff_pre_semester_private['expected_contacts_per_day'] = 10
 params_faculty_staff_pre_semester_private['initial_ID_prevalence'] = 0
-params_faculty_staff_pre_semester_private['test_protocol_QFNR'] = 1 - 0.75 # 0.25
+params_faculty_staff_pre_semester_private['test_protocol_QFNR'] = 1 - 0.6 # 0.4
 params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = 0.255
 params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (pre-semester) Parameters, Private'
 

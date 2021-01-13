@@ -26,6 +26,6 @@ perform_contact_tracing: true
 population_size: 10283
 symptomatic_daily_self_report_p: 0.18
 test_population_fraction: 0
-test_protocol_QFNR: 0.25
+test_protocol_QFNR: 0.4
 test_protocol_QFPR: 0
 use_asymptomatic_testing: true
