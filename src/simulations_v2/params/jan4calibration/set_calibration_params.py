@@ -42,7 +42,7 @@ group 1
 params_group_1_pre_semester = nominal_params.copy()
 params_group_1_pre_semester['population_size'] = 3533
 params_group_1_pre_semester['test_population_fraction'] = 0.0212
-params_group_1_pre_semester['expected_contacts_per_day'] = 161./125 ######## to be changed
+params_group_1_pre_semester['expected_contacts_per_day'] = 92./125 ######## to be changed
 params_group_1_pre_semester['cases_isolated_per_contact'] = 1.329 ######## to be changed
 params_group_1_pre_semester['cases_quarantined_per_contact'] = 3.304 ######## to be changed
 params_group_1_pre_semester['initial_ID_prevalence'] = 0
@@ -69,7 +69,7 @@ group 2
 params_group_2_pre_semester = params_group_1_pre_semester.copy()
 params_group_2_pre_semester['population_size'] = 8434
 params_group_2_pre_semester['test_population_fraction'] = 0.0212
-params_group_2_pre_semester['expected_contacts_per_day'] = 5./44 ######## to be changed
+params_group_2_pre_semester['expected_contacts_per_day'] = 6.5/44 ######## to be changed
 params_group_2_pre_semester['initial_ID_prevalence'] = 0
 params_group_2_pre_semester['daily_outside_infection_p'] = 7.11E-6
 params_group_2_pre_semester['_scenario_name'] = 'Group 2 Students (pre-semester) Parameters, Private'
