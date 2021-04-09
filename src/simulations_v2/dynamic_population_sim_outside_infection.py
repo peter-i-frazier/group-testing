@@ -5,16 +5,16 @@ import math
 
 class DynamicPopulationSim:
 
-    def __init__(self, 
+    def __init__(self,
             movein_free_params, # initial simulation parameters for free group during movein period
             movein_selfiso_params, # initial simulation params for self-isolate group during movein period
             post_movein_params, # sim params for post-movein period -- the initialization params here will be irrelevant, b/c they
                                 # will be copied over from the state of the move-in simulation at the end of the move-in period
             movein_contact_matrix, # 2x2 interaction matrix for movein period -- order of groups is [free, selfiso]
             movein_time_horizon, # number of time periods in the movein period
-            free_group_dynamics, # dictionary mapping time periods t -> 
+            free_group_dynamics, # dictionary mapping time periods t ->
                                          # (dictionary specifying how many people join each compartment on day t in the free group)
-            selfiso_group_dynamics, # dictionary mapping time periods t -> 
+            selfiso_group_dynamics, # dictionary mapping time periods t ->
                                          # (dictionary specifying how many people join each compartment on day t in the self-isolation group)
                                          ):
 
@@ -46,13 +46,13 @@ class DynamicPopulationSim:
     def step(self):
         outside_df = self.post_movein_params['outside_infection_p_array']
         self.current_week = max(math.floor((self.current_t - 18)/7),0)
-        
+
         if self.current_week in outside_df['week_since_sem_start'].values:
-            self.post_movein_params['daily_outside_infection_p'] = outside_df[outside_df['week_since_sem_start'] == self.current_week]['weekly_outside_cases'].values[0]
-                
+            self.post_movein_sim.daily_outside_infection_p = outside_df[outside_df['week_since_sem_start'] == self.current_week]['weekly_outside_cases'].values[0]
+
         else:
             self.post_movein_params['daily_outside_infection_p'] = 0
-        
+
         if self.current_t >= self.movein_time_horizon:
             self.post_movein_sim.step()
         else:
@@ -65,14 +65,14 @@ class DynamicPopulationSim:
         self.current_t += 1
         if self.current_t == self.movein_time_horizon:
             self.initialize_post_movein_sim()
-        
-        
+
+
 
     def initialize_post_movein_sim(self):
         assert(self.current_t == self.movein_time_horizon)
         self.post_movein_sim = StochasticSimulation(self.post_movein_params)
 
-        pop_size = 0 
+        pop_size = 0
 
         # give vars shorter names to save typing effort...
         sims = self.movein_sim.sims
@@ -80,13 +80,13 @@ class DynamicPopulationSim:
 
         new_sim.S = sims[0].S + sims[1].S
         pop_size += new_sim.S
-        
+
         new_sim.E = sims[0].E + sims[1].E
         pop_size += sum(new_sim.E)
-        
+
         new_sim.pre_ID = sims[0].pre_ID + sims[1].pre_ID
         pop_size += sum(new_sim.pre_ID)
-        
+
         new_sim.ID = sims[0].ID + sims[1].ID
         pop_size += sum(new_sim.ID)
 
@@ -117,7 +117,7 @@ class DynamicPopulationSim:
     # the logic for this function follows closely what is done in reset_initial_state()
     # for the main population-level simulation code
     def update_populations(self, sim, pop_updates):
-        
+
         pop_increase = 0
 
         new_S = pop_updates.get('S', 0)
@@ -173,5 +173,3 @@ class DynamicPopulationSim:
         sim.QS = sim.QS + new_QS
 
         sim.pop_size = sim.pop_size + pop_increase
-
-            
