@@ -1,6 +1,7 @@
 from multi_group_simulation import MultiGroupSimulation
 from stochastic_simulation import StochasticSimulation
 import numpy as np
+import math
 
 class DynamicPopulationSim:
 
@@ -44,15 +45,13 @@ class DynamicPopulationSim:
 
     def step(self):
         outside_df = self.post_movein_params['outside_infection_p_array']
-        self.current_week = max(round((self.current_t - 18)/7),0)
+        self.current_week = max(math.floor((self.current_t - 18)/7),0)
         
         if self.current_week in outside_df['week_since_sem_start'].values:
             self.post_movein_params['daily_outside_infection_p'] = outside_df[outside_df['week_since_sem_start'] == self.current_week]['weekly_outside_cases'].values[0]
                 
         else:
             self.post_movein_params['daily_outside_infection_p'] = 0
-            
-        print(self.current_week, self.post_movein_params['daily_outside_infection_p'])
         
         if self.current_t >= self.movein_time_horizon:
             self.post_movein_sim.step()
