@@ -17,7 +17,7 @@ contact_trace_testing_frac: 1
 contact_tracing_delay: 1
 daily_leave_QI_p: 0.0714285
 daily_leave_QS_p: 0.0714285
-daily_outside_infection_p: 2.2e-05
+daily_outside_infection_p: 0
 days_between_tests: 1
 expected_contacts_per_day: 10
 exposed_infection_p: 0.018

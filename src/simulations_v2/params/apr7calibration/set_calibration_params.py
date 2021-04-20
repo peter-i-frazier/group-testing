@@ -97,15 +97,16 @@ params_faculty_staff_pre_semester_private['expected_contacts_per_day'] = 10
 params_faculty_staff_pre_semester_private['initial_ID_prevalence'] = 0
 params_faculty_staff_pre_semester_private['test_protocol_QFNR'] = 1 - 0.6 # 0.4
 params_faculty_staff_pre_semester_private['cases_isolated_per_contact'] = 0.255
+params_faculty_staff_pre_semester_private['daily_outside_infection_p'] = 0
 params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (pre-semester) Parameters, Private'
 
 with open('faculty_staff_pre_semester_private.yaml', 'w') as f:
     yaml.dump(params_faculty_staff_pre_semester_private, f)
 
-params_faculty_staff_pre_semester_private = params_faculty_staff_pre_semester_private.copy()
-params_faculty_staff_pre_semester_private['population_size'] = 0
-params_faculty_staff_pre_semester_private['test_population_fraction'] = 12.74/130
-params_faculty_staff_pre_semester_private['_scenario_name'] = 'Faculty + Staff (post move-in) Parameters, Private'
+params_faculty_staff_post_movein_private = params_faculty_staff_pre_semester_private.copy()
+params_faculty_staff_post_movein_private['population_size'] = 0
+params_faculty_staff_post_movein_private['test_population_fraction'] = 12.74/130
+params_faculty_staff_post_movein_private['_scenario_name'] = 'Faculty + Staff (post move-in) Parameters, Private'
 
 with open('faculty_staff_post_movein_private.yaml', 'w') as f:
-    yaml.dump(params_faculty_staff_pre_semester_private, f)
+    yaml.dump(params_faculty_staff_post_movein_private, f)
