@@ -1,0 +1,12 @@
+_inherit_config: ./nominal.yaml
+_age_severity_config: ./student_age_severity_config.yaml
+_scenario_name: Grad student other Parameters
+
+population_size: 1434
+expected_contacts_per_day: 1.7482
+daily_outside_infection_p: 0.000012
+test_population_fraction: 0.142857
+initial_ID_prevalence: 0.001628
+
+# 1-compliance * sensitivity 
+test_protocol_QFNR: 0.7
