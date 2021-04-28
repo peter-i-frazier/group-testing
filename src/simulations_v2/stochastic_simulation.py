@@ -449,7 +449,7 @@ class StochasticSimulation:
         if self.current_day - self.last_test_day >= self.days_between_tests:
             self.last_test_day = self.current_day
             new_QI += self.run_test()
-            new_contact_traces += int(self.contact_trace_testing_frac * new_QI)
+            new_contact_traces += np.random.poisson(self.contact_trace_testing_frac * new_QI)
 
 
         # resolve symptomatic self-reporting
