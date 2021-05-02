@@ -244,7 +244,7 @@ class StochasticSimulation:
         self.S = self.S - total_contacts_quarantined
         self.QS = self.QS + total_contacts_quarantined
 
-        total_cases_isolated = int(self.cases_isolated_per_contact * resolve_today_QI)
+        total_cases_isolated = np.random.poisson(self.cases_isolated_per_contact * resolve_today_QI)
 
         # trace these cases across E, pre-ID and ID states
 
