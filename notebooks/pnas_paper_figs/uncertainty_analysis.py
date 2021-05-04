@@ -3,6 +3,15 @@ import dill
 import numpy as np
 
 from statsmodels.api import OLS, add_constant
+from util_functions import *
+
+import os
+import sys
+module_path = os.path.abspath(os.path.join('../..'))
+if module_path not in sys.path:
+        sys.path.append(module_path + "/src/simulations_v2")
+from load_params import load_params, update_sev_prevalence
+from analysis_helpers import poisson_waiting_function
 
 # list of parameter names that are varied in the uncertainty analysis
 UNCERTAINTY_PARAMS_LIST = ['asymp_prob_mult', 'inital_prev_mult', 'R0', 'outside_inf_mult', 'daily_self_report_prob',
@@ -32,6 +41,98 @@ PARAM_BOUNDS = {
     'virtual_pop_size': (0,1), # Slider from min to max
 }
 
+def get_centre_point():
+    centre = {}
+    for param in PARAM_BOUNDS:
+        lb, ub = PARAM_BOUNDS[param]
+        centre[param] = (lb + ub) / 2
+    return centre
+
+
+
+def get_test_FNR(sensitivity, compliance):
+    if 1 - (sensitivity * compliance) > 1:
+        print(sensitivity, compliance)
+    return 1 - (sensitivity * compliance)
+
+def uncertainty_point_to_params_dict(uncertainty_point_dict):
+
+    uncertainty_point = []
+    for param in  UNCERTAINTY_PARAMS_LIST + ADDITIONAL_VIRTUAL_PARAMS:
+        uncertainty_point.append(uncertainty_point_dict[param])
+    
+    res_params_list, res_interaction_matrix, res_group_names = get_nominal_params()
+    virtual_persistent_noncompliance = uncertainty_point[12]
+    virtual_ug_pop = 4500 * (1 - uncertainty_point[15]) + 7950 * uncertainty_point[15]
+    virtual_gs_other_pop = 4770 * (1 - uncertainty_point[15]) + 5850 * uncertainty_point[15]
+    virtual_params_list, virtual_interaction_matrix, virtual_group_names = get_virtual_params(virtual_persistent_noncompliance, virtual_ug_pop, virtual_gs_other_pop)
+
+    # Asmptomatic Prob Mult
+    for params in res_params_list:
+        params['severity_prevalence'] = update_sev_prevalence(params['severity_prevalence'], uncertainty_point[0] * params['severity_prevalence'][0])
+        if params['severity_prevalence'][0] > 1:
+            params['severity_prevalence'] = [1,0,0,0]
+    for params in virtual_params_list:
+        params['severity_prevalence'] = update_sev_prevalence(params['severity_prevalence'], uncertainty_point[0] * params['severity_prevalence'][0])
+        if params['severity_prevalence'][0] > 1:
+            params['severity_prevalence'] = [1,0,0,0]
+    
+    # Initial Prevalence Mult
+    for params in res_params_list:
+        params['initial_ID_prevalence'] *= uncertainty_point[1]
+    for params in virtual_params_list:
+        params['initial_ID_prevalence'] *= uncertainty_point[1]
+    
+    # R0 adjustment
+    res_interaction_matrix *= uncertainty_point[2]/2.5
+    virtual_interaction_matrix *= uncertainty_point[2] * uncertainty_point[14]/2.5
+    
+    # Outside inf mult
+    for params in res_params_list:
+        params['daily_outside_infection_p'] *= uncertainty_point[3]
+    for params in virtual_params_list:
+        params['daily_outside_infection_p'] *= uncertainty_point[3]
+    
+    # Daily self-report prob
+    for params in res_params_list:
+        params['severe_symptoms_daily_self_report_p'] = uncertainty_point[4]
+    for params in virtual_params_list:
+        params['severe_symptoms_daily_self_report_p'] = uncertainty_point[4]
+        
+    # CT mult
+    for params in res_params_list:
+        params['cases_isolated_per_contact'] *= uncertainty_point[5]
+    for params in virtual_params_list:
+        params['cases_isolated_per_contact'] *= uncertainty_point[5]
+    
+    # CT testing ratio
+    for params in res_params_list:
+        params['contact_trace_testing_frac'] = uncertainty_point[6]
+    for params in virtual_params_list:
+        params['contact_trace_testing_frac'] = uncertainty_point[6]
+    
+    # Test sensitivity and Test compliance (note: non-compliance is provided in uncertainty point)
+    for params in res_params_list:
+        params['test_protocol_QFNR'] = get_test_FNR(uncertainty_point[7], 1-uncertainty_point[8])
+    for params in virtual_params_list:
+        params['test_protocol_QFNR'] = get_test_FNR(uncertainty_point[7], 1-(uncertainty_point[13]))
+
+    # E_time, ID_time, Sy_time
+    for params in res_params_list:
+        params['exposed_time_function'] = poisson_waiting_function(7, uncertainty_point[9])
+        params['ID_time_function'] = poisson_waiting_function(8, uncertainty_point[10])
+        params['SyID_mild_time_function'] = poisson_waiting_function(20, uncertainty_point[11])
+        params['SyID_severe_time_function'] = poisson_waiting_function(20, uncertainty_point[11])
+    
+    for params in virtual_params_list:
+        params['exposed_time_function'] = poisson_waiting_function(7, uncertainty_point[9])
+        params['ID_time_function'] = poisson_waiting_function(8, uncertainty_point[10])
+        params['SyID_mild_time_function'] = poisson_waiting_function(20, uncertainty_point[11])
+        params['SyID_severe_time_function'] = poisson_waiting_function(20, uncertainty_point[11])
+        
+    return (res_params_list, res_interaction_matrix, res_group_names), \
+            (virtual_params_list, virtual_interaction_matrix, virtual_group_names)
+
 def calculate_pessimistic_scenario(results):
     # the keys in dict(results.params) specify whether this is for residential
     # or virtual vs. residential
@@ -41,14 +142,30 @@ def calculate_pessimistic_scenario(results):
     for param in params:
         range_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/2
 
+    
+    
     sum_squares = 0
     for param in params:
         sum_squares += ((lr_results[param]*range_dict[param])/2) ** 2
 
+    # calculate pessimistic scenario based on available params
     pess_scenario = dict()
     for param in params:
         pess_scenario[param] = np.mean(PARAM_BOUNDS[param]) + \
             ((lr_results[param] * (range_dict[param])**2) / 2) / np.sqrt(sum_squares)
+
+    
+    # add default virtual params if not present
+    default_virtual_param_vals = {
+            'virtual_noncompliance': 0.5, 
+            'intermittent_non-compliance': 0.5, 
+            'virtual_r0_mult': 0.97, 
+            'virtual_pop_size':0.5
+            }
+    for virtual_param, val in default_virtual_param_vals.items():
+        if virtual_param not in params:
+            pess_scenario[virtual_param] = val
+
     return pess_scenario
 
 def residential_regression(scenario_data):
@@ -80,8 +197,6 @@ def virtual_vs_residential_regression(scenario_data):
     results = model.fit()
     return results
 
-def uncertainty_point_to_params_dict():
-    pass
 
 def params_dict_to_uncertainty_point():
     # will have to make assumptions about the parameters in the dictionary that don't get

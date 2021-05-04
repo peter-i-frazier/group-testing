@@ -1,3 +1,14 @@
+import numpy as np
+import os
+import sys
+module_path = os.path.abspath(os.path.join('../..'))
+if module_path not in sys.path:
+        sys.path.append(module_path + "/src/simulations_v2")
+from load_params import load_params, update_sev_prevalence
+from analysis_helpers import poisson_waiting_function
+from multi_group_simulation import MultiGroupSimulation
+
+
 def get_cum_hosp(df):
     return df[['severity_3', 'severity_2']].iloc[df.shape[0] - 1].sum()
 
@@ -189,7 +200,7 @@ def generate_plotting_matrix(results_list, policy=None, ):
 
 def get_nominal_params():
 #     base_directory = '../src/simulations_v2/params/baseline_testing/steady_state/nominal/'
-    base_directory = '../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/nominal/'
+    base_directory = '../../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/nominal/'
     
     ug_dorm_params = load_params(base_directory + 'ug_dorm.yaml')[1]
     ug_off_campus_params = load_params(base_directory + 'ug_off_campus.yaml')[1]
@@ -217,7 +228,7 @@ def get_nominal_params():
 
 def get_optimistic_params():
 #     base_directory = '../src/simulations_v2/params/baseline_testing/steady_state/optimistic/'
-    base_directory = '../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/optimistic/'
+    base_directory = '../../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/optimistic/'
 
     ug_dorm_params = load_params(base_directory + 'ug_dorm.yaml')[1]
     ug_off_campus_params = load_params(base_directory + 'ug_off_campus.yaml')[1]
@@ -245,7 +256,7 @@ def get_optimistic_params():
 
 def get_pessimistic_params():
 #     base_directory = '../src/simulations_v2/params/baseline_testing/steady_state/pessimistic/'
-    base_directory = '../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/pessimistic/'
+    base_directory = '../../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/pessimistic/'
 
     ug_dorm_params = load_params(base_directory + 'ug_dorm.yaml')[1]
     ug_off_campus_params = load_params(base_directory + 'ug_off_campus.yaml')[1]
@@ -270,3 +281,60 @@ def get_pessimistic_params():
     params_list = [ug_dorm_params.copy(), ug_off_campus_params.copy(), gs_research_params.copy(), gs_other_params.copy(), faculty_staff_student_params.copy(), faculty_staff_non_student_params.copy(), faculty_staff_off_campus_params.copy(), ithaca_community_params.copy()]
     
     return params_list, 1.3*interaction_matrix, group_names
+def rescale_virtual_interaction_matrix(perc_compliant, group_sizes):
+    interaction_matrix = np.array([[8.8651, 2.2163, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 1],
+                                    [8.8651, 2.2163, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 1],
+                                    [0.17, 0.0435, 4, 0.1, 0.1, 1.2, 0.05, 0.2, 1.8],
+                                    [0.19, 0.05, 0.11, 6.9926, 1.7482, 0.05, 0.05, 0.05, 1],
+                                    [0.19, 0.05, 0.11, 6.9926, 1.7482, 0.05, 0.05, 0.05, 1],
+                                    [0.04, 0.01, 0.53, 0.02, 0.00, 1, 0.15, 0.3, 1.56],
+                                    [0.07, 0.02, 0.04, 0.03, 0.01, 0.28, 1.8, 0.2, 1.56],
+                                    [0.03, 0.01, 0.07, 0.01, 0.00, 0.23, 0.08, 1.8, 1.56],
+                                    [0.045, 0.011, 0.046, 0.034, 0.008, 0.091, 0.048, 0.12, 3.5]
+                                   ])
+    interaction_matrix[0,0] = (8.8651 + 2.2163) * (1 - perc_compliant)
+    interaction_matrix[0,1] = (8.8651 + 2.2163) * (perc_compliant)
+    interaction_matrix[1,1] = (8.8651 + 2.2163) * (perc_compliant)
+    
+    interaction_matrix[3,3] = (6.9926 + 1.7482) * (1 - perc_compliant)
+    interaction_matrix[3,4] = (6.9926 + 1.7482) * perc_compliant
+    interaction_matrix[4,4] = (6.9926 + 1.7482) * perc_compliant
+    
+    for i in range(interaction_matrix.shape[0]):
+        for j in range(i):
+            if ((i,j) == (0,0)) or ((i,j)==(0,1)) or ((i,j)==(1,1)):
+                continue
+            interaction_matrix[i,j] = interaction_matrix[j,i] * group_sizes[j] / group_sizes[i]
+    return interaction_matrix
+
+
+def get_virtual_params(perc_unmonitored, ug_pop, gs_other_pop):
+    base_directory = '../../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/virtual_instruction/'
+
+    gs_research_params = load_params(base_directory + 'grad_research_virtual.yaml')[1]
+    faculty_staff_student_params = load_params(base_directory + 'faculty_staff_student_same_age_virtual.yaml')[1]
+    faculty_staff_non_student_params = load_params(base_directory + 'faculty_staff_non_student_same_age_virtual.yaml')[1]
+    faculty_staff_off_campus_params = load_params(base_directory + 'faculty_staff_off_campus_same_age_virtual.yaml')[1]
+    ithaca_community_params = load_params(base_directory + 'ithaca_community_virtual.yaml')[1]
+
+    ug_off_campus_unmonitored_params = load_params(base_directory + 'ug_off_campus_unmonitored_virtual.yaml')[1]
+    ug_off_campus_compliant_params = load_params(base_directory + 'ug_off_campus_compliant_virtual.yaml')[1]
+    gs_other_unmonitored_params = load_params(base_directory + 'grad_other_unmonitored_virtual.yaml')[1]
+    gs_other_compliant_params = load_params(base_directory + 'grad_other_compliant_virtual.yaml')[1]
+    
+#     total_ug_pop = ug_off_campus_unmonitored_params['population_size'] + ug_off_campus_compliant_params['population_size']
+    ug_off_campus_unmonitored_params['population_size'] = np.ceil(perc_unmonitored * ug_pop)
+    ug_off_campus_compliant_params['population_size'] = np.floor((1-perc_unmonitored) * ug_pop)
+    
+#     total_gs_other_pop = gs_other_unmonitored_params['population_size'] + gs_other_compliant_params['population_size']
+    gs_other_unmonitored_params['population_size'] = np.ceil(perc_unmonitored * gs_other_pop)
+    gs_other_compliant_params['population_size'] = np.floor((1-perc_unmonitored) * gs_other_pop)
+    
+    params_list = [ug_off_campus_unmonitored_params.copy(), ug_off_campus_compliant_params.copy(), gs_research_params.copy(), gs_other_unmonitored_params.copy(), gs_other_compliant_params.copy(), faculty_staff_student_params.copy(), faculty_staff_non_student_params.copy(), faculty_staff_off_campus_params.copy(), ithaca_community_params.copy()]
+    group_names = ['UG unmonitored', 'UG compliant', 'GS research', 'GS unmonitored', 'GS compliant', 'F/S student', 'F/S non-student', 'F/S off', 'Ithaca']
+    virtual_group_sizes = list()
+    for params in params_list:
+        virtual_group_sizes.append(params['population_size'])
+    interaction_matrix = rescale_virtual_interaction_matrix(1 - perc_unmonitored, virtual_group_sizes)
+    
+    return params_list, interaction_matrix, group_names
