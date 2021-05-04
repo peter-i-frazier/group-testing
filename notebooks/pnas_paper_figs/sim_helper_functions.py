@@ -19,12 +19,12 @@ def run_parallel_sims_lhs_space(uncertainty_points, output_folder):
         output_folder)
 
 
-def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112):
-    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T))
+def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True):
+    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T, run_only_residential))
     p.start()
     return p
 
-def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112):
+def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112, run_only_residential=True):
     idx = 0
     processes = []
     for uncertainty_dict, output_fname in zip(uncertainty_point_dicts, output_fnames):
@@ -38,13 +38,13 @@ def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112
     print("done running processes")
 
 
-def run_simulation(uncertainty_point, filename, point_id=None,nreps=50, T=112):
+def run_simulation(uncertainty_point, filename, point_id=None,nreps=50, T=112, run_only_residential=False):
     # get params
     (res_params_list, res_interaction_matrix, res_group_names),\
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names) \
             = uncertainty_point_to_params_dict(uncertainty_point)
 
-    print("running sim with id {}, nreps {}, T {}".format(point_id, nreps, T))
+    print("running sim with id {}, nreps {}, T {}, filename {}, run_only_residential {}".format(point_id, nreps, T, filename, run_only_residential))
     # run simulations
     # Residential Simulation
     res_test_policy = [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0]
@@ -55,8 +55,11 @@ def run_simulation(uncertainty_point, filename, point_id=None,nreps=50, T=112):
     res_tests_per_day, res_inf_matrix, res_hosp_matrix = evaluate_testing_policy(res_params_list, res_interaction_matrix, res_group_names, res_test_policy, T, nreps)
     
     # Running virtual sims
-    print('running virtual sim with id {}'.format(point_id))
-    virtual_tests_per_day, virtual_inf_matrix, virtual_hosp_matrix = evaluate_testing_policy(virtual_params_list, virtual_interaction_matrix, virtual_group_names, virtual_test_policy, T, nreps)
+    if not run_only_residential:
+        print('running virtual sim with id {}'.format(point_id))
+        virtual_tests_per_day, virtual_inf_matrix, virtual_hosp_matrix = evaluate_testing_policy(virtual_params_list, virtual_interaction_matrix, virtual_group_names, virtual_test_policy, T, nreps)
+    else:
+        virtual_tests_per_day, virtual_inf_matrix, virtual_hosp_matrix = (None, None, None)
     
     # save output
     file = open(filename, mode='wb')

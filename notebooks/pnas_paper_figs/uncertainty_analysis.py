@@ -224,7 +224,10 @@ def load_lhs_output(sim_output_files):
 
         new_row = dict()
         for index, col_name in enumerate(UNCERTAINTY_PARAMS_LIST):
-            new_row[col_name] = uncertainty_point[index]
+            if type(uncertainty_point) == dict:
+                new_row[col_name] = uncertainty_point[col_name]
+            else:
+                new_row[col_name] = uncertainty_point[index]
 
         res_cornell_inf_quantiles, res_ithaca_inf_quantiles = get_stats(res_inf_matrix)
         new_row['res_cornell_inf_10'] = res_cornell_inf_quantiles[0]
@@ -234,14 +237,23 @@ def load_lhs_output(sim_output_files):
         new_row['res_ithaca_inf_50'] = res_ithaca_inf_quantiles[1]
         new_row['res_ithaca_inf_90'] = res_ithaca_inf_quantiles[2]
 
-        vir_cornell_inf_quantiles, vir_ithaca_inf_quantiles = get_stats(virtual_inf_matrix)
-        new_row['vir_cornell_inf_10'] = vir_cornell_inf_quantiles[0]
-        new_row['vir_cornell_inf_50'] = vir_cornell_inf_quantiles[1]
-        new_row['vir_cornell_inf_90'] = vir_cornell_inf_quantiles[2]
-        new_row['vir_ithaca_inf_10'] = vir_ithaca_inf_quantiles[0]
-        new_row['vir_ithaca_inf_50'] = vir_ithaca_inf_quantiles[1]
-        new_row['vir_ithaca_inf_90'] = vir_ithaca_inf_quantiles[2]
-        
+        if virtual_inf_matrix != None:
+            vir_cornell_inf_quantiles, vir_ithaca_inf_quantiles = get_stats(virtual_inf_matrix)
+            new_row['vir_cornell_inf_10'] = vir_cornell_inf_quantiles[0]
+            new_row['vir_cornell_inf_50'] = vir_cornell_inf_quantiles[1]
+            new_row['vir_cornell_inf_90'] = vir_cornell_inf_quantiles[2]
+            new_row['vir_ithaca_inf_10'] = vir_ithaca_inf_quantiles[0]
+            new_row['vir_ithaca_inf_50'] = vir_ithaca_inf_quantiles[1]
+            new_row['vir_ithaca_inf_90'] = vir_ithaca_inf_quantiles[2]
+        else:
+            new_row['vir_cornell_inf_10'] = None
+            new_row['vir_cornell_inf_50'] = None
+            new_row['vir_cornell_inf_90'] = None
+            new_row['vir_ithaca_inf_10'] = None
+            new_row['vir_ithaca_inf_50'] = None
+            new_row['vir_ithaca_inf_90'] = None
+
+            
 
         scenario_data = scenario_data.append(new_row, ignore_index=True)
     return scenario_data 

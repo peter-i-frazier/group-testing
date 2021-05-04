@@ -7,6 +7,10 @@ if module_path not in sys.path:
 from load_params import load_params, update_sev_prevalence
 from analysis_helpers import poisson_waiting_function
 from multi_group_simulation import MultiGroupSimulation
+import time
+
+def get_timestamp():
+    return str(time.time()).split('.')[0]
 
 
 def get_cum_hosp(df):
