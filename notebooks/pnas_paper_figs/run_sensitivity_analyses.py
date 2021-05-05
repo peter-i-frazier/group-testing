@@ -30,7 +30,7 @@ def launch_sensitivity_analysis(centre, pess, param, nreps=50):
     pess_ub = pess.copy()
     pess_ub[param] = param_ub
 
-    pess_points = get_points_on_line(pess_lb, pess_ub)
+    pess_points = get_points_on_line(pess_lb, pess_ub, mult_lb=-1.1, mult_ub=1.1)
 
     timestamp = get_timestamp()
     folder_name = './sensitivity_sims/{}_timestamp_{}/'.format(param, timestamp)
