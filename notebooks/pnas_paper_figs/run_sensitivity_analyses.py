@@ -44,7 +44,7 @@ def launch_sensitivity_analysis(centre, pess, param, base_folder, nreps=50):
     uncertainty_points = centre_points + pess_points
     fnames = centre_fnames + pess_fnames
     #import pdb; pdb.set_trace()
-    processes = run_sims_new_process(uncertainty_points, fnames, nreps=nreps, run_only_residential=True,
+    processes = run_sims_new_process(uncertainty_points, fnames, nreps=nreps, run_only_residential=False,
             wait_for_processes_to_join=False)
     return processes
 
@@ -56,7 +56,6 @@ if __name__ == "__main__":
     for i in range(2000):
         fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
-
 
     scenario_data = load_sim_output(lhs_output_sim_files)
     res_results = residential_regression(scenario_data)
