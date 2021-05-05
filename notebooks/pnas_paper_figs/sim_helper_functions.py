@@ -1,3 +1,4 @@
+import numpy as np
 from uncertainty_analysis import uncertainty_point_to_params_dict
 from multiprocessing import Process
 import dill
@@ -13,10 +14,36 @@ from multi_group_simulation import MultiGroupSimulation
 from util_functions import *
 
 
-def run_parallel_sims_lhs_space(uncertainty_points, output_folder):
-    run_parallel_sims_params_dict(
-        [uncertainty_point_to_params_dict(uncertainty_point) for uncertainty_point in uncertainty_points],
-        output_folder)
+def get_point_on_line(centre, pess, mult, direction = None):
+    if direction == None:
+        direction = {}
+        for param in centre:
+            direction[param] = pess[param] - centre[param]
+
+    point = {}
+    for param in centre:
+        point[param] = centre[param] + mult * direction[param]
+
+    return point
+
+
+def get_points_on_line(centre, pess, npoints=13, mult_lb=-0.1, mult_ub=1.1):
+    mults = np.linspace(mult_lb, mult_ub, npoints)
+    direction = {}
+    for param in centre:
+        direction[param] = pess[param] - centre[param]
+
+    return [get_point_on_line(centre, pess, mult, direction) for mult in mults]
+
+
+def run_sensitivity_analysis_sims(centre, pess, param_to_vary, output_folder, npoints=13, mult_ub=1.1, mult_lb = -0.1, nreps=50):
+    mults = np.linspace(mult_lb, mult_ub, npoints)
+    output_fnames = [output_folder + "/param_to_vary_{}__mult_{}".format(param_to_vary, mult) for mult in mults]
+
+    sim_points = get_points_on_line(centre, pess, npoints, mult_lb, mult_ub)
+    run_sims_new_process(sim_points, output_fnames, nreps=nreps, run_residential_only=True)
+
+    
 
 
 def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True):
@@ -24,7 +51,7 @@ def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_
     p.start()
     return p
 
-def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112, run_only_residential=True):
+def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112, run_only_residential=True, wait_for_processes_to_join=True):
     idx = 0
     processes = []
     for uncertainty_dict, output_fname in zip(uncertainty_point_dicts, output_fnames):
@@ -33,12 +60,20 @@ def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112
         processes.append(p)
 
     print("launched {} processes".format(len(processes)))
-    for p in processes:
-        p.join()
-    print("done running processes")
+    if wait_for_processes_to_join:
+        for p in processes:
+            p.join()
+        print("done running processes")
+        return processes
+    else:
+        return processes
 
 
-def run_simulation(uncertainty_point, filename, point_id=None,nreps=50, T=112, run_only_residential=False):
+def run_simulation(uncertainty_point, 
+                    filename, 
+                    point_id=None,
+                    nreps=50, T=112, 
+                    run_only_residential=False):
     # get params
     (res_params_list, res_interaction_matrix, res_group_names),\
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names) \

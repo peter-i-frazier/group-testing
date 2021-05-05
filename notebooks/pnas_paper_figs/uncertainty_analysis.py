@@ -140,7 +140,7 @@ def calculate_pessimistic_scenario(results):
     range_dict = dict()
     params = set(lr_results.keys()) - set(['const'])
     for param in params:
-        range_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/2
+        range_dict[param] = (PARAM_BOUNDS[param][1] + PARAM_BOUNDS[param][0])/2
 
     
     
@@ -156,12 +156,7 @@ def calculate_pessimistic_scenario(results):
 
     
     # add default virtual params if not present
-    default_virtual_param_vals = {
-            'virtual_noncompliance': 0.5, 
-            'intermittent_non-compliance': 0.5, 
-            'virtual_r0_mult': 0.97, 
-            'virtual_pop_size':0.5
-            }
+    default_virtual_param_vals = {param:(PARAM_BOUNDS[param][1] + PARAM_BOUNDS[param][0])/2 for param in ADDITIONAL_VIRTUAL_PARAMS}
     for virtual_param, val in default_virtual_param_vals.items():
         if virtual_param not in params:
             pess_scenario[virtual_param] = val
@@ -211,7 +206,7 @@ def get_stats(inf_matrix):
     return np.quantile(cornell_inf, [0.1,0.5,0.9]), np.quantile(ithaca_inf, [0.1,0.5,0.9])
 
 
-def load_lhs_output(sim_output_files):
+def load_sim_output(sim_output_files):
     scenario_data = pd.DataFrame(columns=UNCERTAINTY_PARAMS_LIST+\
             ['res_cornell_inf_10','res_cornell_inf_50','res_cornell_inf_90','res_ithaca_inf_10',
                 'res_ithaca_inf_50','res_ithaca_inf_90']+\
