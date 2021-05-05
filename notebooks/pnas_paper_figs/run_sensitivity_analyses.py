@@ -13,7 +13,7 @@ from uncertainty_analysis import *
 from sim_helper_functions import *
 
 
-def launch_sensitivity_analysis(centre, pess, param, nreps=50):
+def launch_sensitivity_analysis(centre, pess, param, base_folder, nreps=50):
     param_lb = min(centre[param], pess[param])
     param_ub = max(centre[param], pess[param])
 
@@ -23,7 +23,7 @@ def launch_sensitivity_analysis(centre, pess, param, nreps=50):
     centre_ub = centre.copy()
     centre_ub[param] = param_ub
 
-    centre_points = get_points_on_line(centre_lb, centre_ub)
+    centre_points = get_points_on_line(centre_lb, centre_ub, mult_lb=-1.1, mult_ub=1.1)
 
     pess_lb = pess.copy()
     pess_lb[param] = param_lb
@@ -32,8 +32,7 @@ def launch_sensitivity_analysis(centre, pess, param, nreps=50):
 
     pess_points = get_points_on_line(pess_lb, pess_ub, mult_lb=-1.1, mult_ub=1.1)
 
-    timestamp = get_timestamp()
-    folder_name = './sensitivity_sims/{}_timestamp_{}/'.format(param, timestamp)
+    folder_name = '{}/{}/'.format(base_folder, param)
     os.mkdir(folder_name)
 
     centre_fnames = [folder_name + 'centre_mult_{}.dill'.format(mult) for mult in \
@@ -64,10 +63,13 @@ if __name__ == "__main__":
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
 
+    base_folder = './sensitivity_sims_{}/'.format(get_timestamp())
+    os.mkdir(base_folder)
+
     processes = []
 
     for param in UNCERTAINTY_PARAMS_LIST:
-        processes.extend(launch_sensitivity_analysis(centre, res_pessimistic, param, nreps=50))
+        processes.extend(launch_sensitivity_analysis(centre, res_pessimistic, param, base_folder,nreps=50))
 
     print("finished launching processes, waiting for them to finish")
     for p in processes:
