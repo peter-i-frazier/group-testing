@@ -51,6 +51,7 @@ def launch_sensitivity_analysis(centre, pess, param, base_folder, nreps=50):
 
     
 
+SHORT_PARAM_LIST = ['inital_prev_mult', 'R0','ct_mult']
 if __name__ == "__main__":
     lhs_output_sim_files = []
     for i in range(2000):
@@ -67,7 +68,8 @@ if __name__ == "__main__":
 
     processes = []
 
-    for param in UNCERTAINTY_PARAMS_LIST:
+    for param in SHORT_PARAM_LIST:
+    #for param in PARAMS_LIST:
         processes.extend(launch_sensitivity_analysis(centre, res_pessimistic, param, base_folder,nreps=50))
 
     print("finished launching processes, waiting for them to finish")
