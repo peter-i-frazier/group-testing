@@ -679,7 +679,13 @@ class StochasticSimulation:
     def update_severity_levels(self):
         for i in range(len(self.severity_prevalence)):
             if i < self.mild_severity_levels:
-                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_mild'] * (self.severity_prevalence[i] / self.mild_symptoms_p)
+                if self.mild_symptoms_p == 0:
+                    self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_mild'] * 0
+                else:
+                    self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_mild'] * (self.severity_prevalence[i] / self.mild_symptoms_p)
             else:
-                self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * (self.severity_prevalence[i] / (1 - self.mild_symptoms_p))
+                if self.mild_symptoms_p == 1:
+                    self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * 0
+                else:
+                    self.sim_df['severity_'+str(i)] = self.sim_df['cumulative_severe'] * (self.severity_prevalence[i] / (1 - self.mild_symptoms_p))
 
