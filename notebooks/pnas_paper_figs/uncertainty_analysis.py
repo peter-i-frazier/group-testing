@@ -140,7 +140,7 @@ def calculate_pessimistic_scenario(results):
     range_dict = dict()
     params = set(lr_results.keys()) - set(['const'])
     for param in params:
-        range_dict[param] = (PARAM_BOUNDS[param][1] + PARAM_BOUNDS[param][0])/2
+        range_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/2
 
     
     
