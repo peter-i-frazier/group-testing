@@ -46,17 +46,21 @@ def run_sensitivity_analysis_sims(centre, pess, param_to_vary, output_folder, np
     
 
 
-def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True):
-    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T, run_only_residential))
+def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True, test_policy_multiplier=1):
+    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T, run_only_residential, test_policy_multiplier))
     p.start()
     return p
 
-def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112, run_only_residential=True, wait_for_processes_to_join=True):
+def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112, run_only_residential=True, wait_for_processes_to_join=True, 
+                        test_policy_multipliers=None):
     idx = 0
     processes = []
-    for uncertainty_dict, output_fname in zip(uncertainty_point_dicts, output_fnames):
+    if test_policy_multipliers==None:
+        test_policy_multipliers = [1] * len(uncertainty_point_dicts)
+    for uncertainty_dict, output_fname, test_policy_multiplier in zip(uncertainty_point_dicts, output_fnames, test_policy_multipliers):
         idx += 1
-        p = run_new_process(uncertainty_dict, output_fname, idx, nreps=nreps, T=T)
+        p = run_new_process(uncertainty_dict, output_fname, idx, nreps=nreps, T=T, 
+                run_only_residential=run_only_residential,test_policy_multiplier=test_policy_multiplier)
         processes.append(p)
 
     print("launched {} processes".format(len(processes)))
@@ -73,7 +77,8 @@ def run_simulation(uncertainty_point,
                     filename, 
                     point_id=None,
                     nreps=50, T=112, 
-                    run_only_residential=False):
+                    run_only_residential=False,
+                    test_policy_multiplier=1):
     # get params
     (res_params_list, res_interaction_matrix, res_group_names),\
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names) \
@@ -82,8 +87,11 @@ def run_simulation(uncertainty_point,
     print("running sim with id {}, nreps {}, T {}, filename {}, run_only_residential {}".format(point_id, nreps, T, filename, run_only_residential))
     # run simulations
     # Residential Simulation
-    res_test_policy = [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0]
-    virtual_test_policy = [0, 2/7,1/7,0,1/7, 2/7,1/7,1/30, 0]
+    res_test_policy_base = [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0]
+    virtual_test_policy_base = [0, 2/7,1/7,0,1/7, 2/7,1/7,1/30, 0]
+
+    res_test_policy = [freq * test_policy_multiplier for freq in res_test_policy_base]
+    virtual_test_policy = [freq * test_policy_multiplier for freq in virtual_test_policy_base]
     
     # Running res sims
     print('running residential sim with id {}'.format(point_id))
