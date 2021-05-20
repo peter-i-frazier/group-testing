@@ -125,6 +125,10 @@ class StochasticSimulation:
         self.cases_isolated_per_contact = params['cases_isolated_per_contact']
         self.cases_quarantined_per_contact = params['cases_quarantined_per_contact']
 
+        self.use_poisson_contact_tracing = True
+        if 'use_poisson_contact_tracing' in params:
+            self.use_poisson_contact_trace = params['use_poisson_contact_tracing']
+
         
         # flag governing meaning of the pre-ID state
         self.pre_ID_state = params['pre_ID_state']
@@ -244,7 +248,10 @@ class StochasticSimulation:
         self.S = self.S - total_contacts_quarantined
         self.QS = self.QS + total_contacts_quarantined
 
-        total_cases_isolated = np.random.poisson(self.cases_isolated_per_contact * resolve_today_QI)
+        if self.use_poisson_contact_tracing:
+            total_cases_isolated = np.random.poisson(self.cases_isolated_per_contact * resolve_today_QI)
+        else:
+            total_cases_isolated = int(self.cases_isolated_per_contact * resolve_today_QI)
 
         # trace these cases across E, pre-ID and ID states
 
@@ -449,8 +456,10 @@ class StochasticSimulation:
         if self.current_day - self.last_test_day >= self.days_between_tests:
             self.last_test_day = self.current_day
             new_QI += self.run_test()
-            new_contact_traces += np.random.poisson(self.contact_trace_testing_frac * new_QI)
-
+            if self.use_poisson_contact_tracing:
+                new_contact_traces += np.random.poisson(self.contact_trace_testing_frac * new_QI)
+            else:
+                new_contact_traces += int(self.contact_trace_testing_frac * new_QI)
 
         # resolve symptomatic self-reporting
         new_self_reports = self.isolate_self_reports()

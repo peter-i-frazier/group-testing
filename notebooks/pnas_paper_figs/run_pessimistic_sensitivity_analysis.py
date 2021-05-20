@@ -44,7 +44,7 @@ MULT_RANGE = np.linspace(-1.1, 1.1, 23)
 if __name__ == "__main__":
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/aaj54/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_24_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
@@ -53,6 +53,9 @@ if __name__ == "__main__":
     centre = get_centre_point()
 
     direction = get_direction(res_pessimistic, centre)
+
+    # toggle whether/not to use poisson contact tracing
+    os.environ['use_poisson_contact_tracing'] = 'False'
 
     base_folder = './pess_sensitivity_sims_{}/'.format(get_timestamp())
     os.mkdir(base_folder)

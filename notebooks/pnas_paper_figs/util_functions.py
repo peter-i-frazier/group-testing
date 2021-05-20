@@ -68,6 +68,11 @@ def run_multiple_trajectories(sim, T, n):
         hosp_matrix.append(result[1])
     return inf_matrix, hosp_matrix
 
+
+def contact_trace_param(ctraceparam):
+    global cparam
+    cparam = ctraceparam
+
 def evaluate_testing_policy(params_list, interaction_matrix, group_names, test_frac, T, n):
     assert len(params_list) == len(test_frac)
     
@@ -78,6 +83,13 @@ def evaluate_testing_policy(params_list, interaction_matrix, group_names, test_f
     for index, params in enumerate(params_list):
         params['expected_contacts_per_day'] = interaction_matrix[index, index]
         params['test_population_fraction'] = test_frac[index]
+        
+        if 'use_poisson_contact_tracing' in os.environ and os.environ['use_poisson_contact_tracing'] == 'False':
+            params['use_poisson_contact_tracing'] = False
+        else:
+            params['use_poisson_contact_tracing'] = True
+
+
         group_size.append(params['population_size'])
         tests_per_day += group_size[-1] * test_frac[index]
     
