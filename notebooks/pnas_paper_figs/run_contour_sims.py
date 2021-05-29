@@ -13,56 +13,65 @@ from uncertainty_analysis import *
 from sim_helper_functions import *
 
 
-def run_contour_plot_sims(centre, pess, mult_lb, mult_ub, 
-        test_policy_mult_lb, test_policy_mult_ub, npoints=13, nreps=50):
+def run_contour_plot_sims(base_point, x_variable = 'virtual_pop_size', y_variable = 'virtual_noncompliance', base_folder_name='./virtual_contour_plot_sims', x_lb=None, x_ub=None, y_lb=None, y_ub=None, npoints=13, nreps=50):
 
-    x_axis_base_points = get_points_on_line(centre, pess, mult_ub=mult_ub, 
-            mult_lb=mult_lb, npoints=npoints)
+    assert x_variable in get_centre_point().keys()
+    assert y_variable in get_centre_point().keys()
 
-    test_policy_mults = np.linspace(test_policy_mult_lb, test_policy_mult_ub, 
-                                    npoints)
+    if x_lb == None:
+        x_lb = PARAM_BOUNDS[x_variable][0]
+    if x_ub == None:
+        x_ub = PARAM_BOUNDS[x_variable][1]
+    if y_lb == None:
+        y_lb = PARAM_BOUNDS[y_variable][0]
+    if y_ub == None:
+        y_ub = PARAM_BOUNDS[y_variable][1]
 
-    folder_name = "./contour_plot_sims_{}/".format(get_timestamp())
+    x_values = np.linspace(x_lb, x_ub, npoints)
+    y_values = np.linspace(y_lb, y_ub, npoints)
+
+    folder_name = "{}_{}/".format(base_folder_name, get_timestamp())
     os.mkdir(folder_name)
     
-    x_axis_indices = range(len(x_axis_base_points))
-
     uncertainty_points = []
-    test_mults_for_sim_runs = []
     filenames = []
-    for x_idx in x_axis_indices:
-        for test_policy_mult in test_policy_mults:
-            point = x_axis_base_points[x_idx].copy()
+    for x_val in x_values:
+        for y_val in y_values:
+            point = base_point.copy()
+            point[x_variable] = x_val
+            point[y_variable] = y_val
             uncertainty_points.append(point)
-            test_mults_for_sim_runs.append(test_policy_mult)
-            fname = folder_name + "test_mult_{}_x_axis_point_idx_{}.dill".format(
-                                    x_idx, test_policy_mult)
+            fname = folder_name + "{}_{}_{}_{}.dill".format(
+                                    x_variable, x_val, y_variable, y_val)
             filenames.append(fname)
 
     processes = run_sims_new_process(uncertainty_points, filenames, 
-                    test_policy_multipliers=test_mults_for_sim_runs,
                     nreps=nreps,
-                    wait_for_processes_to_join=False)
+                    wait_for_processes_to_join=False, run_only_residential=False)
     
     return processes
     
 
 if __name__ == "__main__":
+
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_24_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
     res_results = residential_regression(scenario_data)
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
-
-    nreps=50
+    
+    nreps=100
     npoints=13
-    procs = run_contour_plot_sims(centre, res_pessimistic, mult_lb=-1.1, mult_ub=1.1,
-            test_policy_mult_lb=0.5, test_policy_mult_ub=1.5, npoints=npoints,
-            nreps=nreps)
+    
+    # procs = run_contour_plot_sims(centre, x_variable = 'virtual_pop_size', y_variable = 'virtual_noncompliance',
+    #         base_folder_name='./virtual_contour_plot_sims', npoints=npoints, nreps=nreps)
+
+    procs = run_contour_plot_sims(res_pessimistic, x_variable = 'test_noncompliance', y_variable = 'test_sensitivity',
+            base_folder_name='./test_comp_sens_pess_contour_sims', x_lb = 0.01, x_ub = 0.5, npoints=npoints, nreps=nreps)
 
     for p in procs:
         p.join()
