@@ -84,6 +84,8 @@ def run_simulation(uncertainty_point,
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names) \
             = uncertainty_point_to_params_dict(uncertainty_point)
 
+    np.random.seed(point_id + 10e6)
+
     print("running sim with id {}, nreps {}, T {}, filename {}, run_only_residential {}".format(point_id, nreps, T, filename, run_only_residential))
     # run simulations
     # Residential Simulation
