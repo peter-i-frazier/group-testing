@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/aaj54/group-testing/notebooks/apr_24_scenarios/point_{}.dill'.format(i)
+        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
@@ -64,14 +64,16 @@ if __name__ == "__main__":
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
     
-    nreps=100
+    nreps=250
     npoints=13
     
-    # procs = run_contour_plot_sims(centre, x_variable = 'virtual_pop_size', y_variable = 'virtual_noncompliance',
-    #         base_folder_name='./virtual_contour_plot_sims', npoints=npoints, nreps=nreps)
+    procs1 = run_contour_plot_sims(centre, x_variable = 'virtual_pop_size', y_variable = 'virtual_noncompliance',
+             base_folder_name='./may_29_sims/virtual_contour_plot_sims', npoints=npoints, nreps=nreps)
 
-    procs = run_contour_plot_sims(res_pessimistic, x_variable = 'test_noncompliance', y_variable = 'test_sensitivity',
-            base_folder_name='./test_comp_sens_pess_contour_sims', x_lb = 0.01, x_ub = 0.5, npoints=npoints, nreps=nreps)
+    procs2 = run_contour_plot_sims(res_pessimistic, x_variable = 'test_noncompliance', y_variable = 'test_sensitivity',
+            base_folder_name='./may_29_sims/test_comp_sens_pess_contour_sims', x_lb = 0.01, x_ub = 0.5, npoints=npoints, nreps=nreps)
+
+    procs = procs1 + procs2
 
     for p in procs:
         p.join()

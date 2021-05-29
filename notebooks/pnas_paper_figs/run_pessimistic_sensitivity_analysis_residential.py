@@ -48,8 +48,8 @@ if __name__ == "__main__":
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
-    # res_results = residential_regression(scenario_data)
-    res_results = virtual_vs_residential_regression(scenario_data)
+    res_results = residential_regression(scenario_data)
+    #res_results = virtual_vs_residential_regression(scenario_data)
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     # toggle whether/not to use poisson contact tracing
     os.environ['use_poisson_contact_tracing'] = 'True'
 
-    base_folder = './may_29_sims/pess_res-vir_sensitivity_sims_{}/'.format(get_timestamp())
+    base_folder = './may_29_sims/pess_res_sensitivity_sims_{}/'.format(get_timestamp())
     os.mkdir(base_folder)
 
     processes = []

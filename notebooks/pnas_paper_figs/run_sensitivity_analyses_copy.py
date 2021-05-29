@@ -1,3 +1,5 @@
+# as of may 29 2021: this is deprecated
+
 import sys
 import os
 import numpy as np

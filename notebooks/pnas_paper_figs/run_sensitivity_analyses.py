@@ -63,14 +63,14 @@ if __name__ == "__main__":
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
 
-    base_folder = './sensitivity_sims_{}/'.format(get_timestamp())
+    base_folder = './may_29_sims/sensitivity_sims_{}/'.format(get_timestamp())
     os.mkdir(base_folder)
 
     processes = []
 
-    for param in SHORT_PARAM_LIST:
-    #for param in PARAMS_LIST:
-        processes.extend(launch_sensitivity_analysis(centre, res_pessimistic, param, base_folder,nreps=50))
+    #for param in SHORT_PARAM_LIST:
+    for param in UNCERTAINTY_PARAMS_LIST:
+        processes.extend(launch_sensitivity_analysis(centre, res_pessimistic, param, base_folder,nreps=100))
 
     print("finished launching processes, waiting for them to finish")
     for p in processes:
