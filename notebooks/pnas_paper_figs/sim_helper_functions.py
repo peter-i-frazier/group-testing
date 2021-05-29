@@ -46,8 +46,8 @@ def run_sensitivity_analysis_sims(centre, pess, param_to_vary, output_folder, np
     
 
 
-def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True, test_policy_multiplier=1):
-    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T, run_only_residential, test_policy_multiplier))
+def run_new_process(uncertainty_point, filename, point_id, nreps=50, T=112, run_only_residential=True, test_policy_multiplier=1, random_seed=1000000):
+    p = Process(target = run_simulation, args = (uncertainty_point, filename, point_id, nreps, T, run_only_residential, test_policy_multiplier, random_seed))
     p.start()
     return p
 
@@ -57,10 +57,13 @@ def run_sims_new_process(uncertainty_point_dicts, output_fnames, nreps=50, T=112
     processes = []
     if test_policy_multipliers==None:
         test_policy_multipliers = [1] * len(uncertainty_point_dicts)
+
+    base_seed = np.random.randint(1000000, 10000000)
+
     for uncertainty_dict, output_fname, test_policy_multiplier in zip(uncertainty_point_dicts, output_fnames, test_policy_multipliers):
         idx += 1
         p = run_new_process(uncertainty_dict, output_fname, idx, nreps=nreps, T=T, 
-                run_only_residential=run_only_residential,test_policy_multiplier=test_policy_multiplier)
+                run_only_residential=run_only_residential,test_policy_multiplier=test_policy_multiplier, random_seed = base_seed + idx)
         processes.append(p)
 
     print("launched {} processes".format(len(processes)))
@@ -78,13 +81,14 @@ def run_simulation(uncertainty_point,
                     point_id=None,
                     nreps=50, T=112, 
                     run_only_residential=False,
-                    test_policy_multiplier=1):
+                    test_policy_multiplier=1,
+                    random_seed=1000000):
     # get params
     (res_params_list, res_interaction_matrix, res_group_names),\
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names) \
             = uncertainty_point_to_params_dict(uncertainty_point)
 
-    np.random.seed(point_id + 10e6)
+    np.random.seed(random_seed)
 
     print("running sim with id {}, nreps {}, T {}, filename {}, run_only_residential {}".format(point_id, nreps, T, filename, run_only_residential))
     # run simulations
