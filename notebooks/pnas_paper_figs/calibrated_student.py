@@ -63,7 +63,7 @@ g2_base_params_post_movein['severe_symptoms_daily_self_report_p'] = 0.36
 g3_base_params_post_movein['severe_symptoms_daily_self_report_p'] = 0.36
 
 
-def sample_movein_trajectory(transmission_p):
+def sample_movein_trajectory(transmission_p, sem_test_policy=[2/7,2/7,1/7]):
     
     movein_time_horizon = 18
 
@@ -191,6 +191,10 @@ def sample_movein_trajectory(transmission_p):
     g3_base_params_free['sample_QI_exit_function'] = binomial_exit_function(0)
     g3_base_params_post_movein['sample_QI_exit_function'] = binomial_exit_function(0)
 
+    g1_base_params_post_movein['test_population_fraction'] = sem_test_policy[0]
+    g2_base_params_post_movein['test_population_fraction'] = sem_test_policy[1]
+    g3_base_params_post_movein['test_population_fraction'] = sem_test_policy[2]
+
     
     dynamic_pop_sim1 = DynamicPopulationSim(
         g1_base_params_free,
@@ -250,10 +254,10 @@ def sample_movein_trajectory(transmission_p):
     
     return [r1,r2,r3]
 
-def sample_student_trajectories(ntrajectories, transmission_p = 0.525):
+def sample_student_trajectories(ntrajectories, transmission_p = 0.525, sem_test_policy=[2/7,2/7,1/7]):
     return_list = list()
     for _ in range(ntrajectories):
-        t =sample_movein_trajectory(transmission_p)
+        t =sample_movein_trajectory(transmission_p, sem_test_policy = sem_test_policy)
         return_list.append(t)
     return return_list
 

@@ -1,5 +1,5 @@
 def configure_plot(plt):
-    plt.style.use('seaborn-white')
+    plt.style.use('seaborn-ticks')
     plt.rcParams['axes.titlesize'] = 20
     plt.rcParams['axes.labelsize'] = 16
     plt.rcParams['legend.fontsize'] = 14
