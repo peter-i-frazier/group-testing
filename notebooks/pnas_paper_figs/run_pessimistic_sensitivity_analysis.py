@@ -44,7 +44,7 @@ MULT_RANGE = np.linspace(-1.1, 1.1, 23)
 if __name__ == "__main__":
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     # toggle whether/not to use poisson contact tracing
     os.environ['use_poisson_contact_tracing'] = 'True'
 
-    base_folder = './may_29_sims/pess_res-vir_sensitivity_sims_{}/'.format(get_timestamp())
+    base_folder = './jun_23_sims/pess_res-vir_sensitivity_sims_{}/'.format(get_timestamp())
     os.mkdir(base_folder)
 
     processes = []

@@ -37,7 +37,7 @@ def launch_prior_sims(npoints = 200, nreps=50):
         print(point)
 
     timestamp = get_timestamp()
-    folder_name = './prior_sims/timestamp_{}/'.format(timestamp)
+    folder_name = './jun_19_sims/prior_sims_{}/'.format(timestamp)
     os.mkdir(folder_name)
 
     fnames = [folder_name + 'prior_{}.dill'.format(count) for count in \

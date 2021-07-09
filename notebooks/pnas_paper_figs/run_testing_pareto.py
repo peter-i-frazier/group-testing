@@ -7,10 +7,29 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
+import itertools as it
 
 from util_functions import *
 from uncertainty_analysis import *
 from sim_helper_functions import *
+
+def get_tests_per_day(test_policy, params_list):
+    assert len(test_policy) == len(params_list)
+    tests_per_day = 0
+    for index, params in enumerate(params_list[:6]):
+        tests_per_day += np.ceil(params['population_size'] * test_policy[index])
+    return tests_per_day
+
+def equal_freq_policy(tests_per_day, params_list):
+    on_campus_pop = 0
+    for index in range(6):
+        on_campus_pop += params_list[index]['population_size']
+    equal_policy = list()
+    for _ in range(6):
+        equal_policy.append(tests_per_day / on_campus_pop)
+    equal_policy.append(1/30)
+    equal_policy.append(0)
+    return equal_policy
 
 def run_simulation(uncertainty_point,
                     test_policy,
@@ -71,45 +90,92 @@ if __name__ == "__main__":
 
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
     res_results = residential_regression(scenario_data)
     res_pessimistic = calculate_pessimistic_scenario(res_results)
 
-    test_policies = [[1/7,1/7,1/7,1/7,1/7,1/7,1/14,0],
-    [2/7,1/7,1/7,1/7,1/7,1/7,1/30,0],
-    [2/7,2/7,1/7,1/7,1/7,1/7,1/30,0],
-    [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0],
-    [2/7,1/7,2/7,1/7,1/7,1/7,1/30,0],
-    [2/7,1/7,1/7,2/7,1/7,1/7,1/30,0],
-    [2/7,1/7,1/7,1/7,2/7,1/7,1/30,0],
-    [2/7,1/7,1/7,1/7,1/7,2/7,1/30,0],
-    [2/7,2/7,2/7,1/7,2/7,1/7,1/30,0],
-    [2/7,2/7,1/7,2/7,2/7,1/7,1/30,0]]
+    groups_tested_2x_week = list()
+    for ngroups in range(7):
+        for entry in it.combinations(range(6), ngroups):
+            groups_tested_2x_week.append(entry)
+
+    test_policies = list()
+    for groups_tested in groups_tested_2x_week:
+        baseline_policy = [1/7,1/7,1/7,1/7,1/7,1/7,1/30,0]
+        for group in groups_tested:
+            baseline_policy[group] = 2/7
+        test_policies.append(baseline_policy)
+
+#    test_policies = [[1/7,1/7,1/7,1/7,1/7,1/7,1/14,0],
+#    [2/7,1/7,1/7,1/7,1/7,1/7,1/30,0],
+#    [2/7,2/7,1/7,1/7,1/7,1/7,1/30,0],
+#    [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0],
+#    [2/7,1/7,2/7,1/7,1/7,1/7,1/30,0],
+#    [2/7,1/7,1/7,2/7,1/7,1/7,1/30,0],
+#    [2/7,1/7,1/7,1/7,2/7,1/7,1/30,0],
+#    [2/7,1/7,1/7,1/7,1/7,2/7,1/30,0],
+#    [2/7,2/7,2/7,1/7,2/7,1/7,1/30,0],
+#    [2/7,2/7,1/7,2/7,2/7,1/7,1/30,0]]
+
+    equal_test_policies = list()
 
     centre_points_list = list()
+    centre_equal_points_list = list()
     pess_points_list = list()
-    for _ in test_policies:
-        centre_points_list.append(get_centre_point())
-        pess_points_list.append(res_pessimistic.copy())
+    pess_equal_points_list = list()
 
-    centre_folder = './may_29_sims/test_pareto_centre_{}/'.format(get_timestamp())
-    pess_folder = './may_29_sims/test_pareto_pess_{}/'.format(get_timestamp())
+    for test_policy in test_policies:
+        centre_points_list.append(get_centre_point())
+        centre_equal_points_list.append(get_centre_point())
+        pess_points_list.append(res_pessimistic.copy())
+        pess_equal_points_list.append(res_pessimistic.copy())
+
+        params_list = uncertainty_point_to_params_dict(get_centre_point())[0][0]
+        equal_test_policies.append(equal_freq_policy(get_tests_per_day(test_policy, params_list), params_list))
+
+    centre_folder = './jun_23_sims/test_pareto_centre_{}/'.format(get_timestamp())
+    centre_equal_folder = './jun_23_sims/test_pareto_centre_equal_{}/'.format(get_timestamp())
+    pess_folder = './jun_23_sims/test_pareto_pess_{}/'.format(get_timestamp())
+    pess_equal_folder = './jun_23_sims/test_pareto_pess_equal_{}/'.format(get_timestamp())
 
     os.mkdir(centre_folder)
+    os.mkdir(centre_equal_folder)
     os.mkdir(pess_folder)
+    os.mkdir(pess_equal_folder)
 
     centre_fnames = [centre_folder + 'point_{}.dill'.format(count) for count in \
                    range(len(centre_points_list))]
-
+    centre_equal_fnames = [centre_equal_folder + 'point_{}.dill'.format(count) for count in \
+                   range(len(centre_equal_points_list))]
     pess_fnames = [pess_folder + 'point_{}.dill'.format(count) for count in range(len(pess_points_list))]
+    pess_equal_fnames = [pess_equal_folder + 'point_{}.dill'.format(count) for count in range(len(pess_equal_points_list))]
 
     processes = []
 
     processes.extend(run_sims_new_process(centre_points_list, test_policies, centre_fnames, nreps=100))
     processes.extend(run_sims_new_process(pess_points_list, test_policies, pess_fnames, nreps=100))
+    print(equal_test_policies[0])
+    processes.extend(run_sims_new_process(centre_equal_points_list, equal_test_policies, centre_equal_fnames, nreps=100))
+    processes.extend(run_sims_new_process(pess_equal_points_list, equal_test_policies, pess_equal_fnames, nreps=100))
+
+    file = open(centre_folder + 'test_policies.dill', mode='wb')
+    dill.dump([test_policies], file)
+    file.close()
+
+    file = open(centre_equal_folder + 'test_policies.dill', mode='wb')
+    dill.dump([equal_test_policies], file)
+    file.close()
+
+    file = open(pess_folder + 'test_policies.dill', mode='wb')
+    dill.dump([test_policies], file)
+    file.close()
+
+    file = open(pess_equal_folder + 'test_policies.dill', mode='wb')
+    dill.dump([equal_test_policies], file)
+    file.close()
 
     print("finished launching processes, waiting for them to finish")
     for p in processes:

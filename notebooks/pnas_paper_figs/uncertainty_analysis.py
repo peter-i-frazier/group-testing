@@ -12,6 +12,7 @@ if module_path not in sys.path:
         sys.path.append(module_path + "/src/simulations_v2")
 from load_params import load_params, update_sev_prevalence
 from analysis_helpers import poisson_waiting_function
+from scipy.stats import norm
 
 # list of parameter names that are varied in the uncertainty analysis
 UNCERTAINTY_PARAMS_LIST = ['asymp_prob_mult', 'inital_prev_mult', 'R0', 'outside_inf_mult', 'daily_self_report_prob',
@@ -133,36 +134,71 @@ def uncertainty_point_to_params_dict(uncertainty_point_dict):
     return (res_params_list, res_interaction_matrix, res_group_names), \
             (virtual_params_list, virtual_interaction_matrix, virtual_group_names)
 
-def calculate_pessimistic_scenario(results):
+
+def calculate_pessimistic_scenario(results, q=0.99, beta=1.96):
     # the keys in dict(results.params) specify whether this is for residential
     # or virtual vs. residential
     lr_results = dict(results.params)
-    range_dict = dict()
+    sd_dict = dict()
+    pess_direction = dict()
     params = set(lr_results.keys()) - set(['const'])
-    for param in params:
-        range_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/2
-
+    centre_infections = lr_results['const']
     
+    invquantile = norm.ppf(q)
     
-    sum_squares = 0
     for param in params:
-        sum_squares += ((lr_results[param]*range_dict[param])/2) ** 2
-
-    # calculate pessimistic scenario based on available params
-    pess_scenario = dict()
+        sd_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/(2*beta)
+        centre_infections += np.mean(PARAM_BOUNDS[param]) * lr_results[param]
+    
+    sum_squares_Sigma_1 = 0
+    
     for param in params:
-        pess_scenario[param] = np.mean(PARAM_BOUNDS[param]) + \
-            ((lr_results[param] * (range_dict[param])**2) / 2) / np.sqrt(sum_squares)
-
+        sum_squares_Sigma_1 += (lr_results[param]*sd_dict[param]) ** 2
+        
+    for param in params:
+        pess_direction[param] = lr_results[param]*(sd_dict[param])**2 / np.sqrt(sum_squares_Sigma_1)
+    
+    mp_pess_scenario = dict()
+    for param in params:
+        mp_pess_scenario[param] = np.mean(PARAM_BOUNDS[param]) + invquantile * pess_direction[param]
     
     # add default virtual params if not present
     default_virtual_param_vals = {param:(PARAM_BOUNDS[param][1] + PARAM_BOUNDS[param][0])/2 for param in ADDITIONAL_VIRTUAL_PARAMS}
     for virtual_param, val in default_virtual_param_vals.items():
         if virtual_param not in params:
-            pess_scenario[virtual_param] = val
+            mp_pess_scenario[virtual_param] = val
+    
+    return mp_pess_scenario
 
-    return pess_scenario
 
+# Old version of calculate_pessimistic_scenario is below. Depricated as of 6/18
+#def calculate_pessimistic_scenario_DEPRICATED(results):
+#    # the keys in dict(results.params) specify whether this is for residential
+#    # or virtual vs. residential
+#    lr_results = dict(results.params)
+#    range_dict = dict()
+#    params = set(lr_results.keys()) - set(['const'])
+#    for param in params:
+#        range_dict[param] = (PARAM_BOUNDS[param][1] - PARAM_BOUNDS[param][0])/2
+#
+#    sum_squares = 0
+#    for param in params:
+#        sum_squares += ((lr_results[param]*range_dict[param])/2) ** 2
+#
+#    # calculate pessimistic scenario based on available params
+#    pess_scenario = dict()
+#    for param in params:
+#        pess_scenario[param] = np.mean(PARAM_BOUNDS[param]) + \
+#            ((lr_results[param] * (range_dict[param])**2) / 2) / np.sqrt(sum_squares)
+#
+#    # add default virtual params if not present
+#    default_virtual_param_vals = {param:(PARAM_BOUNDS[param][1] + PARAM_BOUNDS[param][0])/2 for param in ADDITIONAL_VIRTUAL_PARAMS}
+#    for virtual_param, val in default_virtual_param_vals.items():
+#        if virtual_param not in params:
+#            pess_scenario[virtual_param] = val
+#
+#    return pess_scenario
+#
 def residential_regression(scenario_data):
     residential_columns = scenario_data.columns[0:12]
     residential_target = 'res_cornell_inf_50'

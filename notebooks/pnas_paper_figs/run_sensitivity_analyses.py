@@ -55,7 +55,7 @@ SHORT_PARAM_LIST = ['inital_prev_mult', 'R0','ct_mult']
 if __name__ == "__main__":
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     res_pessimistic = calculate_pessimistic_scenario(res_results)
     centre = get_centre_point()
 
-    base_folder = './may_31_sims/sensitivity_sims_{}/'.format(get_timestamp())
+    base_folder = './jun_23_sims/sensitivity_sims_{}/'.format(get_timestamp())
     os.mkdir(base_folder)
 
     processes = []

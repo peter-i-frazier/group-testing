@@ -22,7 +22,7 @@ def run_contour_plot_sims(centre, pess, mult_lb, mult_ub,
     test_policy_mults = np.linspace(test_policy_mult_lb, test_policy_mult_ub, 
                                     npoints)
 
-    folder_name = "./contour_plot_sims_{}/".format(get_timestamp())
+    folder_name = "jun_23_sims/scenario_test_freq_contour_{}/".format(get_timestamp())
     os.mkdir(folder_name)
     
     x_axis_indices = range(len(x_axis_base_points))
@@ -50,7 +50,7 @@ def run_contour_plot_sims(centre, pess, mult_lb, mult_ub,
 if __name__ == "__main__":
     lhs_output_sim_files = []
     for i in range(2000):
-        fname = '/home/jmc678/covid_data/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
+        fname = '/home/aaj54/group-testing/notebooks/apr_29_scenarios/point_{}.dill'.format(i)
         lhs_output_sim_files.append(fname)
 
     scenario_data = load_sim_output(lhs_output_sim_files)
