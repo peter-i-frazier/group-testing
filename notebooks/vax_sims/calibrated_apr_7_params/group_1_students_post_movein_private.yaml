@@ -1,0 +1,31 @@
+E_time_params:
+- 2
+- 7
+ID_time_params:
+- 3
+- 8
+Sy_time_params:
+- 12
+- 20
+_age_severity_config: ../age_severity_config.yaml
+_scenario_name: Group 1 Students (post move-in) Parameters, Private
+asymptomatic_daily_self_report_p: 0
+asymptomatic_pct_mult: 1
+cases_isolated_per_contact: 1.329
+cases_quarantined_per_contact: 4.785
+contact_trace_testing_frac: 1
+contact_tracing_delay: 1
+daily_leave_QI_p: 0.0714285
+daily_leave_QS_p: 0.0714285
+daily_outside_infection_p: 1.42e-05
+days_between_tests: 1
+expected_contacts_per_day: 0.736
+exposed_infection_p: 0.018
+initial_ID_prevalence: 0
+perform_contact_tracing: true
+population_size: 0
+symptomatic_daily_self_report_p: 0.22
+test_population_fraction: 0.285714
+test_protocol_QFNR: 0.4156000000000001
+test_protocol_QFPR: 0
+use_asymptomatic_testing: true
