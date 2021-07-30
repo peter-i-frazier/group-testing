@@ -1,0 +1,4 @@
+_base_config: /home/aaj54/group-testing/notebooks/vax_sims/vax_sim_nominal_params/ug_greek_athlete_nominal.yaml
+vax_test_freq: 0.142857
+unvax_test_freq: 0.285714
+vax_proportion: 0.879

@@ -1,0 +1,4 @@
+_base_config: /home/aaj54/group-testing/notebooks/vax_sims/vax_sim_nominal_params/grad_other_nominal.yaml
+vax_test_freq: 0.142857
+unvax_test_freq: 0.142857
+vax_proportion: 0.84
