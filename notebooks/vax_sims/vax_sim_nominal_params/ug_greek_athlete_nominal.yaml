@@ -21,7 +21,7 @@ daily_outside_infection_p: 1.42e-05
 days_between_tests: 1
 expected_contacts_per_day: 7.36 # 0.736 * 10
 exposed_infection_p: 0.13125 #0.525 * 2.5 / 10 = 0.13125
-initial_ID_prevalence: 0
+initial_ID_prevalence: 0.000359 # 4.3 / 11971 
 perform_contact_tracing: true
 population_size: 3533 
 symptomatic_daily_self_report_p: 0.36
