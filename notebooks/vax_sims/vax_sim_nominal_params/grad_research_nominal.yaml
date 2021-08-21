@@ -7,7 +7,7 @@ ID_time_params:
 Sy_time_params:
 - 12
 - 20
-_age_severity_config: /home/aaj54/group-testing/notebooks/vax_sims/vax_sim_nominal_params/age_severity_config.yaml
+_age_severity_config: ./age_severity_config.yaml
 _scenario_name: Grad Student (Research)
 asymptomatic_daily_self_report_p: 0
 asymptomatic_pct_mult: 1

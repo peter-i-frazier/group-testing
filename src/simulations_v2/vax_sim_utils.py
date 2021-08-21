@@ -19,7 +19,8 @@ def generate_vax_unvax_multigroup_sim(orig_group_params, orig_group_names,
     new_group_params = []
     new_group_vax_statuses = []
 
-    new_contact_matrix = np.zeros(orig_contact_matrix.shape)
+    
+    new_contact_matrix = np.zeros((2*N,2*N))
     group_idx = 0
     for group_params, vax_rate in zip(orig_group_params, vax_rates_by_group):
         assert(vax_rate >= 0 and vax_rate <= 1)
@@ -55,6 +56,7 @@ def generate_vax_unvax_multigroup_sim(orig_group_params, orig_group_names,
             j_vax_group_id = j * 2
             j_unvax_group_id = j * 2 + 1
 
+            #import pdb; pdb.set_trace()
             new_contact_matrix[vax_group_id, j_vax_group_id] = vax_contact_freq
             new_contact_matrix[vax_group_id, j_unvax_group_id] = vax_contact_freq
 
