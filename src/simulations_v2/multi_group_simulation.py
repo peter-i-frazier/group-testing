@@ -28,6 +28,14 @@ class MultiGroupSimulation:
         self.N = len(group_params)
         self.interaction_matrix = interaction_matrix
 
+        for i in range(self.N):
+            if self.sims[i].daily_contacts_lambda != interaction_matrix[i,i]:
+                print("Warning: expected contacts per day in group {} config does not match contact matrix diagonal element.".format(i))
+                print("         Overrideing expected contacts per day in group {} to diagonal element of contact matrix.".format(i))
+                print("         Old value: {}".format(self.sims[i].daily_contacts_lambda))
+                self.sims[i].daily_contacts_lambda = interaction_matrix[i,i]
+                print("         New value: {}".format(self.sims[i].daily_contacts_lambda))
+
         self.original_interaction_matrix = interaction_matrix
         self.original_daily_contacts = [sim.daily_contacts_lambda for sim in self.sims]
         self.lockdown_in_effect = False
