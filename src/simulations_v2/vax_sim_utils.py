@@ -21,12 +21,17 @@ def create_multigrp_vax_sim(group_params, group_vax_statuses, interaction_matrix
 
             vax_weighted_interaction_matrix[i,j] = j_to_i_contact_freq
 
+    for i in range(N):
+        group_params[i]['expected_contacts_per_day'] = vax_weighted_interaction_matrix[i,i]
+
     return MultiGroupSimulation(group_params, vax_weighted_interaction_matrix)
 
 def load_vax_group_configs(vax_config_yaml):
     with open(vax_config_yaml, "rb") as f:
         vax_config = yaml.load(f)
+    return process_vax_config(vax_config)
 
+def process_vax_config(vax_config):
     base_config_yaml = vax_config['_base_config']
     base_config_unvax = load_params(base_config_yaml)[1]
 
