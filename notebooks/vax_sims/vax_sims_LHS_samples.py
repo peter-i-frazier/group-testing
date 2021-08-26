@@ -28,36 +28,21 @@ from vax_sim_utils import generate_vax_unvax_multigroup_sim
 UNCERTAINTY_PARAMS = ['vax_susc_mult', 'vax_transmission_mult', 'contacts_per_day_mult', 'outside_infection_rate_mult', 'cases_isolated_per_contact_trace']
 
 UNCERTAINTY_PARAM_RANGES = {
-    'vax_susc_mult': (0.1, 0.5),
-    'vax_transmission_mult': (0.5, 1),
+    'vax_susc_mult': (0.097608, 0.941192), # 0.5194 +/- 1.96 * 0.2152
+    'vax_transmission_mult': (0.25, 1),
     'contacts_per_day_mult': (1.4,3.2),
     'outside_infection_rate_mult': (1, 5),
     'cases_isolated_per_contact_trace': (0.5,1.5)
-# add initial prevalence as a parameter
 }
-
-lb = list()
-ub = list()
-
-for param in UNCERTAINTY_PARAMS:
-    lb.append(UNCERTAINTY_PARAM_RANGES[param][0])
-    ub.append(UNCERTAINTY_PARAM_RANGES[param][1])
-
-
-np.random.seed(2021)
-
-dim = len(UNCERTAINTY_PARAMS)
-num_samples = 2000
-lhs_points = pyDOE.lhs(dim, samples=num_samples)
-
-for i in range(dim):
-    lhs_points[:, i] = (1 - lhs_points[:,i]) * lb[i] + lhs_points[:,i] * ub[i]
 
 def load_calibrated_params():
     employee_base_params = load_params("./vax_sim_nominal_params/employee_nominal.yaml")[1]
     grad_base_params = load_params("./vax_sim_nominal_params/grad_research_nominal.yaml")[1]
     ug_ga_base_params = load_params("./vax_sim_nominal_params/ug_greek_athlete_nominal.yaml")[1]
     ug_other_base_params = load_params("./vax_sim_nominal_params/ug_other_nominal.yaml")[1]
+    
+    ug_ga_base_params['initial_ID_prevalence'] = 0.003
+    ug_other_base_params['initial_ID_prevalence'] = 0.003
     
     # order is ug_ga, ug_other, grad, employees
     contact_matrix = np.matrix(
@@ -126,7 +111,26 @@ def run_simulations(lhs_point, idx, output_folder):
         dill.dump(list_of_infs_by_group, f)
 
 if __name__ == "__main__":
-    
+
+
+    lb = list()
+    ub = list()
+
+    for param in UNCERTAINTY_PARAMS:
+        lb.append(UNCERTAINTY_PARAM_RANGES[param][0])
+        ub.append(UNCERTAINTY_PARAM_RANGES[param][1])
+
+
+    np.random.seed(2021)
+
+    dim = len(UNCERTAINTY_PARAMS)
+    num_samples = 200
+    lhs_points = pyDOE.lhs(dim, samples=num_samples)
+
+    for i in range(dim):
+        lhs_points[:, i] = (1 - lhs_points[:,i]) * lb[i] + lhs_points[:,i] * ub[i]
+
+   
     processes = []
     timestamp = time.time()
     output_folder = "./lhs_vax_sims:{}/".format(timestamp)
