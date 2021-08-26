@@ -1,4 +1,5 @@
 import sys
+import time
 import yaml
 import os
 import numpy as np
@@ -28,10 +29,11 @@ UNCERTAINTY_PARAMS = ['vax_susc_mult', 'vax_transmission_mult', 'contacts_per_da
 
 UNCERTAINTY_PARAM_RANGES = {
     'vax_susc_mult': (0.1, 0.5),
-    'vax_transmission_mult': (0.4, 0.8),
+    'vax_transmission_mult': (0.5, 1),
     'contacts_per_day_mult': (1.4,3.2),
-    'outside_infection_rate_mult': (1, 3),
+    'outside_infection_rate_mult': (1, 5),
     'cases_isolated_per_contact_trace': (0.5,1.5)
+# add initial prevalence as a parameter
 }
 
 lb = list()
@@ -92,15 +94,54 @@ def map_lhs_point_to_vax_sim(lhs_point):
                                     vax_trans_mult, vax_susc_mult)
 
 
+def get_cum_infections(df):
+    return df[['cumulative_mild', 'cumulative_severe']].iloc[df.shape[0]-1].sum()
 
-for i in range(lhs_points.shape[0]):
-# for i in range(20):
-    point = lhs_points[i,:]
+
+def run_multigroup_sim(sim, T):
+    sim.run_new_trajectory(T)
+    infs_by_group = []
+    for group in sim.sims:
+        df = group.sim_df
+        infs.append(get_cum_infections(df))
+    return infs_by_group
+
+
+def run_multiple_trajectories(sim, T, n):
+    infs_by_group_list = []
+    for _ in range(n):
+        infs_by_group = run_multigroup_sim(sim,T)
+        infs_by_group_list.append(infs_by_group)
+    return infs_by_group_list
+
+
+def run_simulations(lhs_point, idx, output_folder):
+    T=112
+    n=50
     vax_sim = map_lhs_point_to_vax_sim(point)
+    list_of_infs_by_group = run_multiple_trajectories(vax_sim, T, n)
+    with open(output_folder + "lhs_point_{}.dill".format(idx)) as f:
+        dill.dump(lhs_point, f)
+    with open(output_folder + "list_of_infs_by_group_{}.dill".format(idx)) as f:
+        dill.dump(list_of_infs_by_group, f)
 
-    vax_sim.run_new_trajectory(25)
-    import pdb; pdb.set_trace()
+if __name__ == "__main__":
+    
+    processes = []
+    timestamp = time.time()
+    output_folder = "./lhs_vax_sims:{}/".format(timestamp)
+    os.mkdir(output_folder)
+    for i in range(lhs_points.shape[0]):
+        point = lhs_points[i,:]
 
+        p = multiprocessing.Process(target = run_simulations, args = (point, i, output_folder))
+        p.start()
+        processes.append(p)
+    print("done launching {} processes".format(len(processes)))
+    for p in processes:
+        p.join()
+
+    print("processes finished running")
             
 
 
