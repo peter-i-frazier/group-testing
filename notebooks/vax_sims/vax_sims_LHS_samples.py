@@ -88,7 +88,7 @@ def run_multigroup_sim(sim, T):
     infs_by_group = []
     for group in sim.sims:
         df = group.sim_df
-        infs.append(get_cum_infections(df))
+        infs_by_group.append(get_cum_infections(df))
     return infs_by_group
 
 
@@ -105,9 +105,9 @@ def run_simulations(lhs_point, idx, output_folder):
     n=50
     vax_sim = map_lhs_point_to_vax_sim(point)
     list_of_infs_by_group = run_multiple_trajectories(vax_sim, T, n)
-    with open(output_folder + "lhs_point_{}.dill".format(idx)) as f:
+    with open(output_folder + "lhs_point_{}.dill".format(idx), "wb") as f:
         dill.dump(lhs_point, f)
-    with open(output_folder + "list_of_infs_by_group_{}.dill".format(idx)) as f:
+    with open(output_folder + "list_of_infs_by_group_{}.dill".format(idx), "wb") as f:
         dill.dump(list_of_infs_by_group, f)
 
 if __name__ == "__main__":
