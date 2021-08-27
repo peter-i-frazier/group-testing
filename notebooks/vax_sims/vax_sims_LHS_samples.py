@@ -30,7 +30,7 @@ UNCERTAINTY_PARAMS = ['vax_susc_mult', 'vax_transmission_mult', 'contacts_per_da
 UNCERTAINTY_PARAM_RANGES = {
     'vax_susc_mult': (0.097608, 0.941192), # 0.5194 +/- 1.96 * 0.2152
     'vax_transmission_mult': (0.25, 1),
-    'contacts_per_day_mult': (1.4,3.2),
+    'contacts_per_day_mult': (0.9,2.7),
     'outside_infection_rate_mult': (1, 5),
     'cases_isolated_per_contact_trace': (0.5,1.5)
 }
@@ -58,6 +58,11 @@ def load_calibrated_params():
             contact_matrix,\
             vax_rates
 
+
+def nominal_params_vax_sim():
+    nominal_point = np.array([np.mean(UNCERTAINTY_PARAM_RANGES[key]) for key in UNCERTAINTY_PARAMS])
+    return map_lhs_point_to_vax_sim(nominal_point)
+
 def map_lhs_point_to_vax_sim(lhs_point):
     base_params, base_group_names, contact_matrix, vax_rates = load_calibrated_params()
 
@@ -74,9 +79,32 @@ def map_lhs_point_to_vax_sim(lhs_point):
     base_params[1]['cases_isolated_per_contact_trace'] = lhs_point[4]
     base_params[2]['cases_isolated_per_contact_trace'] = lhs_point[4]
 
-    return generate_vax_unvax_multigroup_sim(base_params, base_group_names,
+    vax_sim = generate_vax_unvax_multigroup_sim(base_params, base_group_names,
                                     vax_rates, contact_matrix,
                                     vax_trans_mult, vax_susc_mult)
+
+    return vax_sim
+
+
+def update_vax_sim_params(vax_sim, param_modifiers):
+    # order is [ug_ga_vax, ug_ga_unvax, ug_other_vax, ug_other_unvax, grad_vax, grad_unvax, employee_vax, employee_unvax]
+    # which corresponds to [0,       1,            2,              3,        4,          5,            6,              7]
+
+    test_frequency_specifiers = ['ug_ga_vax_test_frequency', 'ug_ga_unvax_test_frequency', 
+            'ug_other_vax_test_frequency', 'ug_other_unvax_test_frequency',
+            'grad_vax_test_frequency', 'grad_unvax_test_frequency',
+            'employee_vax_test_frequency', 'employee_unvax_test_frequency']
+                            
+    
+    for idx, frequency_specifier in enumerate(test_frequency_specifiers):
+        if frequency_specifier in param_modifiers:
+            vax_sim.sims[idx].test_pop_fraction = param_modifiers[frequency_specifier]
+
+
+    if 'contact_tracing_delay' in param_modifiers:
+        for idx in range(len(vax_sim.sims)):
+            vax_sim.sims[idx].contact_tracing_delay = param_modifiers['contact_tracing_delay']
+
 
 
 def get_cum_infections(df):
