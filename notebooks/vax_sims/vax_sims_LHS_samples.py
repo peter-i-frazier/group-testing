@@ -59,8 +59,10 @@ def load_calibrated_params():
             vax_rates
 
 
-def nominal_params_vax_sim():
+def nominal_params_vax_sim(param_modifiers={}):
     nominal_point = np.array([np.mean(UNCERTAINTY_PARAM_RANGES[key]) for key in UNCERTAINTY_PARAMS])
+    if 'contacts_per_day_mult' in param_modifiers:
+        nominal_point[2] = param_modifiers['contacts_per_day_mult']
     return map_lhs_point_to_vax_sim(nominal_point)
 
 def map_lhs_point_to_vax_sim(lhs_point):
@@ -74,10 +76,11 @@ def map_lhs_point_to_vax_sim(lhs_point):
 
     for params in base_params:
         params['daily_outside_infection_p'] = params['daily_outside_infection_p'] * lhs_point[3]
+        
 
-    base_params[0]['cases_isolated_per_contact_trace'] = lhs_point[4]
-    base_params[1]['cases_isolated_per_contact_trace'] = lhs_point[4]
-    base_params[2]['cases_isolated_per_contact_trace'] = lhs_point[4]
+    base_params[0]['cases_isolated_per_contact'] *= lhs_point[4]
+    base_params[1]['cases_isolated_per_contact'] *= lhs_point[4]
+    base_params[2]['cases_isolated_per_contact'] *= lhs_point[4]
 
     vax_sim = generate_vax_unvax_multigroup_sim(base_params, base_group_names,
                                     vax_rates, contact_matrix,
