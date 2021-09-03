@@ -51,7 +51,7 @@ def load_calibrated_params():
                 [0, 0.023, .067, 0],
                 [0,0,0,1]]) * 10
 
-    vax_rates = [0.9, 0.9, 0.9, 0.8]
+    vax_rates = [0.95, 0.95, 0.95, 0.8]
 
     return [ug_ga_base_params, ug_other_base_params, grad_base_params, employee_base_params], \
             ["ug_ga", "ug_other", "grad", "employees"], \
@@ -65,7 +65,7 @@ def nominal_params_vax_sim(param_modifiers={}):
         nominal_point[2] = param_modifiers['contacts_per_day_mult']
     return map_lhs_point_to_vax_sim(nominal_point)
 
-def map_lhs_point_to_vax_sim(lhs_point):
+def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None):
     base_params, base_group_names, contact_matrix, vax_rates = load_calibrated_params()
 
 
@@ -85,6 +85,8 @@ def map_lhs_point_to_vax_sim(lhs_point):
     vax_sim = generate_vax_unvax_multigroup_sim(base_params, base_group_names,
                                     vax_rates, contact_matrix,
                                     vax_trans_mult, vax_susc_mult)
+
+    update_vax_sim_params(vax_sim, param_modifiers)
 
     return vax_sim
 
@@ -108,7 +110,28 @@ def update_vax_sim_params(vax_sim, param_modifiers):
         for idx in range(len(vax_sim.sims)):
             vax_sim.sims[idx].contact_tracing_delay = param_modifiers['contact_tracing_delay']
 
+    # Changing initial prevalence
+    if 'initial_ID_prevalence' in param_modifiers:
+        assert len(param_modifiers['initial_ID_prevalence']) == len(vax_sim.sims)
+        for idx, init_prevalence in enumerate(param_modifiers['initial_ID_prevalence']):
+            vax_sim.sims[idx].init_ID_prevalence = init_prevalence
 
+    # Changing contact tracing effectiveness
+    if 'cases_isolated_per_contact_mult' in param_modifiers:
+        for sim in vax_sim.sims:
+            sim.cases_isolated_per_contact *= param_modifiers['cases_isolated_per_contact_mult']
+
+    # Test delay of d days implemented by adding infectious period of d days before ID state
+    if 'test_delay' in param_modifiers and param_modifiers['test_delay'] > 0:
+        for sim in vax_sim.sims:
+            sim.pre_ID_state = 'infectious'
+            sim.max_time_pre_ID = param_modifiers['test_delay']
+            sim.sample_pre_ID_times = constant_delay_function(param_modifiers['test_delay']) 
+
+def constant_delay_function(time):
+    array = np.zeros(time+1)
+    array[time] = 1
+    return (lambda n: np.random.multinomial(n, array))
 
 def get_cum_infections(df):
     return df[['cumulative_mild', 'cumulative_severe']].iloc[df.shape[0]-1].sum()
@@ -131,10 +154,10 @@ def run_multiple_trajectories(sim, T, n):
     return infs_by_group_list
 
 
-def run_simulations(lhs_point, idx, output_folder):
+def run_simulations(lhs_point, idx, output_folder, param_modifiers = None):
     T=112
     n=50
-    vax_sim = map_lhs_point_to_vax_sim(point)
+    vax_sim = map_lhs_point_to_vax_sim(point, param_modifiers)
     list_of_infs_by_group = run_multiple_trajectories(vax_sim, T, n)
     with open(output_folder + "lhs_point_{}.dill".format(idx), "wb") as f:
         dill.dump(lhs_point, f)
@@ -161,6 +184,10 @@ if __name__ == "__main__":
     for i in range(dim):
         lhs_points[:, i] = (1 - lhs_points[:,i]) * lb[i] + lhs_points[:,i] * ub[i]
 
+    param_modifiers = {'ug_ga_vax_test_frequency': 1/7, 'ug_ga_unvax_test_frequency': 2/7,
+            'ug_other_vax_test_frequency': 1/7, 'ug_other_unvax_test_frequency': 2/7,
+            'grad_vax_test_frequency': 1/7, 'grad_unvax_test_frequency': 2/7,
+            'employee_vax_test_frequency': 1/7, 'employee_unvax_test_frequency': 2/7}
    
     processes = []
     timestamp = time.time()
@@ -169,7 +196,7 @@ if __name__ == "__main__":
     for i in range(lhs_points.shape[0]):
         point = lhs_points[i,:]
 
-        p = multiprocessing.Process(target = run_simulations, args = (point, i, output_folder))
+        p = multiprocessing.Process(target = run_simulations, args = (point, i, output_folder, param_modifiers))
         p.start()
         processes.append(p)
     print("done launching {} processes".format(len(processes)))

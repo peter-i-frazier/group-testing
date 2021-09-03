@@ -1,0 +1,1 @@
+These sims assume that student vax rate is 90%. This is outdated, we now assume 95%
