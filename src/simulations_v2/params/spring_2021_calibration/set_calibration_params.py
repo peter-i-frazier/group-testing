@@ -7,9 +7,15 @@ with open('nominal.yaml') as f:
 parameter update history:
 [] test frequencies
 [] params for employees
+[x] others: last updated 9/20/2021
 
+Group 1: UG, Greek/athlete
+Group 2: UG, non Greek/athlete
+Group 3: MBA
+Group 4: Grad/prof, non MBA
+"""
 
-
+"""
 private calibration for students
 group 1
 """
