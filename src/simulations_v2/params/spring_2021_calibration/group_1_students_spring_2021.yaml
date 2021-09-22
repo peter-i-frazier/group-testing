@@ -19,9 +19,9 @@ daily_leave_QI_p: 0.0714285
 daily_leave_QS_p: 0.0714285
 daily_outside_infection_p: 1.44e-05
 days_between_tests: 1
-expected_contacts_per_day: 0.9464
+expected_contacts_per_day: 0.9318
 exposed_infection_p: 0
-initial_ID_prevalence: 0.004217482727545809
+initial_ID_prevalence: 0.007340012015620306
 perform_contact_tracing: true
 population_size: 3329
 symptomatic_daily_self_report_p: 0.22
