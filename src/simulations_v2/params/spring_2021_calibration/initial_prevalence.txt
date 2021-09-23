@@ -1,3 +1,4 @@
-free and infectious: [10.8  52.92  3.24  7.56]
-secondary_infections: [13.6349 16.8048  1.5623  1.0752]
-total free and infectious: [24.4349 69.7248  4.8023  8.6352]
+free and infectious: [12.96 52.92  3.24  7.56]
+secondary_infections: [13.0853 17.2056  1.244   1.1216]
+total free and infectious: [26.0453 70.1256  4.484   8.6816]
+outside_infection_rate: [9.61249625e-06 1.77128307e-06 4.49438202e-05 1.53051464e-06]
