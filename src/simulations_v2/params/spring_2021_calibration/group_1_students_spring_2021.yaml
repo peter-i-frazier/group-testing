@@ -17,11 +17,11 @@ contact_trace_testing_frac: 1
 contact_tracing_delay: 1
 daily_leave_QI_p: 0.0714285
 daily_leave_QS_p: 0.0714285
-daily_outside_infection_p: 9.612496245118654e-06
+daily_outside_infection_p: 1.6821868428957645e-05
 days_between_tests: 1
 expected_contacts_per_day: 0.7307
 exposed_infection_p: 0
-initial_ID_prevalence: 0.007823760889155902
+initial_ID_prevalence: 0.003844998498047462
 perform_contact_tracing: true
 population_size: 3329
 symptomatic_daily_self_report_p: 0.22

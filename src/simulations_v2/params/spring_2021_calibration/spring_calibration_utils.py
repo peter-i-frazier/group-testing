@@ -29,9 +29,9 @@ def compute_score(sim_df, actual_df):
 
 class SpringCalibration:
     # 125 days from january 21 through may 25
-    # day 78 corresponds to april 9, which is the week we saw increased testing frequency according to the data 
+    # day 78 corresponds to april 9, which is the week we saw increased testing frequency according to the data
     def __init__(self, exposed_infection_p, sim_length=124, change_t=78):
-    
+
         # transpose of 4x4 matrix in pnas calibration doc
         interaction_matrix = np.array([[0.9464, 0.0943, 0.    , 0.    ],
                                        [0.2036, 0.3205, 0.    , 0.0189],
@@ -57,7 +57,7 @@ class SpringCalibration:
             params['sample_QI_exit_function'] = binomial_exit_function(0)
             group_names.append(name)
             group_params.append(params)
-            
+
 
         self.multigroup_sim = MultiGroupSimulation(group_params, interaction_matrix, group_names)
 
@@ -89,17 +89,17 @@ class SpringCalibration:
         return sim_df, [sim.sim_df for sim in self.multigroup_sim.sims]
 
 
-    
+
     def score_trajectory(self, cumulative_sim_df, sim_dfs_by_group):
         cumulative_score = compute_score(cumulative_sim_df, self.cumulative_actual_counts)
-        scores_by_group = [compute_score(sim_dfs_by_group[group_idx-1], self.actual_counts_by_group[group_idx]) 
+        scores_by_group = [compute_score(sim_dfs_by_group[group_idx-1], self.actual_counts_by_group[group_idx])
                                 for group_idx in [1,2,3,4]]
         return cumulative_score, np.mean(scores_by_group)
 
 
     def run_and_score_trajectories(self, ntrajs):
         cumulative_scores = []
-        avg_group_scores = [] 
+        avg_group_scores = []
         for _ in range(ntrajs):
             cum_df, dfs_by_group = self.run_new_trajectory()
             cum_score, avg_group_score = self.score_trajectory(cum_df, dfs_by_group)

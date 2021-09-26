@@ -21,16 +21,17 @@ contact_matrix = np.array([[0.7307, 0.2004, 0.0000, 0.0232],
 interaction_matrix = np.transpose(contact_matrix)
 np.savetxt("interaction_matrix.csv", interaction_matrix)
 population_sizes = [3329, 9033, 534, 5227]
-arrival_positives = np.array([12, 49, 3, 7])
-outside_infections = np.array([4, 2, 3, 1])
+arrival_positives = np.array([10, 43, 1, 5])
+free_and_infectious = np.array([2, 4, 2, 2])
+outside_infections = np.array([7, 3, 3, 1])
 outside_infection_rates = np.divide(outside_infections, np.array(population_sizes) * 125)
 num_free_infectious_per_arrival_positive = 1.08
-secondary_infections_from_arrival_positives = np.dot(interaction_matrix, arrival_positives)
+# secondary_infections_from_arrival_positives = np.dot(interaction_matrix, arrival_positives)
 total_num_free_infectious = arrival_positives * num_free_infectious_per_arrival_positive + \
-    secondary_infections_from_arrival_positives
+    free_and_infectious
 initial_prevalence = np.divide(total_num_free_infectious, np.array(population_sizes))
-print("free and infectious:", arrival_positives * num_free_infectious_per_arrival_positive)
-print("secondary_infections:",  secondary_infections_from_arrival_positives)
+print("free and infectious (missed by arrival testing):", arrival_positives * num_free_infectious_per_arrival_positive)
+print("free and infectious (non-compliant)",  free_and_infectious)
 print("total free and infectious:", total_num_free_infectious)
 print("outside_infection_rate:", outside_infection_rates)
 
