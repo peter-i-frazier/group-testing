@@ -7,7 +7,8 @@ with open('nominal.yaml') as f:
 
 """
 parameter update history:
-[x] last updated 9/22/2021
+[x] last updated 9/25/2021
+yet to update: contact matrix, contact tracing effectiveness, testing frequency
 
 Group 1: UG, Greek/athlete
 Group 2: UG, non Greek/athlete

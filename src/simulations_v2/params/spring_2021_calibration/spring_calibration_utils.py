@@ -30,16 +30,19 @@ def compute_score(sim_df, actual_df):
 class SpringCalibration:
     # 125 days from january 21 through may 25
     # day 78 corresponds to april 9, which is the week we saw increased testing frequency according to the data
-    def __init__(self, exposed_infection_p, sim_length=124, change_t=78):
+    # day 65 corresponds to march 27
+    def __init__(self, exposed_infection_p, sim_length=124, change_t=65):
 
         # transpose of 4x4 matrix in pnas calibration doc
+        # needs to be updated
         interaction_matrix = np.array([[0.9464, 0.0943, 0.    , 0.    ],
                                        [0.2036, 0.3205, 0.    , 0.0189],
                                        [0.    , 0.    , 0.5156, 0.0094],
                                        [0.0236, 0.0044, 0.0273, 0.0849]])
 
-
+        # need to double check
         self.empirical_test_frequencies = [0.373, 0.283, 0.141, 0.141]
+        # need to double check
         self.post_apr_9_mba_test_freq = 0.237
         self.change_t = change_t
         self.exposed_infection_p = exposed_infection_p
