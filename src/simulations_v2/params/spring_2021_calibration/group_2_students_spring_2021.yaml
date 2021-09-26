@@ -11,17 +11,17 @@ _age_severity_config: ../age_severity_config.yaml
 _scenario_name: Group 2 Students Parameters, Spring 2021
 asymptomatic_daily_self_report_p: 0
 asymptomatic_pct_mult: 1
-cases_isolated_per_contact: 0.944
-cases_quarantined_per_contact: 3.233
+cases_isolated_per_contact: 0.854
+cases_quarantined_per_contact: 3.083
 contact_trace_testing_frac: 1
 contact_tracing_delay: 1
 daily_leave_QI_p: 0.0714285
 daily_leave_QS_p: 0.0714285
 daily_outside_infection_p: 2.656924609764198e-06
 days_between_tests: 1
-expected_contacts_per_day: 0.2995
+expected_contacts_per_day: 0.2852
 exposed_infection_p: 0
-initial_ID_prevalence: 0.005583969888187756
+initial_ID_prevalence: 0.006144138160079708
 perform_contact_tracing: true
 population_size: 9033
 symptomatic_daily_self_report_p: 0.22

@@ -35,10 +35,11 @@ class SpringCalibration:
 
         # transpose of 4x4 matrix in pnas calibration doc
         # needs to be updated
-        interaction_matrix = np.array([[0.9464, 0.0943, 0.    , 0.    ],
-                                       [0.2036, 0.3205, 0.    , 0.0189],
-                                       [0.    , 0.    , 0.5156, 0.0094],
-                                       [0.0236, 0.0044, 0.0273, 0.0849]])
+        interaction_matrix = np.loadtxt(PARAMS_FOLDER + "/interaction_matrix.csv")
+        # interaction_matrix = np.array([[0.9464, 0.0943, 0.    , 0.    ],
+        #                                [0.2036, 0.3205, 0.    , 0.0189],
+        #                                [0.    , 0.    , 0.5156, 0.0094],
+        #                                [0.0236, 0.0044, 0.0273, 0.0849]])
 
         # need to double check
         self.empirical_test_frequencies = [0.373, 0.283, 0.141, 0.141]

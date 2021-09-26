@@ -7,32 +7,32 @@ with open('nominal.yaml') as f:
 
 """
 parameter update history:
-[x] last updated 9/25/2021
-yet to update: contact matrix, contact tracing effectiveness, testing frequency
+[x] contact matrix updated 9/25/2021
+[x] contact tracing effectiveness updated 9/25/2021
+[x] initial prevalence updated 9/25/2021
+yet to update: testing frequency
 
 Group 1: UG, Greek/athlete
 Group 2: UG, non Greek/athlete
 Group 3: MBA
 Group 4: Grad/prof, non MBA
 """
-contact_matrix = np.array([[0.7307, 0.2004, 0.0000, 0.0232],
-    [0.0881, 0.2995, 0.0000, 0.0041],
-    [0.0000, 0.0000, 0.3939, 0.0265],
-    [0.0000, 0.0179, 0.0089, 0.0804]]) # to update
+contact_matrix = np.array([[0.6946, 0.1965, 0.0000, 0.0232],
+    [0.0744, 0.2852, 0.0000, 0.0041],
+    [0.0000, 0.0000, 0.3939, 0.0227],
+    [0.0000, 0.0179, 0.0000, 0.0759]])
 interaction_matrix = np.transpose(contact_matrix)
 np.savetxt("interaction_matrix.csv", interaction_matrix)
 population_sizes = [3329, 9033, 534, 5227]
-arrival_positives = np.array([10, 43, 1, 5])
-free_and_infectious = np.array([2, 4, 2, 2])
+# arrival_positives = np.array([10, 43, 1, 5])
 outside_infections = np.array([7, 3, 3, 1])
 outside_infection_rates = np.divide(outside_infections, np.array(population_sizes) * 125)
-num_free_infectious_per_arrival_positive = 1.08
+# num_free_infectious_per_arrival_positive = 1.08
 # secondary_infections_from_arrival_positives = np.dot(interaction_matrix, arrival_positives)
-total_num_free_infectious = arrival_positives * num_free_infectious_per_arrival_positive + \
-    free_and_infectious
+total_num_free_infectious = np.array([12.9, 55.5, 2.3, 20.3])
 initial_prevalence = np.divide(total_num_free_infectious, np.array(population_sizes))
-print("free and infectious (missed by arrival testing):", arrival_positives * num_free_infectious_per_arrival_positive)
-print("free and infectious (non-compliant)",  free_and_infectious)
+# print("free and infectious (missed by arrival testing):", arrival_positives * num_free_infectious_per_arrival_positive)
+# print("free and infectious (non-compliant)",  free_and_infectious)
 print("total free and infectious:", total_num_free_infectious)
 print("outside_infection_rate:", outside_infection_rates)
 
@@ -45,8 +45,8 @@ params_group_1 = nominal_params.copy()
 params_group_1['population_size'] = population_sizes[0]
 params_group_1['test_population_fraction'] = 3/7
 params_group_1['expected_contacts_per_day'] = float(contact_matrix[0,0])
-params_group_1['cases_isolated_per_contact'] = 0.944
-params_group_1['cases_quarantined_per_contact'] = 3.233
+params_group_1['cases_isolated_per_contact'] = 0.854
+params_group_1['cases_quarantined_per_contact'] = 3.083
 params_group_1['initial_ID_prevalence'] = float(initial_prevalence[0])
 params_group_1['daily_outside_infection_p'] = float(outside_infection_rates[0])
 params_group_1['_scenario_name'] = 'Group 1 Students Parameters, Spring 2021'

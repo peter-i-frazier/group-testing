@@ -1,4 +1,2 @@
-free and infectious (missed by arrival testing): [10.8  46.44  1.08  5.4 ]
-free and infectious (non-compliant) [2 4 2 2]
-total free and infectious: [12.8  50.44  3.08  7.4 ]
+total free and infectious: [12.9 55.5  2.3 20.3]
 outside_infection_rate: [1.68218684e-05 2.65692461e-06 4.49438202e-05 1.53051464e-06]
