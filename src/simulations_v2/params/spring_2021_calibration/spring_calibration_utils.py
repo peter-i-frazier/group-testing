@@ -42,9 +42,9 @@ class SpringCalibration:
         #                                [0.0236, 0.0044, 0.0273, 0.0849]])
 
         # need to double check
-        self.empirical_test_frequencies = [0.373, 0.283, 0.141, 0.141]
+        self.empirical_test_frequencies = [0.355, 0.285, 0.152, 0.148]
         # need to double check
-        self.post_apr_9_mba_test_freq = 0.237
+        self.post_apr_9_mba_test_freq = 0.241
         self.change_t = change_t
         self.exposed_infection_p = exposed_infection_p
         self.sim_length = sim_length
