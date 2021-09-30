@@ -155,6 +155,7 @@ for i in range(dim):
     lhs_points[:, i] = (1 - lhs_points[:,i]) * lb[i] + lhs_points[:,i] * ub[i]
 
 
+
 def get_nominal_params():
 #     base_directory = '../src/simulations_v2/params/baseline_testing/steady_state/nominal/'
     base_directory = '../src/simulations_v2/params/baseline_testing/res_instr_paper_mar_18/nominal/'
@@ -318,6 +319,25 @@ def adjust_params(uncertainty_point):
     return (res_params_list, res_interaction_matrix, res_group_names), (virtual_params_list, virtual_interaction_matrix, virtual_group_names)
 
 
+def run_simulation_residential_only(uncertainty_point, filename, point_id=None):
+    # get params
+    (res_params_list, res_interaction_matrix, res_group_names), (virtual_params_list, virtual_interaction_matrix, virtual_group_names) = adjust_params(uncertainty_point)
+
+    # run simulations
+    # Residential Simulation
+    res_test_policy = [2/7,2/7,1/7,1/7,2/7,1/7,1/30,0]
+    
+    # Running res sims
+    print('Res Sim', point_id)
+    res_tests_per_day, res_inf_matrix, res_hosp_matrix = evaluate_testing_policy(res_params_list, res_interaction_matrix, res_group_names, res_test_policy, 112, 20)
+    
+    # save output
+    file = open(filename, mode='wb')
+    dill.dump([uncertainty_point, res_inf_matrix, res_hosp_matrix, 0, 0], file)
+    file.close()    
+    return
+
+
 
 # Running sim code
 def run_simulation(uncertainty_point, filename, point_id=None):
@@ -357,16 +377,52 @@ def run_new_process(uncertainty_point, filename, point_id):
     p.start()
     return p
 
-processes = []
-for i in range(lhs_points.shape[0]):
-# for i in range(20):
-    point = lhs_points[i,:]
-    p = run_new_process(point, 'apr_29_scenarios/point_'+str(i)+'.dill', i)
-    processes.append(p)
+def run_new_process_residential_only(uncertainty_point, filename, point_id):
+    p = Process(target = run_simulation_residential_only, args = (uncertainty_point, filename, point_id))
+    p.start()
+    return p
 
-# p = run_sims_new_process(ct_delay_sensitivity, 'res_inst_paper_graphs/apr_5_sens_ct_delay.dill')
-# processes.append(p)
-print("launched {} processes".format(len(processes)))
-for p in processes:
-    p.join()
 
+def sample_from_prior(param, nsamples):
+    lb, ub = param_uncertainty[param]
+    mean = 0.5 * (lb + ub)
+    stddev = 0.5 * (ub - lb) / 1.96 # based on a sentence of line 796 in Appendix -- double check
+    return np.random.normal(mean, stddev, nsamples)
+
+#uncertainty_params_list = ['asymp_prob_mult', 'inital_prev_mult', 'R0', 'outside_inf_mult', 'daily_self_report_prob',
+#                           'ct_mult', 'ct_testing_ratio', 'test_sensitivity', 'test_noncompliance', 'E_time', 'ID_time',
+#                          'Sy_time', 'virtual_noncompliance', 'intermittent_non-compliance', 'virtual_r0_mult',
+#                           'virtual_pop_size']
+
+
+if __name__ == "__main__":
+    processes = []
+    nsamples = 1000
+    for i in range(nsamples):
+        point = []
+        for param in uncertainty_params_list:
+            point.append(sample_from_prior(param, 1)[0])
+        p = run_new_process_residential_only(point, 'sept_29_prior_sims/point_'+str(i)+'.dill', i)
+        processes.append(p)
+
+    # p = run_sims_new_process(ct_delay_sensitivity, 'res_inst_paper_graphs/apr_5_sens_ct_delay.dill')
+    # processes.append(p)
+    print("launched {} processes".format(len(processes)))
+    for p in processes:
+        p.join()
+
+"""
+if __name__ == "__main__":
+    processes = []
+    for i in range(lhs_points.shape[0]):
+    # for i in range(20):
+        point = lhs_points[i,:]
+        p = run_new_process(point, 'apr_29_scenarios/point_'+str(i)+'.dill', i)
+        processes.append(p)
+
+    # p = run_sims_new_process(ct_delay_sensitivity, 'res_inst_paper_graphs/apr_5_sens_ct_delay.dill')
+    # processes.append(p)
+    print("launched {} processes".format(len(processes)))
+    for p in processes:
+        p.join()
+"""
