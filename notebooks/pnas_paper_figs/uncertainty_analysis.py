@@ -268,7 +268,7 @@ def load_sim_output(sim_output_files):
         new_row['res_ithaca_inf_50'] = res_ithaca_inf_quantiles[1]
         new_row['res_ithaca_inf_90'] = res_ithaca_inf_quantiles[2]
 
-        if virtual_inf_matrix != None:
+        if virtual_inf_matrix != None and virtual_inf_matrix != 0:
             vir_cornell_inf_quantiles, vir_ithaca_inf_quantiles = get_stats(virtual_inf_matrix)
             new_row['vir_cornell_inf_10'] = vir_cornell_inf_quantiles[0]
             new_row['vir_cornell_inf_50'] = vir_cornell_inf_quantiles[1]
