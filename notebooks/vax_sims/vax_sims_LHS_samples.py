@@ -125,11 +125,14 @@ def update_vax_sim_params(vax_sim, param_modifiers):
     if 'test_delay' in param_modifiers and param_modifiers['test_delay'] > 0:
         for sim in vax_sim.sims:
             sim.pre_ID_state = 'infectious'
-            sim.max_time_pre_ID = param_modifiers['test_delay']
-            sim.sample_pre_ID_times = constant_delay_function(param_modifiers['test_delay']) 
+            if 'max_time_pre_ID' not in param_modifiers:
+                sim.max_time_pre_ID = param_modifiers['test_delay']
+            else:
+                sim.max_time_pre_ID = param_modifiers['max_time_pre_ID']
+            sim.sample_pre_ID_times = constant_delay_function(param_modifiers['test_delay'], sim.max_time_pre_ID) 
 
-def constant_delay_function(time):
-    array = np.zeros(time+1)
+def constant_delay_function(time, max_time):
+    array = np.zeros(max_time+1)
     array[time] = 1
     return (lambda n: np.random.multinomial(n, array))
 
