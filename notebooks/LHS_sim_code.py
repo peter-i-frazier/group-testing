@@ -329,7 +329,7 @@ def run_simulation_residential_only(uncertainty_point, filename, point_id=None):
     
     # Running res sims
     print('Res Sim', point_id)
-    res_tests_per_day, res_inf_matrix, res_hosp_matrix = evaluate_testing_policy(res_params_list, res_interaction_matrix, res_group_names, res_test_policy, 112, 200)
+    res_tests_per_day, res_inf_matrix, res_hosp_matrix = evaluate_testing_policy(res_params_list, res_interaction_matrix, res_group_names, res_test_policy, 112, 20)
     
     # save output
     file = open(filename, mode='wb')
