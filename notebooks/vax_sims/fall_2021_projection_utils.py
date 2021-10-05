@@ -35,6 +35,55 @@ def compute_log_likelihood(simulated_cumulative_trajs, eps=1e-5):
     return loglik
 
 
+def get_simulated_positives_by_day(simulated_cumulative_trajs):
+    simulated_mean_traj = np.mean(np.array(simulated_cumulative_trajs), axis=0)
+    
+    true_positives_by_day = ACTUAL_TRAJ
+    num_days = min(len(true_positives_by_day), len(simulated_mean_traj))
+    
+    simulated_positives_by_day = [simulated_mean_traj[0]]
+    day = 1
+    while day < num_days:
+        simulated_positives_by_day.append(simulated_mean_traj[day] - simulated_mean_traj[day - 1])
+        day += 1
+    return simulated_positives_by_day
+
+
+def get_positives_by_week(simulated_cumulative_trajs):
+    simulated_positives_by_day = get_simulated_positives_by_day(simulated_cumulative_trajs)
+    simulated_positives_by_week = []
+    lower_idx = 0
+    upper_idx = 7 
+    while lower_idx <= len(simulated_positives_by_day):
+        simulated_positives_by_week.append(sum(simulated_positives_by_day[lower_idx:upper_idx]))
+        lower_idx = upper_idx
+        upper_idx += 7
+    assert(np.abs(sum(simulated_positives_by_week) - sum(simulated_positives_by_day)) < 1e-5)
+    return simulated_positives_by_week
+
+
+def get_true_positives_by_week():
+    positives_by_day = ACTUAL_TRAJ
+    positives_by_week = []
+    lower_idx = 0
+    upper_idx = 7 
+    while lower_idx <= len(positives_by_day):
+        positives_by_week.append(sum(positives_by_day[lower_idx:upper_idx]))
+        lower_idx = upper_idx
+        upper_idx += 7
+    assert(sum(positives_by_week) == sum(positives_by_day))
+    return positives_by_week
+
+def compute_log_likelihood_by_week(simulated_cumulative_trajs, eps=1e-5):
+    simulated_positives_by_week = get_positives_by_week(simulated_cumulative_trajs)
+    true_positives_by_week = get_true_positives_by_week()
+    loglik = 0
+    for true_positives, simulated_positives in zip(true_positives_by_week, simulated_positives_by_week):
+        loglik += np.log(poisson.pmf(true_positives, simulated_positives) + eps)
+    
+    return loglik
+
+
 def aggregate_trajs(inf_trajs_by_group):
     aggregated_trajs = []
     for trajs in inf_trajs_by_group:
