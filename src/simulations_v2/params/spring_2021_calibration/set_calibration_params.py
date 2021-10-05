@@ -111,7 +111,7 @@ private calibration for faculty + staff
 params_faculty_staff = nominal_params.copy()
 params_faculty_staff['population_size'] = 10283
 params_faculty_staff['test_population_fraction'] = 0.146
-params_faculty_staff['initial_ID_prevalence'] = 68 / params_faculty_staff['population_size']
+params_faculty_staff['initial_ID_prevalence'] = 23 / params_faculty_staff['population_size']
 params_faculty_staff['cases_isolated_per_contact'] = 0.035
 params_faculty_staff['daily_outside_infection_p'] = 0
 params_faculty_staff['_scenario_name'] = 'Faculty + Staff Parameters, Spring 2021'
