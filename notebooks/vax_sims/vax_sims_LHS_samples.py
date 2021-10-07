@@ -65,8 +65,11 @@ def nominal_params_vax_sim(param_modifiers={}):
         nominal_point[2] = param_modifiers['contacts_per_day_mult']
     return map_lhs_point_to_vax_sim(nominal_point)
 
-def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None):
-    base_params, base_group_names, contact_matrix, vax_rates = load_calibrated_params()
+def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None):
+    base_params, base_group_names, contact_matrix, default_vax_rates = load_calibrated_params()
+
+    if vax_rates == None:
+        vax_rates = default_vax_rates
 
 
     vax_susc_mult = lhs_point[0]
@@ -85,6 +88,9 @@ def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None):
     vax_sim = generate_vax_unvax_multigroup_sim(base_params, base_group_names,
                                     vax_rates, contact_matrix,
                                     vax_trans_mult, vax_susc_mult)
+
+    if len(lhs_point) == 6:
+        param_modifiers['initial_ID_prevalence'] = [lhs_point[-1]]*8
 
     update_vax_sim_params(vax_sim, param_modifiers)
 
