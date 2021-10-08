@@ -169,6 +169,20 @@ def compute_log_likelihood_by_week(simulated_cumulative_trajs, eps=1e-5):
     return loglik
 
 
+def aggregate_trajs_student_only(inf_trajs_by_group):
+    aggregated_trajs = []
+    for trajs in inf_trajs_by_group:
+        num_groups = len(trajs) - 2 # subtract off the two employee groups at the end
+        assert(num_groups >= 1)
+        aggregated_traj = trajs[0]
+        group_idx = 1
+        while group_idx < num_groups:
+            aggregated_traj += trajs[group_idx]
+            group_idx += 1
+        aggregated_trajs.append(aggregated_traj)
+    return aggregated_trajs
+
+
 def aggregate_trajs(inf_trajs_by_group):
     aggregated_trajs = []
     for trajs in inf_trajs_by_group:
