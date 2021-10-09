@@ -23,7 +23,7 @@ expected_contacts_per_day: 0.67
 exposed_infection_p: 0.13125
 initial_ID_prevalence: 0.0014 # 8.7/6202
 perform_contact_tracing: true
-population_size: 3101
+population_size: 6202 #3101
 symptomatic_daily_self_report_p: 0.36
 test_population_fraction: 0.142857
 test_protocol_QFNR: 0.4156000000000001
