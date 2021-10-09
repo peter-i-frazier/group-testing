@@ -192,12 +192,12 @@ def load_posterior_point(point_idx):
     best_points_df = load_posterior_df()
     return list(best_points_df[UNCERTAINTY_PARAMS].iloc[point_idx])
 
-TEST_POLICIES_TO_RUN = [1,2]
+TEST_POLICIES_TO_RUN = [1,2,3,4,5,6,7,8]#,6,7,8]
 
-vax_rates_to_try = [[0.25,0.25,0.25,0.25],
-                    [0.5,0.5,0.5,0.5],
-                    [0.75,0.75,0.75,0.75],
-                    [0.99,0.99,0.99,0.99]]
+#vax_rates_to_try = [#[0.25,0.25,0.25,0.25],
+                    #[0.5,0.5,0.5,0.5],
+                    #[0.75,0.75,0.75,0.75],
+vax_rates_to_try = [[1,1,1,1]]
 
 param_modifiers = PARAMS_PRE_MOVEIN
 override_params = PARAMS_POST_MOVEIN

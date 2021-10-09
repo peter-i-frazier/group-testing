@@ -94,6 +94,7 @@ def get_cum_inf_trajectory(df):
 
 def run_new_trajectory(sim, T, change_t, override_premovein_params=None):
     sim.reset_initial_state()
+    assert(override_premovein_params != None)
     if override_premovein_params != None:
         update_vax_sim_params(sim, override_premovein_params)
     else:
@@ -101,8 +102,8 @@ def run_new_trajectory(sim, T, change_t, override_premovein_params=None):
         
     for t in range(T):
         sim.step()
-        if t == change_t:
-            update_vax_sim_params(sim, PARAMS_POST_MOVEIN)
+        #if t == change_t:
+        #    update_vax_sim_params(sim, PARAMS_POST_MOVEIN)
 
     for single_group_sim in sim.sims:
         single_group_sim.update_severity_levels()
@@ -154,7 +155,7 @@ def sample_and_save(point_idx,
     test_policy_premovein = test_policy[test_policy_idx].copy()
     test_policy_postmovein = test_policy[test_policy_idx].copy()
 
-    test_policy_premovein['test_delay'] = 2
+    test_policy_premovein['test_delay'] = 1
     test_policy_premovein['max_time_pre_ID'] = 2
 
     test_policy_postmovein['test_delay'] = 1

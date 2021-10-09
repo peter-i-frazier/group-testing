@@ -142,13 +142,10 @@ def get_timestamp():
     return str(time.time()).split('.')[0]
 
 
-def sample_and_save(point_idx,
-                    vax_rates_idx, 
+def sample_and_save(vax_rates_idx, 
                     test_policy_idx,
-                    save_folder, nsamples=100, T=50):
+                    save_folder, nsamples=100, T=112):
     gc.collect()
-
-    posterior_point = load_posterior_point(point_idx)
 
     vax_rates = vax_rates_to_try[vax_rates_idx]
 
@@ -161,14 +158,32 @@ def sample_and_save(point_idx,
     test_policy_postmovein['test_delay'] = 1
     test_policy_postmovein['max_time_pre_ID'] = 2
 
+    df = load_posterior_df()
+    posterior_sample = np.random.multinomial(nsamples, list(df['posterior']))
+    posterior_point_idxs = []
+    for idx, count in enumerate(posterior_sample):
+        for _ in range(count):
+            posterior_point_idxs.append(idx)
 
-    posterior_sim = map_lhs_point_to_vax_sim(posterior_point, test_policy_premovein, vax_rates)
+    assert(len(posterior_point_idxs) == nsamples)
 
-    inf_trajs_by_group = run_multiple_trajs(posterior_sim, T=T, n=nsamples, override_premovein_params=test_policy_postmovein)
+    posterior_points = []
+    inf_trajs_by_group = []
 
-    dill_path = save_folder + 'posterior_point_{}_test_policy_{}_vax_rates_{}.dill'.format(point_idx, test_policy_idx, vax_rates_idx)
+    for idx in posterior_point_idxs:
 
-    pickle.dump([posterior_point, inf_trajs_by_group], open(dill_path, 'wb'))
+        posterior_point = list(df[UNCERTAINTY_PARAMS].iloc[idx])
+
+        posterior_sim = map_lhs_point_to_vax_sim(posterior_point, test_policy_premovein, vax_rates)
+        infs_by_group = run_multigroup_sim(posterior_sim, T, override_premovein_params = test_policy_premovein)
+
+        posterior_points.append(posterior_point)
+        inf_trajs_by_group.append(infs_by_group)
+
+
+    dill_path = save_folder + 'test_policy_{}_vax_rates_{}.dill'.format(test_policy_idx, vax_rates_idx)
+
+    pickle.dump([posterior_point_idxs, posterior_point, inf_trajs_by_group], open(dill_path, 'wb'))
 
 
 
@@ -180,24 +195,18 @@ from test_policies import test_policy
 import pandas as pd
 
 
-N_POSTERIOR_POINTS = 106
 def load_posterior_df():
-    df = pd.read_csv('posterior_csvs/21_10_06_13:34_posteriors.csv')
-    sorted_df = df.sort_values(by='posterior', ascending=False)
-    best_points = sorted_df.head(n=N_POSTERIOR_POINTS)
-    return best_points
+    df = pd.read_csv('posterior_csvs/21_10_08_14:44_posteriors.csv')
+    return df
 
 
-def load_posterior_point(point_idx):
-    best_points_df = load_posterior_df()
-    return list(best_points_df[UNCERTAINTY_PARAMS].iloc[point_idx])
 
-TEST_POLICIES_TO_RUN = [1,2]
+TEST_POLICIES_TO_RUN = [1,2,3,4,5,6,7,8]
 
 vax_rates_to_try = [[0.25,0.25,0.25,0.25],
                     [0.5,0.5,0.5,0.5],
                     [0.75,0.75,0.75,0.75],
-                    [0.99,0.99,0.99,0.99]]
+                    [1,1,1,1]]
 
 param_modifiers = PARAMS_PRE_MOVEIN
 override_params = PARAMS_POST_MOVEIN
@@ -206,22 +215,21 @@ if __name__ == "__main__":
 
     param_modifiers = PARAMS_PRE_MOVEIN
     override_params = PARAMS_POST_MOVEIN
-    nsamples = 100
+    nsamples = 1000
     T = 112 
     
     save_folder = '../../notebooks/vax_sims/posterior_test_frequency_sims_{}/'.format(get_timestamp())
     os.mkdir(save_folder)
 
-    posterior_sim_configs = [(posterior_idx, vax_rate_idx, test_policy) for posterior_idx in range(N_POSTERIOR_POINTS)
-                                                                            for test_policy in TEST_POLICIES_TO_RUN
-                                                                            for vax_rate_idx in range(len(vax_rates_to_try))]
+    posterior_sim_configs = [(vax_rate_idx, test_policy) for test_policy in TEST_POLICIES_TO_RUN
+                                                         for vax_rate_idx in range(len(vax_rates_to_try))]
+
     print("preparing to launch {} simulations now".format(len(posterior_sim_configs)))
 
-    print("kicking off processes now")
+    print("kicking off processes now, saving results in {}".format(save_folder))
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(delayed(sample_and_save)(sim_config[0], 
                                                                     sim_config[1], 
-                                                                    sim_config[2], 
                                                                     save_folder, 
                                                                     nsamples=nsamples, 
                                                                     T=T) for sim_config in posterior_sim_configs)
