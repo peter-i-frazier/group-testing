@@ -153,7 +153,7 @@ import multiprocessing as mp
 import gc
 from joblib import Parallel, delayed
 import multiprocessing
-from launch_fall_2021_posterior_sims_v2 import load_posterior_df
+from launch_fall_2021_posterior_sims_v3_contour import load_posterior_df
 
 if __name__ == "__main__":
 
@@ -177,5 +177,5 @@ if __name__ == "__main__":
     for count, point_idx in enumerate(posterior_idxs):
         point_id = "{}_{}".format(count, point_idx)
         point = list(posterior_df[UNCERTAINTY_PARAMS].iloc[point_idx])
-        sample_and_save(point_id, point, save_folder, nsamples, T)
+        sample_and_save(point_id, point, save_folder, 1, T)
 

@@ -194,7 +194,7 @@ import pandas as pd
 
 
 def load_posterior_df():
-    df = pd.read_csv('posterior_csvs/21_10_08_14:44_posteriors.csv')
+    df = pd.read_csv('posterior_csvs/21_10_09_19:21_posteriors.csv')
     return df
 
 
