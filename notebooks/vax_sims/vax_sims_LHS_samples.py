@@ -65,7 +65,7 @@ def nominal_params_vax_sim(param_modifiers={}):
         nominal_point[2] = param_modifiers['contacts_per_day_mult']
     return map_lhs_point_to_vax_sim(nominal_point)
 
-def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None):
+def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None, tr_mult=1):
     base_params, base_group_names, contact_matrix, default_vax_rates = load_calibrated_params()
 
     if vax_rates == None:
@@ -75,7 +75,7 @@ def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None):
     vax_susc_mult = lhs_point[0]
     vax_trans_mult = lhs_point[1]
 
-    contact_matrix = contact_matrix * lhs_point[2]
+    contact_matrix = contact_matrix * lhs_point[2] * tr_mult
 
     for params in base_params:
         params['daily_outside_infection_p'] = params['daily_outside_infection_p'] * lhs_point[3]
