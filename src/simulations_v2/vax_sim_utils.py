@@ -1,11 +1,12 @@
 from multi_group_simulation import MultiGroupSimulation
 import numpy as np
 import yaml
-from load_params import load_params
+from load_params import load_params, load_age_sev_params
 
 def generate_vax_unvax_multigroup_sim(orig_group_params, orig_group_names,
                                     vax_rates_by_group, orig_contact_matrix,
-                                    vax_trans_mult, vax_susc_mult):
+                                    vax_trans_mult, vax_susc_mult, 
+                                    vax_age_sev_dist_files=None):
     N = len(orig_group_params)
     assert(len(orig_group_names) == N)
     assert(len(vax_rates_by_group) == N)
@@ -35,6 +36,12 @@ def generate_vax_unvax_multigroup_sim(orig_group_params, orig_group_names,
         g_vax = group_params.copy()
         g_unvax = group_params.copy()
         g_vax['population_size'] = vax_popsize
+        if vax_age_sev_dist_files != None:
+            vax_age_sev_dist_file = vax_age_sev_dist_files[group_idx]
+            age_sev_params = load_age_sev_params(vax_age_sev_dist_file)
+            g_vax['severity_prevalence'] = age_sev_params
+        
+
         g_unvax['population_size'] = unvax_popsize
 
         new_group_params.append(g_vax)
