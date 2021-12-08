@@ -40,7 +40,7 @@ def sample_from_prior():
             idx += 1
     return return_point
 
-def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None, omicron_multiplier=1):
+def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None, omicron_multiplier=1, social_distance_multiplier=1):
     base_params, base_group_names, contact_matrix, default_vax_rates = load_calibrated_params()
     if vax_rates == None:
         vax_rates = default_vax_rates
@@ -48,7 +48,7 @@ def map_lhs_point_to_vax_sim(lhs_point, param_modifiers=None, vax_rates=None, om
     vax_susc_mult = lhs_point[0]
     vax_trans_mult = lhs_point[1]
 
-    contact_matrix = contact_matrix * lhs_point[2] * omicron_multiplier
+    contact_matrix = contact_matrix * lhs_point[2] * omicron_multiplier * social_distance_multiplier
 
     for params in base_params:
         params['daily_outside_infection_p'] = params['daily_outside_infection_p'] * lhs_point[3]
@@ -143,14 +143,12 @@ def get_timestamp():
     return str(time.time()).split('.')[0]
 
 
-def sample_and_save(vax_rates, 
-                    omicron_multiplier,
+def sample_and_save(vax_rates, omicron_multiplier, social_dist_multiplier, test_policy_idx,
                     save_folder, nsamples=100, T=112):
     gc.collect()
 
-
-    test_policy_premovein = PARAMS_PRE_MOVEIN
-    test_policy_postmovein = PARAMS_POST_MOVEIN
+    test_policy_premovein = test_policy[test_policy_idx].copy()
+    test_policy_postmovein = test_policy[test_policy_idx].copy()
 
     test_policy_premovein['test_delay'] = 1
     test_policy_premovein['max_time_pre_ID'] = 2
@@ -175,14 +173,16 @@ def sample_and_save(vax_rates,
 
         posterior_point = list(df[UNCERTAINTY_PARAMS].iloc[idx])
 
-        posterior_sim = map_lhs_point_to_vax_sim(posterior_point, test_policy_premovein, vax_rates, omicron_multiplier=omicron_multiplier)
+        posterior_sim = map_lhs_point_to_vax_sim(posterior_point, test_policy_premovein, vax_rates, 
+                                                omicron_multiplier=omicron_multiplier, 
+                                                social_distance_multiplier=social_dist_multiplier)
         infs_by_group = run_multigroup_sim(posterior_sim, T, override_premovein_params = test_policy_premovein)
 
         posterior_points.append(posterior_point)
         inf_trajs_by_group.append(infs_by_group)
 
 
-    dill_path = save_folder + 'test_policy_{}_vax_rates_{}.dill'.format(test_policy_idx, vax_rates_idx)
+    dill_path = save_folder +'omicron_multiplier_{}_social_dist_multiplier_{}_test_policy_idx_{}.dill'.format(omicron_multiplier, social_dist_multiplier, test_policy_idx)
 
     pickle.dump([posterior_point_idxs, posterior_point, inf_trajs_by_group], open(dill_path, 'wb'))
 
@@ -193,6 +193,7 @@ import gc
 from joblib import Parallel, delayed
 import multiprocessing
 import pandas as pd
+from test_policies import test_policy
 
 
 def load_posterior_df():
@@ -206,6 +207,9 @@ def load_posterior_df():
 vax_rates_to_try = [1,1,1,1]
 omicron_multipliers = np.linspace(1,3.5,5)
 
+social_distance_multipliers = np.linspace(0.5, 1, 5)
+test_policies_to_use = [1,2,3,4,5,6,7,8,9,10] 
+
 param_modifiers = PARAMS_PRE_MOVEIN
 override_params = PARAMS_POST_MOVEIN
 
@@ -213,18 +217,24 @@ if __name__ == "__main__":
 
     param_modifiers = PARAMS_PRE_MOVEIN
     override_params = PARAMS_POST_MOVEIN
-    nsamples = 1000
+    nsamples = 50
     T = 112 
     
     save_folder = '../../notebooks/vax_sims/posterior_test_frequency_sims_{}/'.format(get_timestamp())
     os.mkdir(save_folder)
 
+    posterior_sim_configs = [(omicron_multiplier, social_dist_multiplier, test_policy) 
+                                                        for test_policy in test_policies_to_use
+                                                        for omicron_multiplier in omicron_multipliers
+                                                        for social_dist_multiplier in social_distance_multipliers]
 
 
     print("kicking off processes now, saving results in {}".format(save_folder))
     num_cores = multiprocessing.cpu_count()
     results = Parallel(n_jobs=num_cores)(delayed(sample_and_save)(vax_rates_to_try, 
-                                                                    omicron_multiplier, 
+                                                                    config[0], 
+                                                                    config[1],
+                                                                    config[2],
                                                                     save_folder, 
                                                                     nsamples=nsamples, 
-                                                                    T=T) for omicron_multiplier in omicron_multipliers)
+                                                                    T=T) for config in posterior_sim_configs)
