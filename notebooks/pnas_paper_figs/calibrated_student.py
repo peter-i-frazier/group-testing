@@ -58,6 +58,8 @@ g3_movein_contact_matrix = np.matrix(
    [ [g3_base_params_free['expected_contacts_per_day'], 0],
     [0, 0]])
 
+movein_selfiso_params['expected_contacts_per_day'] = 0
+
 g1_base_params_post_movein['severe_symptoms_daily_self_report_p'] = 0.36
 g2_base_params_post_movein['severe_symptoms_daily_self_report_p'] = 0.36
 g3_base_params_post_movein['severe_symptoms_daily_self_report_p'] = 0.36
