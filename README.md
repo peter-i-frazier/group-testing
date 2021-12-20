@@ -1,3 +1,5 @@
+# Cornell COVID-19 Simulation Model
+
 This repository contains a python-based epidemic model.
 
 It was used to study reopening Cornell University in this report:
