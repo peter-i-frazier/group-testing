@@ -1,0 +1,59 @@
+_scenario_name: High Contact Undergrads
+
+# ignore symptomatic and self-reporting dynamics
+asymptomatic_daily_self_report_p: 0
+asymptomatic_pct_mult: 1
+symptomatic_daily_self_report_p: 0
+
+# reducing contact trace effectiveness to 0
+perform_contact_tracing: false
+cases_isolated_per_contact: 0  # MAP estimate from Spring 2021 data is 1.215
+cases_quarantined_per_contact: 0
+contact_trace_testing_frac: 1
+contact_tracing_delay: 1
+
+# average length of time in isolation is 10 days based on my current
+# understanding of the protocol
+daily_leave_QI_p: 0.1
+daily_leave_QS_p: 0.1
+
+
+# previous calibration was 1.42e-05.  Multiply by 5 for omicron
+daily_outside_infection_p: 7.1e-05
+
+# transmission rate parameters are below:
+# spring 2021 calibrated values were 7.36
+# multiplying by 1.4477 = MAP estimate for contact multiplier
+expected_contacts_per_day: 10.66
+
+
+# spring 2021 calibrated value was  0.13125. 
+# adjusting by factor of 1.366 = 5 (omicron multiplier) 
+#                           *0.2732 (MAP estimate for vax multipliers)
+exposed_infection_p: 0.179
+
+initial_ID_prevalence: 0.04 # geometric average of our guesses
+
+initial_R_count: 1463 # 80% of the 1829 omicron cases
+
+# 66% of (3533 (ug_ga pop size) + 8434 (ug_nonga pop size)) ~= 8018
+population_size: 8018
+
+test_population_fraction: 0.1429 # 1x/week testing
+days_between_tests: 1
+test_protocol_QFNR: 0.4156000000000001
+test_protocol_QFPR: 0
+use_asymptomatic_testing: true
+
+# default biological params
+E_time_params:
+- 2
+- 7
+ID_time_params:
+- 3
+- 8
+Sy_time_params:
+- 12
+- 20
+_age_severity_config: ./age_severity_config.yaml
+

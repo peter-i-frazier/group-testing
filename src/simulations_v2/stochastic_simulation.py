@@ -142,6 +142,8 @@ class StochasticSimulation:
         self.init_SyID_mild_count = params['initial_SyID_mild_count']
         self.init_SyID_severe_count = params['initial_SyID_severe_count']
 
+        self.init_R_count = params.get('initial_R_count', 0)
+
         self.init_ID_prevalence = params['initial_ID_prevalence']
         if 'init_ID_prevalence_stochastic' in params:
             self.init_ID_prevalence_stochastic = params['init_ID_prevalence_stochastic']
@@ -150,7 +152,9 @@ class StochasticSimulation:
 
         self.init_S_count = self.pop_size - self.init_E_count - \
                         self.init_pre_ID_count - self.init_ID_count - \
-                        self.init_SyID_mild_count - self.init_SyID_severe_count
+                        self.init_SyID_mild_count - self.init_SyID_severe_count - \
+                        self.init_R_count
+
         assert(self.init_S_count >= 0)
 
         # instantiate state variables and relevant simulation variables
@@ -197,8 +201,8 @@ class StochasticSimulation:
         self.QI_mild = 0
         self.QI_severe = 0
 
-        self.R = SyID_mild_sample[0] + SyID_severe_sample[0]
-        self.R_mild = SyID_mild_sample[0]
+        self.R = SyID_mild_sample[0] + SyID_severe_sample[0] + self.init_R_count
+        self.R_mild = SyID_mild_sample[0] + self.init_R_count
         self.R_severe = SyID_severe_sample[0]
 
 
