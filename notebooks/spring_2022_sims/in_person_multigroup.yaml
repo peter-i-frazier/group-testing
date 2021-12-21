@@ -1,0 +1,31 @@
+# Every multi-group parameter config still needs a _scenario_name field
+_scenario_name: "Multigroup Spring 2022"
+
+# Every multi-group parameter config also needs a _num_groups field, specifying
+# an integer number of groups
+_num_groups: 2
+
+# _group_configs is a list of single-group scenario configs
+_group_configs:
+    _group_0:
+        _scenario_name: High Contact Undergrads
+        _inherit_config: high_contact_ug_virtual_config.yaml
+        expected_contacts_per_day: 7.36 # from ../vax_sims/vax_sims_LHS_samples.py#load_calibrated_params
+
+    _group_1:
+        _scenario_name: Low Contact Undergrads
+        _inherit_config: low_contact_ugs.yaml
+        expected_contacts_per_day: 1.48 # arbitrary within-group contacts/day
+
+# _inter_group_expected_contacts is a list of lists, such that (group_x, group_y) value
+# specifies poisson-parameter governing number of group_y interactions per day
+# that a free individual from group_x encounters
+# all missing values default to 0
+_inter_group_expected_contacts:
+    _group_0:
+        _group_1: 0.23
+
+    _group_1:
+        _group_0: 0.28
+
+

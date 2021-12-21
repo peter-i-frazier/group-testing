@@ -30,7 +30,8 @@ expected_contacts_per_day: 10.66
 # spring 2021 calibrated value was  0.13125. 
 # adjusting by factor of 1.366 = 5 (omicron multiplier) 
 #                           *0.2732 (MAP estimate for vax multipliers)
-exposed_infection_p: 0.179
+#                           * 0.5 (booster multiplier)
+exposed_infection_p: 0.09
 
 initial_ID_prevalence: 0.04 # geometric average of our guesses
 
