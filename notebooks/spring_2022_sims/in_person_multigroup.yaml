@@ -10,12 +10,10 @@ _group_configs:
     _group_0:
         _scenario_name: High Contact Undergrads
         _inherit_config: high_contact_ug_virtual_config.yaml
-        expected_contacts_per_day: 7.36 # from ../vax_sims/vax_sims_LHS_samples.py#load_calibrated_params
 
     _group_1:
         _scenario_name: Low Contact Undergrads
         _inherit_config: low_contact_ugs.yaml
-        expected_contacts_per_day: 1.48 # arbitrary within-group contacts/day
 
 # _inter_group_expected_contacts is a list of lists, such that (group_x, group_y) value
 # specifies poisson-parameter governing number of group_y interactions per day

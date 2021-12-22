@@ -3,7 +3,7 @@ _scenario_name: Low Contact Undergrads
 
 population_size: 3949
 
-daily_outside_infection_p: 3.555e-05 #7.11e-06 (prev calibrated value) * 5 (omicron adjustment)
+daily_outside_infection_p: 1.7775e-05 #7.11e-06 (prev calibrated value) * 5 (omicron adjustment) * 0.5 (booster adjustment)
 
 expected_contacts_per_day: 2.142 #1.48 (prev calibrated value) * 1.4477 (MAP estimate for contact multiplier)
 
