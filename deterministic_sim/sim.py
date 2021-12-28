@@ -142,7 +142,7 @@ class sim:
 
         # Move the infected people out of susceptible and in to recovered
         self.S[t+1] = self.S[t]-self.I[t+1]
-        self.R[t+1] = self.R[t]+self.I[t+1] # XXX is this a bug?  I think I[t+1] here should be t.  Write a test case that ensures that the
+        self.R[t+1] = self.R[t]+self.I[t]
 
         # The old hidden recoveries are either discovered (with probability recovered_discovery_frac) or move forward
         # into the next time period as hidden recoveries

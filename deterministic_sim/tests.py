@@ -5,6 +5,12 @@ from micro import __days_infectious_perfect_sensitivity__, days_infectious
 import matplotlib.pyplot as plt
 
 
+def is_constant_population_size(s):
+    """Checks that the population size of each group is contant across sim."""
+    pop = s.get_metric("S") + s.get_metric("I") + s.get_metric("R")
+    return all(np.isclose(pop, np.max(pop)))
+
+
 def test_sim1():
     K = 3
     T = 20
@@ -25,6 +31,8 @@ def test_sim1():
 
     s = sim(T,S0,I0,R0,infection_rate,generation_time)
     s.step(T-1)
+
+    assert is_constant_population_size(s)
 
     y = s.get_metric('I', aggregate=False, normalize=True)
     for i in range(K):
@@ -58,6 +66,8 @@ def test_sim4():
 
     s = sim(T,S0,I0,R0,infection_rate,0,0,generation_time)
     s.step(T-1)
+
+    assert is_constant_population_size(s)
 
     # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
     # the number discovered should be 0
@@ -129,6 +139,8 @@ def test_sim3():
     s = sim(T,S0,I0,R0,infection_rate,generation_time)
     s.step(T-1)
 
+    assert is_constant_population_size(s)
+
     infected = s.get_metric('I', aggregate=True)
     cum_infected = s.get_metric('I', aggregate=True,cumulative=True)
     plt.plot(np.arange(T)*generation_time, infected, label='New Infections')
@@ -160,6 +172,7 @@ def test_sim2():
 
     # The group with 0 contacts should not have any infections
     assert(np.isclose(s.get_metric_for_group('I', 0),np.zeros(T)).all())
+    assert is_constant_population_size(s)
 
     for i in range(K):
         plt.plot(np.arange(T), s.get_metric_for_group('I', i,normalize=True), label=i)
