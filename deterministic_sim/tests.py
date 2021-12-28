@@ -234,7 +234,7 @@ def test_sim5():
     # group's effective R0 (under the testing intervention at the time) was equal to the ballpark estimate.
     # Assuming a generation time of 4 days, and 50% day-over-day growth, we get a ballpark estimate of 1.5^4 = 5.06
     # for the december effective R0
-    dec_effective_R0 = 10
+    dec_effective_R0 = 8.5
     dec_contacts_of_key_group = 6
     dec_infections_per_contact = dec_effective_R0 / dec_contacts_of_key_group
     dec_days_infectious = micro.days_infectious(7,2)
@@ -250,55 +250,31 @@ def test_sim5():
     # We then adjust this by multiplying by the number of days infectious under our testing strategy, divided by the
     # number under our December Omicron outbreak.
 
+    # No surveillance
+    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(np.inf,1) / dec_days_infectious
+    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
+    infection_discovery_frac = symptomatic_rate # 30% are asymptomatic
+    recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time,
+        infection_discovery_frac=infection_discovery_frac,
+        recovered_discovery_frac=recovered_discovery_frac)
+    s.step(T-1)
+    plt.subplot(211)
+    plt.plot(np.arange(T)*generation_time, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    plt.subplot(212)
+    plt.plot(np.arange(T) * generation_time, s.get_isolated(), 'k', label='No surveillance')
+
     # 1x / week testing and 2 day delay
     infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,2) / dec_days_infectious
     infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
     s.step(T-1)
     plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 2d delay')
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'crimson', label='1x/wk, 2d delay')
     plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='1x/wk, 2d delay')
-
-    # 2x / week testing and 1.5 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1.5) / dec_days_infectious
-    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 1.5d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 1.5d delay')
-
-    # 2x / week testing and 2 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,2) / dec_days_infectious
-    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 2d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 2d delay')
-
-    # 2x / week testing and 1 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1) / dec_days_infectious
-    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 1d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 1d delay')
-
-    # 1x / week testing and 1 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,1) / dec_days_infectious
-    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 1d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), label='1x/wk, 1d delay')
+    plt.plot(np.arange(T)*generation_time, s.get_isolated(), color = 'crimson', label='1x/wk, 2d delay')
 
     # 1x / week testing and 1.5 day delay
     infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,1.5) / dec_days_infectious
@@ -306,24 +282,56 @@ def test_sim5():
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
     s.step(T-1)
     plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 1.5d delay')
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'orangered', label='1x/wk, 1.5d delay')
     plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), label='1x/wk, 1.5d delay')
+    plt.plot(np.arange(T) * generation_time, s.get_isolated(), color = 'orangered', label='1x/wk, 1.5d delay')
 
-    # No surveillance
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(np.inf,1) / dec_days_infectious
+    # 1x / week testing and 1 day delay
+    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,1) / dec_days_infectious
     infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
-    infection_discovery_frac = symptomatic_rate # 30% are asymptomatic
-    recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time,
-            infection_discovery_frac=infection_discovery_frac,
-            recovered_discovery_frac=recovered_discovery_frac)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
     s.step(T-1)
     plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
-    plt.plot(np.arange(T)*generation_time, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'coral', label='1x/wk, 1d delay')
     plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), 'k', label='No surveillance')
+    plt.plot(np.arange(T) * generation_time, s.get_isolated(), color = 'coral', label='1x/wk, 1d delay')
+
+    # 2x / week testing and 2 day delay
+    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,2) / dec_days_infectious
+    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
+    s.step(T-1)
+    plt.subplot(211)
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'navy', label='2x/wk, 2d delay')
+    plt.subplot(212)
+    plt.plot(np.arange(T)*generation_time, s.get_isolated(), color = 'navy', label='2x/wk, 2d delay')
+
+    # 2x / week testing and 1.5 day delay
+    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1.5) / dec_days_infectious
+    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
+    s.step(T-1)
+    plt.subplot(211)
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'royalblue', label='2x/wk, 1.5d delay')
+    plt.subplot(212)
+    plt.plot(np.arange(T)*generation_time, s.get_isolated(), color = 'royalblue', label='2x/wk, 1.5d delay')
+
+    # 2x / week testing and 1 day delay
+    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1) / dec_days_infectious
+    infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
+    s.step(T-1)
+    plt.subplot(211)
+    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), \
+             color = 'powderblue', label='2x/wk, 1d delay')
+    plt.subplot(212)
+    plt.plot(np.arange(T)*generation_time, s.get_isolated(), color = 'powderblue', label='2x/wk, 1d delay')
+
+
 
 
     plt.subplot(211)
