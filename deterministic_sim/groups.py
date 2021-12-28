@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 '''
 This module contains code for working with groups and meta-groups
@@ -56,7 +57,7 @@ class population:
     A population is a collection of meta-groups
     '''
 
-    def __init__(self, meta_group_list, meta_group_contact_matrix):
+    def __init__(self, meta_group_list: List[meta_group], meta_group_contact_matrix: np.ndarray):
         '''
         meta_group_matrix[i,j] is a matrix that gives the number of contacts that occurred where the source case was
         in meta-group i and the exposed group was in meta-group j.
@@ -66,6 +67,14 @@ class population:
         probabilities may be influenced by the population sizes -- if meta-group j is bigger, then it may be more
         likely to be the exposed meta-group.
         '''
+        self.meta_group_contact_matrix = meta_group_contact_matrix
+        self.meta_group_list = meta_group_list
+
+        n, m = len(meta_group_contact_matrix), len(meta_group_contact_matrix[0])
+        assert (n == m)
+
+        k = len(meta_group_list)
+        assert (k == n)
 
     def infection_matrix(self, infections_per_contact_unit):
         '''
@@ -91,6 +100,7 @@ class population:
         '''
         Returns a list of group indices corresponding to the passed meta-group name
         '''
+        
 
     def groupname_to_idx(self, groupname):
         '''
