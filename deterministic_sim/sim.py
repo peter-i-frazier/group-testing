@@ -58,6 +58,8 @@ class sim:
         self.max_T = max_T # Maximum number of periods we can simulate
         self.t = 0 # current time period
         self.generation_time = generation_time
+        assert (infection_discovery_frac >= 0) and (infection_discovery_frac <= 1)
+        assert (recovered_discovery_frac >= 0) and (recovered_discovery_frac <= 1)
         self.infection_discovery_frac = infection_discovery_frac
         self.recovered_discovery_frac = recovered_discovery_frac
 
