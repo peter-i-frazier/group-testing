@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import pytest
 
 '''
 This code performs "microscopic" calculations that predict how long an individual is infectious and free.
@@ -24,8 +22,8 @@ Pass days_between_tests = np.inf to model not testing.
 
 We assume the following notation:
 -   The start of an infection occurs between two surveillance testing days.  Let T be the distance in time
-    between these two sampling days.  
--   We suppose that the beginning of the period when a person is PCR-detectable is uniformly distributed between 
+    between these two sampling days.
+-   We suppose that the beginning of the period when a person is PCR-detectable is uniformly distributed between
     0 and T.  Call this time X so that T-X is the time until the first surveillance test.
 -   We assume that the person is infectious for the whole time they are PCR-detectable, and that their infectivity
     is constant over this time period. Let R be the length of this infectious period.
@@ -36,10 +34,10 @@ With this notation, the number of days when the person is infectious is min(D+NT
 We compute the expected value of this quantity.
 
 The max_infectious_days parameter has an important influence on how much testing can help --- if the period is short,
-then it is hard for a test to intercept a significant part of this period. We are currently setting this to 6 days as 
-a default. The logic here is that the pre-infectious-period + max_infectious_period / 2 should be equal to the 
-generation time. This assumes that the infectivity is uniform and symmetric.  So this would imply 
-max_infectious_period = 2 * (generation_time - pre_infectious_period). If the generation time is 5 days and the 
+then it is hard for a test to intercept a significant part of this period. We are currently setting this to 6 days as
+a default. The logic here is that the pre-infectious-period + max_infectious_period / 2 should be equal to the
+generation time. This assumes that the infectivity is uniform and symmetric.  So this would imply
+max_infectious_period = 2 * (generation_time - pre_infectious_period). If the generation time is 5 days and the
 pre-infectious period is 2 days, then this is 2 * (5-2) = 6 days.
 
 Our simulator is pessimistic in that it assumes PCR cannot detect an infection before it becomes infectious and that
@@ -140,12 +138,12 @@ Pass days_between_tests = np.inf to model not testing.
 
 Assumes that tests have 100% sensitivity.
 
-Here is the mathematics behind 
-Consider the start of an infection.  This occurs between two surveillance testing days.  Let T be the distance in time 
-between these two sampling days.  We will suppose that the beginning of the period when a person is PCR-detectable 
-is uniformly distributed between 0 and T.  Call this time X.  We assume that the person is infectious for the whole time 
-that they are PCR-detectable, and that their infectivity is constant over this time period. Let R be the length of this 
-infectious period.  Let D be the delay from sampling to acting on the result by isolating the person. 
+Here is the mathematics behind
+Consider the start of an infection.  This occurs between two surveillance testing days.  Let T be the distance in time
+between these two sampling days.  We will suppose that the beginning of the period when a person is PCR-detectable
+is uniformly distributed between 0 and T.  Call this time X.  We assume that the person is infectious for the whole time
+that they are PCR-detectable, and that their infectivity is constant over this time period. Let R be the length of this
+infectious period.  Let D be the delay from sampling to acting on the result by isolating the person.
 
 Then the number of days when the person is infectious is min(T+D-X, R).
 
@@ -181,66 +179,3 @@ def __days_infectious_perfect_sensitivity__(days_between_tests, isolation_delay,
         y = b * (1 - 0.5 * b)
 
     return D + T * y
-
-
-def test_days_infectious():
-
-    # If there is infinite time between tests, the time infectious in the presence of testing should be whatever
-    # the length of the maximum infectious period is. This should be true regardless of the sensitivity.
-    assert __days_infectious_perfect_sensitivity__(np.inf,1,max_infectious_days = 5) == 5
-    assert days_infectious(np.inf,1,max_infectious_days = 5) == 5
-
-    # Time infectious with testing should be less than the maximum
-    assert days_infectious(2,1,max_infectious_days = 5) < 5
-
-    # Testing with more delay should result in a longer time infectious
-    assert days_infectious(7,1) > days_infectious(2, 1)
-
-    # A shorter max infectioun time should result in fewer days infectious
-    assert days_infectious(5, 1, max_infectious_days=5) < days_infectious(5, 1, max_infectious_days=7)
-
-    # Codes should agree when sensitivity is perfect
-    assert days_infectious(7,1,sensitivity=1) == __days_infectious_perfect_sensitivity__(7,1)
-    assert days_infectious(4,2,sensitivity=1) == __days_infectious_perfect_sensitivity__(4,2)
-
-    # A lower sensitivity should result in more days infectious
-    assert days_infectious(5, 1, sensitivity=.5) > days_infectious(5, 1, sensitivity=.7)
-
-    # A sensitivity of 0 should be like not testing
-    assert days_infectious(2,1,max_infectious_days = 5, sensitivity = 0) == 5
-
-    # days infectious should be larger when the days between tests is larger
-    for d in range(20):
-        assert days_infectious(d+2, 1) > days_infectious(d+1, 1)
-
-    days_between_tests = np.arange(1, 20, .1)
-    y70 = [days_infectious(d, 1, sensitivity = 0.7) for d in days_between_tests]
-    y90 = [days_infectious(d, 1, sensitivity = 0.9) for d in days_between_tests]
-    y100 = [days_infectious(d, 1, sensitivity = 1) for d in days_between_tests]
-    plt.plot(days_between_tests, y70, label = 'Sensitivity = 70%')
-    plt.plot(days_between_tests, y90, label = 'Sensitivity = 90%')
-    plt.plot(days_between_tests, y100, label = 'Sensitivity = 100%')
-    plt.legend()
-    plt.xlabel('Number of days between tests')
-    plt.ylabel('Expected Days infectious')
-    plt.savefig('test_days_infectious1.png', facecolor='w')
-    plt.close()
-
-    # Compare what we are using here to what we used before
-    days_between_tests = np.arange(1, 20, .1)
-    y_old = [days_infectious(d, 1, sensitivity=1, max_infectious_days=7) for d in days_between_tests]
-    y_new = [days_infectious(d, 1) for d in days_between_tests]
-    plt.plot(days_between_tests, y_old, 'k--', label='Sensitivity = 100%, max_infectious = 7 days, 1 day delay')
-    plt.plot(days_between_tests, y_new, 'k-', label='Sensitivity = 60%, max_infectious = default, 1 day delay')
-
-    y_old = [days_infectious(d, 2, sensitivity=1, max_infectious_days=7) for d in days_between_tests]
-    y_new = [days_infectious(d, 2) for d in days_between_tests]
-    plt.plot(days_between_tests, y_old, 'b--', label='Sensitivity = 100%, max_infectious = 7 days, 2 day delay')
-    plt.plot(days_between_tests, y_new, 'b-', label='Sensitivity = 60%, max_infectious = default, 2 day delay')
-
-    plt.legend()
-    plt.xlabel('Number of days between tests')
-    plt.ylabel('Expected Days infectious')
-    plt.savefig('test_days_infectious2.png', facecolor='w')
-    plt.close()
-
