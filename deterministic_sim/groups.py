@@ -76,6 +76,13 @@ class population:
         k = len(meta_group_list)
         assert (k == n)
 
+        self.idx2groupname = []
+        for meta_group in meta_group_list:
+            for i in range(meta_group.K):
+                self.idx2groupname.append(meta_group.name + " " + i)
+        
+        self.groupname2idx = {name: i for i, name in self.idx2groupname}
+
     def infection_matrix(self, infections_per_contact_unit):
         '''
         Returns an infection rate matrix that corresponds to well-mixed interactions within each meta-group,
@@ -95,17 +102,27 @@ class population:
 
         The name is a concatenation of the group's meta-group name and the group's number of contact units
         '''
+        return self.idx2groupname[i]
 
-    def metagroup_indices(self, meta_group):
+    def metagroup_indices(self, metagroup_names):
         '''
-        Returns a list of group indices corresponding to the passed meta-group name
+        Returns a list of group indices corresponding to the passed metagroup_names
         '''
+        res = []
+        for metagroup_name in metagroup_names:
+            tmp = []
+            for i in enumerate(self.idx2groupname):
+                if self.idx2groupname[i][0: len(metagroup_name)] == metagroup_name:
+                    tmp.append(i)
+            res.append(tmp)
+        return res
         
 
     def groupname_to_idx(self, groupname):
         '''
         Returns the group index associated with a groupname
         '''
+        return self.groupname2idx[groupname]
 
 
 
