@@ -4,7 +4,7 @@ import micro
 from sim import sim, well_mixed_infection_rate
 import matplotlib.pyplot as plt
 
-def test_sim_calibration():
+def main():
     total_pop = 16000 # total UG population
     K = 12 # number of distinct contact groups
     T = 5 # num generations
@@ -82,3 +82,7 @@ def test_sim_calibration():
     plt.legend()
     plt.savefig('test_sim6.png', facecolor='w')
     plt.close()
+
+
+if __name__ == "main":
+    main()
