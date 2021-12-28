@@ -1,7 +1,4 @@
 import numpy as np
-import micro
-import matplotlib.pyplot as plt
-import pytest
 
 class sim:
     '''
@@ -20,23 +17,42 @@ class sim:
     During execution, S, I, and R are TxK matrices that track the number susceptible, infectious, and recovered in each
     of the K groups over T time periods.
     '''
-    def __init__(self, max_T, init_susceptible, init_infected, init_recovered, infection_rate, generation_time,
-                 infection_discovery_frac=1, recovered_discovery_frac=1):
-        '''
-        max_T is the maximum number of time periods we will simulate
-        init_susceptible, init_infected, init_recovered are vectors containing the number of people in each group that are susceptible, infectious, and recovered.
-        infection_rate is a matrix where infection_rate[i,j] is the number of new infections that an infected person in group i creates in group j
-        Letting K be the number of groups, the three init_ vectors should be length K.  infection_rate should be KxK.
+    def __init__(self, max_T: int, init_susceptible: np.ndarray,
+                 init_infected: np.ndarray, init_recovered: np.ndarray,
+                 infection_rate: np.ndarray, infection_discovery_frac: float = 1,
+                 recovered_discovery_frac: float = 1, generation_time: float = 1):
+        """Initialize an SIR-style simulation of COVID spread.
 
-        generation_time is the length of the generation interval in whatever units the user would like to use, e.g.,
-        days or weeks. This is not used, except to support plotting.
+        Group dynamics can be captured by providing vectors of
+        initial counts. If there are K groups, the length of init_susceptible,
+        init_infected, and init_recovered should all be K.
 
-        To model the discovery of people who have or had COVID (people in I or R), we model a fraction
-        infection_discovery_frac of new infections as being discovered in the generation that they start.
-        If they are not discovered then, they become "hidden recovered".  A fraction recovered_discovery_frac of the
-        undiscovered recovered infections are discovered in each generation. By default, everything is discovered,
-        making these two fractions 1.
-        '''
+        To model the discovery of people who
+        have or had COVID (I or R), we model a fraction infection_discovery_frac
+        of new infections as being discovered in the generation that they start.
+        If they are not discovered then, they become "hidden recovered".  A
+        fraction recovered_discovery_frac of the undiscovered recovered infections
+        are discovered in each generation.
+
+        Args:
+            max_T (int): Maximum number of time periods to simulate.
+            init_susceptible (np.ndarray): Vector of the initial number of \
+                people in each group that are susceptible.
+            init_infected (np.ndarray): Vector of the initial number of \
+                people in each group that are infected.
+            init_recovered (np.ndarray): Vector of the initial number of \
+                people in each group that are recovered.
+            infection_rate (np.ndarray): Matrix where infection_rate[i,j] is \
+                the number of new infections that an infected person in \
+                group i creates in group j
+            infection_discovery_frac (float): Fraction of infections being \
+                discovered in the generation that they start. Defaults to 1.
+            recovered_discovery_frac (float): Fraction of recovered being \
+                discovered in each generation. Defaults to 1.
+            generation_time (float): Length of the generation interval in \
+                whatever units the user would like to use, e.g., days or weeks. \
+                This is not used, except to support plotting. Defaults to 1.
+        """
         assert (max_T > 0)
 
         self.max_T = max_T # Maximum number of periods we can simulate
@@ -69,18 +85,45 @@ class sim:
         assert (infection_rate.shape == (self.K, self.K))
         self.infection_rate = infection_rate
 
-    def step(self, nsteps = 1):
-        """Move the simulation forward by nsteps"""
 
+    def step(self, nsteps: int = 1, infection_rate: np.ndarray = None,
+             infection_discovery_frac: float = None,
+             recovered_discovery_frac: float = None):
+        """Take n steps forward in the simulation.
+
+        As parameters like infection_rate can change over time, this function
+        can take those parameters as input.
+
+        Args:
+            infection_rate (np.ndarray): Matrix where infection_rate[i,j] is \
+                the number of new infections that an infected person in \
+                group i creates in group j. Defaults to self.infection_rate.
+            infection_discovery_frac (float): Fraction of infections being \
+                discovered in the generation that they start. \
+                Defaults to self.infection_discovery_frac.
+            recovered_discovery_frac (float): Fraction of recovered being \
+                discovered in each generation. \
+                Defaults to self.recovered_discovery_frac.
+        """
         assert(nsteps >= 1)
-        if nsteps > 1: # If the user is asking for more than 1 step, run this function the requested number of times
-            for i in range(nsteps):
-                self.step() # Simulate forward 1 step
+        # take multiple steps if necessary
+        if nsteps > 1:
+            for _ in range(nsteps):
+                self.step(infection_rate=infection_rate,
+                          infection_discovery_frac=infection_discovery_frac,
+                          recovered_discovery_frac=recovered_discovery_frac)
             return
+
+        if infection_rate is None:
+            infection_rate = self.infection_rate
+        if infection_discovery_frac is None:
+            infection_discovery_frac = self.infection_discovery_frac
+        if recovered_discovery_frac is None:
+            recovered_discovery_frac = self.recovered_discovery_frac
 
         t = self.t
 
-        assert(t+1 < self.max_T) # Otherwise, we will run out of space in the matrices S, I, R when we try to add at t+1
+        assert(t+1 < self.max_T) # enforce max generation
 
         # vector giving the fraction susceptible in each group
         frac_susceptible = self.S[t] / (self.S[t] + self.I[t] + self.R[t])
@@ -88,7 +131,7 @@ class sim:
         # The number of new infections in each group that would result, if everyone were susceptible
         # A = I[t-1] is a vector containing the number of infections in each source group
         # np.matmul(A, infection_rate) has a value at entry j of sum(A[k], infection_rate[k,j])
-        self.I[t+1] = np.matmul(self.I[t], self.infection_rate)
+        self.I[t+1] = np.matmul(self.I[t], infection_rate)
 
         # Adjust this for the fact that not everyone is susceptible. This is an elementwise product.
         self.I[t+1] = self.I[t+1] * frac_susceptible
@@ -103,13 +146,13 @@ class sim:
 
         # The old hidden recoveries are either discovered (with probability recovered_discovery_frac) or move forward
         # into the next time period as hidden recoveries
-        self.D[t+1] = self.H[t]*self.recovered_discovery_frac # discovery of old hidden recoveries
-        self.H[t+1] = self.H[t]*(1-self.recovered_discovery_frac)
+        self.D[t+1] = self.H[t]*recovered_discovery_frac # discovery of old hidden recoveries
+        self.H[t+1] = self.H[t]*(1-recovered_discovery_frac)
 
         # New infections are either discovered immediately (with probability infection_discovery_frac) or
         # become hidden recoveries
-        self.D[t+1] = self.D[t+1] + self.I[t+1] * self.infection_discovery_frac
-        self.H[t+1] = self.H[t+1] + self.I[t+1] * (1-self.infection_discovery_frac)
+        self.D[t+1] = self.D[t+1] + self.I[t+1] * infection_discovery_frac
+        self.H[t+1] = self.H[t+1] + self.I[t+1] * (1-infection_discovery_frac)
 
         self.t = self.t + 1 # Move time forward by one step
 

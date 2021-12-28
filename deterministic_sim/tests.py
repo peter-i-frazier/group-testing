@@ -56,7 +56,7 @@ def test_sim4():
     infection_rate = well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact)
     generation_time = 4/7 # in units of weeks
 
-    s = sim(T,S0,I0,R0,infection_rate,generation_time,0,0)
+    s = sim(T,S0,I0,R0,infection_rate,0,0,generation_time)
     s.step(T-1)
 
     # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
