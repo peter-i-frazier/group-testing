@@ -95,7 +95,18 @@ class population:
 
         Here, a "group" is an integer that corresponds to a meta-group and a group within that meta-group.
         '''
-
+        dim_tot = 0 #total number of meta-group-groups
+        cum_tot = []
+        for i in meta_group_list:
+            cum_tot.append(dim_tot)
+            dim_tot += i.K
+        
+        res = np.zeros((dim_tot, dim_tot))
+        for i in range(len(meta_group_list)):
+            for j in range(meta_group_list[i].K):
+                for k in range(len(meta_group_list)):
+                    for l in range(meta_group_list[k].K):
+                        res[]
     def idx_to_groupname(self, i):
         '''
         Returns a string naming the group indexed by i, e.g., "UG 6".
