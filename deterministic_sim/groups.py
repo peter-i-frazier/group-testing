@@ -106,7 +106,7 @@ class population:
             for j in range(meta_group_list[i].K):
                 for k in range(len(meta_group_list)):
                     for l in range(meta_group_list[k].K):
-                        res[]
+                        res=[]
     def idx_to_groupname(self, i):
         '''
         Returns a string naming the group indexed by i, e.g., "UG 6".
