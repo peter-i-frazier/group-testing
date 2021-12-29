@@ -174,13 +174,17 @@ def test_days_infectious():
     # plt.close()
 
 
-def test_sim6():
-    '''order of meta-groups: UG, GR, VM/GM/LA, fac/staff'''
-    total_pops = [16000, 8000, 3000, 10000]
-    T = 20 #num generations
+# TODO (hwr26): Use a simpler example here to test the groups functions
+def test_meta_groups():
+    """Test a simulation with multiple meta groups."""
 
-    # Based on Xiangyu's adjusted moment match code, this is the fraction of the population (UG-only?  or all students)
-    # broken out by the amount of contact that they have, starting from low contact to high contact.
+    # order: [UG, GR, VM/GM/LA, fac/staff]
+    total_pops = [16000, 8000, 3000, 10000]
+    T = 20
+
+    # Based on Xiangyu's adjusted moment match code, this is the fraction of the
+    # population (UG-only?  or all students) broken out by the amount of contact
+    # that they have, starting from low contact to high contact.
     pop_fracs = np.array([
             [0.3771077769,
             0.1744692313,
@@ -226,46 +230,47 @@ def test_sim6():
     for i in range(len(total_pops)):
         pops[i] = total_pops[i]*np.array(pop_fracs[i])
 
-
     marginal_contacts = np.array([np.arange(1,len(pops[0])+1),
-                    np.arange(1,len(pops[1])+1),
-                    np.arange(1,len(pops[2])+1),
-                    np.arange(1,len(pops[3])+1)])
+                                  np.arange(1,len(pops[1])+1),
+                                  np.arange(1,len(pops[2])+1),
+                                  np.arange(1,len(pops[3])+1)])
 
     # flatten doesn't work when rows have different lengths :(
     tmp = []
     for i in range(len(marginal_contacts)):
-        tmp+=list(marginal_contacts[i])
+        tmp += list(marginal_contacts[i])
     marginal_contacts_flat = np.array(tmp)
 
     tmp = []
     for i in range(len(pops)):
-        tmp+=list(pops[i])
+        tmp += list(pops[i])
     pops_flat = np.array(tmp)
-    # There were roughly 1900 UG infected during the Omicron outbreak in December 2021.
-    # Assume that another 2000 will be infected during winter break
+
+    # There were roughly 1900 UG infected during the Omicron outbreak in
+    # December 2021. Assume that another 2000 will be infected over winter break
     infected_before_semester = 1900 + 2000
 
     # Assume 100 active infections to start the semester
     initial_infections = 100
 
-    # Assume a group's previous and new infections are divided proportionally to the amount of contact it has as a
-    # group. This is its contact rate * population size
+    # Assume a group's previous and new infections are divided proportionally to
+    # the amount of contact it has as a group.
     b = marginal_contacts_flat * pops_flat
     b =  b / np.sum(b)
     R0 = infected_before_semester * b
     I0 = initial_infections * b
-
-    S0 = np.maximum(pops_flat - R0 - I0, 0) # Need to take the max with 0 because R0[i]+S0[i] can be bigger than pop[i]
+    S0 = np.maximum(pops_flat - R0 - I0, 0)
 
     generation_time = 4/7 # weeks
     symptomatic_rate = .3 # used for the fraction of new infections will be discovered without surevillance
 
     # We calibrate our probability of infection to the December Omicron outbreak
-    # We use a ballpark estimate of the effective R0 during that period, and an estimate of which group was the most
-    # important one in driving that outbreak.  We then assume that the probability of infection is such that this
-    # group's effective R0 (under the testing intervention at the time) was equal to the ballpark estimate.
-    # Assuming a generation time of 4 days, and 50% day-over-day growth, we get a ballpark estimate of 1.5^4 = 5.06
+    # We use a ballpark estimate of the effective R0 during that period, and an
+    # estimate of which group was the most important one in driving that outbreak.
+    # We then assume that the probability of infection is such that this
+    # group's effective R0 (under the testing intervention at the time) was equal
+    # to the ballpark estimate. Assuming a generation time of 4 days, and 50%
+    # day-over-day growth, we get a ballpark estimate of 1.5^4 = 5.06
     # for the december effective R0
     dec_effective_R0 = 5
     dec_contacts_of_key_group = 6
@@ -286,107 +291,47 @@ def test_sim6():
     # We then adjust this by multiplying by the number of days infectious under our testing strategy, divided by the
     # number under our December Omicron outbreak.
 
-    # 1x / week testing and 2 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,2) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 2d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='1x/wk, 2d delay')
 
-        # 2x / week testing and 1.5 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1.5) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 1.5d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 1.5d delay')
+    def sim_test_regime(tests_per_week, delay, color):
+        days_between_tests = 7 / tests_per_week
+        infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(days_between_tests, delay) / dec_days_infectious
+        group_names = ['UG', 'GR', 'PR', 'FS']
+        meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
+                       for i in range(4)]
+        popul = population(meta_groups, meta_matrix)
+        infection_matrix = popul.infection_matrix(infections_per_contact)
+        s = sim(T, S0, I0, R0, infection_rate=infection_matrix,
+                generation_time=generation_time)
+        s.step(T-1)
 
-    # 2x / week testing and 2 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,2) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 2d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 2d delay')
+        label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
+        plt.subplot(211)
+        plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
+        plt.subplot(212)
+        plt.plot(np.arange(T)*generation_time, s.get_isolated(), label=label, color=color)
 
-    # 2x / week testing and 1 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(3.5,1) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='2x/wk, 1d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T)*generation_time, s.get_isolated(), label='2x/wk, 1d delay')
-
-    # 1x / week testing and 1 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,1) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 1d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), label='1x/wk, 1d delay')
-
-    # 1x / week testing and 1.5 day delay
-    infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(7,1.5) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    # print(popul.infection_matrix(infections_per_contact))
-    s = sim(T, S0, I0, R0, popul.infection_matrix(infections_per_contact), generation_time)
-    s.step(T-1)
-    plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label='1x/wk, 1.5d delay')
-    plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), label='1x/wk, 1.5d delay')
+    sim_test_regime(1,2,"crimson")
+    sim_test_regime(1,1.5,"orangered")
+    sim_test_regime(1,1,"coral")
+    sim_test_regime(2,2,"navy")
+    sim_test_regime(2,1.5,"royalblue")
+    sim_test_regime(2,1,"powderblue")
 
     # No surveillance
     infections_per_contact = booster_effectiveness * dec_infections_per_contact * micro.days_infectious(np.inf,1) / dec_days_infectious
-    ug = meta_group('UG', pops[0], marginal_contacts[0])
-    gr = meta_group('GR', pops[1], marginal_contacts[1])
-    pro = meta_group('PR', pops[2], marginal_contacts[2])
-    fac = meta_group('FS', pops[3], marginal_contacts[3])
-    popul = population([ug, gr, pro, fac], meta_matrix)
-    infection_discovery_frac = symptomatic_rate # 30% are asymptomatic
+    group_names = ['UG', 'GR', 'PR', 'FS']
+    meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
+                   for i in range(4)]
+    popul = population(meta_groups, meta_matrix)
+    infection_discovery_frac = symptomatic_rate
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
-    s = sim(T,S0,I0,R0,popul.infection_matrix(infections_per_contact),generation_time,infection_discovery_frac,recovered_discovery_frac)
+    infection_rate=popul.infection_matrix(infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate,
+            infection_discovery_frac=infection_discovery_frac,
+            recovered_discovery_frac=recovered_discovery_frac,
+            generation_time=generation_time)
     s.step(T-1)
+
     plt.subplot(211)
     plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
     plt.plot(np.arange(T)*generation_time, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
@@ -398,7 +343,6 @@ def test_sim6():
     plt.title('Dec Effective R0 = {}, Symptomatic Rate = {}'.format(dec_effective_R0, symptomatic_rate))
     plt.rcParams.update({'font.size': 8})
     plt.legend()
-    #plt.xlabel('Weeks')
     plt.ylabel('Total Infected')
 
     plt.subplot(212)
@@ -407,5 +351,5 @@ def test_sim6():
     plt.xlabel('Weeks')
     plt.ylabel('Total in Isolation')
 
-    plt.savefig('test_sim6.png', facecolor='w')
+    plt.savefig('test_meta_groups.png', facecolor='w')
     plt.close()
