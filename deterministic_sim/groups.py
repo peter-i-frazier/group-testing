@@ -76,12 +76,12 @@ class population:
         k = len(meta_group_list)
         assert (k == n)
 
-        # self.idx2groupname = []
-        # for meta_group in meta_group_list:
-        #     for i in range(meta_group.K):
-        #         self.idx2groupname.append(meta_group.name + " " + str(i))
+        self.idx2groupname = []
+        for meta_group in meta_group_list:
+            for i in range(meta_group.K):
+                self.idx2groupname.append(meta_group.name + " " + str(i))
         
-        # self.groupname2idx = {name: i for i, name in self.idx2groupname}
+        self.groupname2idx = {name: i for i, name in enumerate(self.idx2groupname)}
 
     def infection_matrix(self, infections_per_contact_unit):
         '''
