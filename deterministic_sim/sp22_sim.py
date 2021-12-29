@@ -45,20 +45,21 @@ def main(**kwargs):
     # proportionally to the amount of contact it has as a group.
     # =====================================================================
 
-    group_names = ['UG', 'GR', 'PR', 'FS']
-    pops = np.zeros(len(group_names), dtype = 'object')
-    for i in range(len(params['total_pops'])):
-        pops[i] = params['total_pops'][i]*np.array(params['pop_fracs'][i])
+    population_count = params["population_count"]
+    population_names = params["population_names"]
+    meta_groups = []
+    for i in range(len(population_count)):
+        name = population_names[i]
+        pop = population_count[i] * np.array(params['pop_fracs'][i])
+        contact_units = np.arange(1, len(pop) + 1)
+        meta_groups.append(meta_group(name, pop, contact_units))
 
-    marginal_contacts = np.array([np.arange(1,len(pops[0])+1),
-                                np.arange(1,len(pops[1])+1),
-                                np.arange(1,len(pops[2])+1),
-                                np.arange(1,len(pops[3])+1)])
+    initial_infectious = params['initial_infections']
+    initial_recovered = params['infected_from_outbreak'] + params['infected_over_break']
 
-    meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
-                    for i in range(len(group_names))]
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.getSIRinit(params['total_pops'], params['pop_fracs'], params['infected_from_outbreak'], params['infected_over_break'], params['initial_infections'])
+    S0, I0, R0 = popul.get_init_SIR(initial_infectious, initial_recovered)
+
     # ========================================
     # [Run] Reduce R0 once the semester begins
     # ========================================

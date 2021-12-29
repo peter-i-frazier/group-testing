@@ -51,6 +51,23 @@ class meta_group:
         infection_rates = np.outer(r, q)
         return infection_rates
 
+    def get_init_SIR(self, initial_infectious, initial_recovered):
+        """Return initial SIR vectors.
+
+        Assuming initial infections and recovered are distributed proportional
+        to the population.
+
+        Args:
+            initial_infectious (float): Initial infectious count.
+            initial_recovered (float): Initial recovered count.
+        """
+        b = self.contact_units * self.pop
+        b =  b / np.sum(b)
+        R0 = initial_recovered * b
+        I0 = initial_infectious * b
+        S0 = np.maximum(self.pop - R0 - I0, 0)
+        return S0, I0, R0
+
 
 class population:
     '''
@@ -142,7 +159,7 @@ class population:
 
     def flatten(self, input):
         '''
-        Returns a flattened version of inputted array 
+        Returns a flattened version of inputted array
         amenable to usage in sim(), which only takes 1D SIR etc.
         e.g. marginal contacts, or population counts per meta-group-group
         '''
@@ -151,17 +168,31 @@ class population:
             tmp += list(input[i])
         return np.array(tmp)
 
-    def getSIRinit(self, total_pops, pop_fracs, infected_from_outbreak, infected_over_break, initial_infections):
-        '''
-        Returns the initial susceptible, infected, and recovered given the inputted parameters in the YAML.
-        Note these are all one-dimensional, as sim() only takes 1-D arrays.
-        '''
-        marginal_contacts_flat = self.flatten(marginal_contacts)
-        pops_flat = self.flatten(pops)
-        b =  marginal_contacts_flat * pops_flat
-        b =  b / np.sum(b)
-        total_initial = infected_from_outbreak + infected_over_break
-        R0 = total_initial * b
-        I0 = initial_infections * b
-        S0 = np.maximum(pops_flat - R0 - I0, 0)
+
+    def get_init_SIR(self, initial_infectious, initial_recovered):
+        """Return initial SIR vectors.
+
+        Assuming initial infections and recovered are distributed proportional
+        to the population.
+
+        Args:
+            initial_infectious (float): Initial infectious count.
+            initial_recovered (float): Initial recovered count.
+        """
+        meta_group_pops = np.array([sum(g.pop) for g in self.meta_group_list])
+        meta_group_prop = meta_group_pops / sum(meta_group_pops)
+        initial_infectious = initial_infectious * meta_group_prop
+        initial_recovered = initial_recovered * meta_group_prop
+
+        SIR = []
+        for i in range(len(self.meta_group_list)):
+            group = self.meta_group_list[i]
+            S0, I0, R0 = group.get_init_SIR(initial_infectious[i],
+                                         initial_recovered[i])
+            SIR.append([S0, I0, R0])
+        SIR = np.array(SIR)
+
+        S0 = self.flatten(SIR[:,0])
+        R0 = self.flatten(SIR[:,1])
+        I0 = self.flatten(SIR[:,2])
         return S0, I0, R0

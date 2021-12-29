@@ -1,8 +1,14 @@
-total_pops:                     # total UG population (by meta group)
+population_count:               # population count (by meta group)
   - 16000  # UG
   - 8000   # GR
   - 3000   # VM/GM/LA
   - 10000  # fac/staff
+population_names:               # names of populations (by meta group)
+  - "UG"
+  - "GR"
+  - "PR"
+  - "FS"
+
 T: 28                           # num generations (16 weeks with 4-day generations)
 
 symptomatic_rate: .3            # used to compute discovered without surveillance
