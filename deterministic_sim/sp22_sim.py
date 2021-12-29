@@ -58,7 +58,7 @@ def main(**kwargs):
     meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
                     for i in range(len(group_names))]
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.getSIRinit(params['total_pops'], params['pop_fracs'], params['infected_from_outbreak'], params['infected_over_break'], params['initial_infections'])
+    S0, I0, R0 = popul.getSIRinit(marginal_contacts, pops, params['total_pops'], params['pop_fracs'], params['infected_from_outbreak'], params['infected_over_break'], params['initial_infections'])
     # ========================================
     # [Run] Reduce R0 once the semester begins
     # ========================================

@@ -232,7 +232,7 @@ class sim:
     def get_discovered_for_group(self, group, normalize=False, cumulative=False):
         return self.get_metric_for_group('D', group, normalize, cumulative)
 
-    def get_isolated(self, group = False, isolation_len = 2, isolation_frac = 1):
+    def get_isolated(self, group = False, iso_lengths = [8], iso_props = [1]):
         '''
         Returns the number of people in isolation during the generation.
         isolation_len is the number of generations that isolation lasts.
@@ -268,13 +268,24 @@ class sim:
         else:
             discovered = self.get_discovered_for_group(group)
 
-        if np.isscalar(isolation_frac):
-            isolation_frac = np.ones(isolation_len) * isolation_frac
-        assert(len(isolation_frac)) == isolation_len
+        iso_len = int(np.ceil(iso_lengths[-1]/self.generation_time))
+        def cut01(s):
+            if s<0:
+                return 0
+            elif s>1:
+                return 1
+            else:
+                return s
+
+        isolation_frac = np.ones(iso_len)
+        for i in range(1,iso_len):
+            isolation_frac[i] = 0
+            for j in range(len(iso_lengths)):
+                isolation_frac[i] += iso_props[j]*cut01((iso_lengths[j]-self.generation_time*i)/self.generation_time)
 
         isolated = np.zeros(self.max_T)
         for t in range(self.max_T):
-            for i in range(isolation_len):
+            for i in range(iso_len):
                 if t-i >= 0:
                     # Add in the people who were discovered i generations ago
                     isolated[t] = isolated[t] + isolation_frac[i] * discovered[t-i]
