@@ -1,0 +1,37 @@
+total_pop: 16000                # total UG population
+K: 12                           # number of distinct contact groups
+T: 28                           # num generations (16 weeks with 4-day generations)
+
+symptomatic_rate: .3            # used to compute discovered without surveillance
+booster_effectiveness: 0.5      # reduction in transmission from boosters
+
+infected_from_outbreak: 1900
+infected_over_break: 175        # According to @Brian Liu's analysis
+initial_infections: 25          # According to @Brian Liu's analysis
+
+dec_effective_R0: 7             # calibrated from calibration.py by @hwr26
+R0_reduction: 0.85              # reduction in R0 once classes start
+generation_time: 4              # generation time (days)
+dec_contacts_of_key_group: 6    # number of contacts among key group
+dec_days_between_tests: 7       # days between test (december 2021)
+dec_isolation_delay: 2          # isolation delay (december 2021)
+
+# Based on Xiangyu's adjusted moment match code, this is the fraction of the
+# population (UG-only?  or all students) broken out by the amount of contact
+# that they have, starting from low contact to high contact.
+# Assumes that group i has i+1 contacts per day.
+pop_frac:
+  - 0.46666204134859246
+  - 0.21110377424326393
+  - 0.13427835918082992
+  - 0.040993148549700376
+  - 0.05561449714374835
+  - 0.03772148571886847
+  - 0.020557396664413034
+  - 0.01829685176380435
+  - 0.003308325172067398
+  - 0.006056046991853723
+  - 0.0027991704708900224
+  - 0.002608902751968122
+
+# TODO (hwr26): Add Peter's params for isolation lengths

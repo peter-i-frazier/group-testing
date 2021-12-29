@@ -80,7 +80,7 @@ class population:
         for meta_group in meta_group_list:
             for i in range(meta_group.K):
                 self.idx2groupname.append(meta_group.name + " " + str(i))
-        
+
         self.groupname2idx = {name: i for i, name in enumerate(self.idx2groupname)}
 
     def infection_matrix(self, infections_per_contact_unit):
@@ -100,7 +100,7 @@ class population:
         for i in self.meta_group_list:
             cum_tot.append(dim_tot)
             dim_tot += i.K
-        
+
         res = np.zeros((dim_tot, dim_tot))
         for i in range(len(self.meta_group_list)): #source meta group
             for j in range(self.meta_group_list[i].K): #source meta-group-group
@@ -132,7 +132,7 @@ class population:
                     tmp.append(i)
             res.append(tmp)
         return res
-        
+
 
     def groupname_to_idx(self, groupname):
         '''
