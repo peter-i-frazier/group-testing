@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import micro
-from sim import sim, well_mixed_infection_rate
+from sim import sim
+from groups import well_mixed_infection_rate_one_meta_group
 import matplotlib.pyplot as plt
 
 
@@ -61,17 +62,17 @@ def main():
 
     # [12/1 to 12/9] 1x / week testing with 36hr delay
     infections_per_contact = DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(7,1.5) / DEC_DAYS_INFECTIOUS
-    infection_rate = well_mixed_infection_rate(pop, MARGINAL_CONTACTS, infections_per_contact)
+    infection_rate = well_mixed_infection_rate_one_meta_group(pop, MARGINAL_CONTACTS, infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
     s.step(2)
 
     # [12/10 to 12/16] 1x / week testing with 3 day delay
     infections_per_contact = DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(7,3) / DEC_DAYS_INFECTIOUS
-    infection_rate = well_mixed_infection_rate(pop, 0.5 * MARGINAL_CONTACTS, infections_per_contact)
+    infection_rate = well_mixed_infection_rate_one_meta_group(pop, 0.5 * MARGINAL_CONTACTS, infections_per_contact)
     s.step(1, infection_rate=infection_rate)
 
     infections_per_contact = DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(7,3) / DEC_DAYS_INFECTIOUS
-    infection_rate = well_mixed_infection_rate(pop, 0.33 * MARGINAL_CONTACTS, infections_per_contact)
+    infection_rate = well_mixed_infection_rate_one_meta_group(pop, 0.33 * MARGINAL_CONTACTS, infections_per_contact)
     s.step(1, infection_rate=infection_rate)
 
     # ==================================================

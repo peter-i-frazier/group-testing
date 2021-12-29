@@ -1,6 +1,7 @@
 import numpy as np
 import micro
-from sim import sim, well_mixed_infection_rate
+from sim import sim
+from groups import well_mixed_infection_rate_one_meta_group
 import matplotlib
 import matplotlib.pyplot as plt
 import warnings
@@ -75,10 +76,10 @@ def main():
         """Simulate a testing regime"""
         days_between_tests = 7 / tests_per_week
         infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(days_between_tests,delay) / DEC_DAYS_INFECTIOUS
-        infection_rate = well_mixed_infection_rate(pop, MARGINAL_CONTACTS, infections_per_contact)
+        infection_rate = well_mixed_infection_rate_one_meta_group(pop, MARGINAL_CONTACTS, infections_per_contact)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
         s.step(4)
-        infection_rate = well_mixed_infection_rate(pop, R0_REDUCTION * MARGINAL_CONTACTS, infections_per_contact)
+        infection_rate = well_mixed_infection_rate_one_meta_group(pop, R0_REDUCTION * MARGINAL_CONTACTS, infections_per_contact)
         s.step(T-1-4, infection_rate=infection_rate)
 
         label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
@@ -97,7 +98,7 @@ def main():
 
     # No surveillance
     infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(np.inf,1) / DEC_DAYS_INFECTIOUS
-    infection_rate = well_mixed_infection_rate(pop, MARGINAL_CONTACTS, infections_per_contact)
+    infection_rate = well_mixed_infection_rate_one_meta_group(pop, MARGINAL_CONTACTS, infections_per_contact)
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time,

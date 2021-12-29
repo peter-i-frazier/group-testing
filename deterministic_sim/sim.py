@@ -128,7 +128,7 @@ class sim:
         assert(t+1 < self.max_T) # enforce max generation
 
         # vector giving the fraction susceptible in each group
-        frac_susceptible = self.S[t] / (self.S[t] + self.I[t] + self.R[t])
+        frac_susceptible = np.divide(self.S[t], (self.S[t] + self.I[t] + self.R[t]), out=np.zeros_like(self.S[t]), where=(self.S[t] + self.I[t] + self.R[t])!=0) # self.S[t] / (self.S[t] + self.I[t] + self.R[t])
 
         # The number of new infections in each group that would result, if everyone were susceptible
         # A = I[t-1] is a vector containing the number of infections in each source group
@@ -285,29 +285,3 @@ class sim:
         return self.generation_time
 
 
-'''
-Returns an infection rate matrix that corresponds to well-mixed interactions between groups, where each group has a
-amount of contact during their infectious period (summed over all exposed groups) given by the vector
-marginal_contacts and a population size by the vector pop.  The number of infections per unit of contact in
-marginal_contact (infections_per_contact) is a scalar and applies to all contacts. The units of "marginal_contacts"
-could be total contacts over the course of someone's infectious period, in which case infections_per_contact is the
-same as the probability of transmission given contact.  It could also be the *rate* at which people have contact per
-day, in which case infections_per_contact should be the probability of transmission given contact times the expected
-length of a person's infectious period.
-'''
-def well_mixed_infection_rate(pop, marginal_contacts, infections_per_contact):
-    assert (len(pop) == len(marginal_contacts))
-    frac_pop = pop / np.sum(pop)  # convert to a fraction
-    K = len(marginal_contacts)
-
-    # An incoming contact lands in a population with a probability proportional to its number of outgoing contacts,
-    # which is q[i] = frac_pop[i]*marginal_contacts[i].
-    q = frac_pop * marginal_contacts / np.sum(frac_pop * marginal_contacts)
-
-    # The total number of people infected by a positive in group i is infections_per_contact * marginal_contacts[i]
-    r = infections_per_contact * marginal_contacts
-
-    # When a person in group i is infected, the number of people infected in group j is then r[i]*q[j]
-
-    infection_rates = np.outer(r, q)
-    return infection_rates
