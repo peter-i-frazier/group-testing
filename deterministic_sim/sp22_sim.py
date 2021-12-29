@@ -45,7 +45,6 @@ def main(**kwargs):
     # proportionally to the amount of contact it has as a group.
     # =====================================================================
 
-    # TODO (hwr26): To be replaced with code Sam is working on
     group_names = ['UG', 'GR', 'PR', 'FS']
     pops = np.zeros(len(group_names), dtype = 'object')
     for i in range(len(params['total_pops'])):
