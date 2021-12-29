@@ -25,6 +25,7 @@ def main(**kwargs):
     T = params['T']
     GENERATION_TIME = params['generation_time']
     SYMPTOMATIC_RATE = params['symptomatic_rate']
+    R0_REDUCTION = params['R0_reduction']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     DEC_INFECTIONS_PER_CONTACT = params['dec_effective_R0'] / \
                                  params['dec_contacts_of_key_group']
@@ -58,10 +59,11 @@ def main(**kwargs):
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
         infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(days_between_tests, delay) / DEC_DAYS_INFECTIOUS
-        infection_matrix = popul.infection_matrix(infections_per_contact)
-        s = sim(T, S0, I0, R0, infection_rate=infection_matrix,
+        infection_rate = popul.infection_matrix(infections_per_contact)
+        s = sim(T, S0, I0, R0, infection_rate=infection_rate,
                 generation_time=GENERATION_TIME)
-        s.step(T-1)
+        s.step(4)
+        s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
         label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
         plt.subplot(211)
@@ -88,7 +90,8 @@ def main(**kwargs):
             infection_discovery_frac=infection_discovery_frac,
             recovered_discovery_frac=recovered_discovery_frac,
             generation_time=GENERATION_TIME)
-    s.step(T-1)
+    s.step(4)
+    s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
     plt.subplot(211)
     plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')

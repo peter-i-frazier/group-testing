@@ -19,7 +19,7 @@ infected_over_break: 175        # According to @Brian Liu's analysis
 initial_infections: 25          # According to @Brian Liu's analysis
 
 dec_effective_R0: 7             # calibrated from calibration.py by @hwr26
-R0_reduction: 0.85              # reduction in R0 once classes start
+R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
 generation_time: 4              # generation time (days)
 dec_contacts_of_key_group: 6    # number of contacts among key group
 dec_days_between_tests: 7       # days between test (december 2021)
