@@ -232,7 +232,8 @@ class sim:
     def get_discovered_for_group(self, group, normalize=False, cumulative=False):
         return self.get_metric_for_group('D', group, normalize, cumulative)
 
-    def get_isolated(self, group = False, iso_lengths = [8], iso_props = [1]):
+    def get_isolated(self, group = False, iso_lengths = [8], iso_props = [1],
+                     on_campus_frac = 0.5):
         '''
         Returns the number of people in isolation during the generation.
         iso_lengths is the number days isolations lasts for each group (in ascending order)
@@ -267,6 +268,9 @@ class sim:
             discovered = self.get_discovered()
         else:
             discovered = self.get_discovered_for_group(group)
+
+        # only consider the on campus fraction (as off-campus don't require isolation)
+        discovered = on_campus_frac * discovered
 
         iso_len = int(np.ceil(iso_lengths[-1]/self.generation_time))
         def cut01(s):

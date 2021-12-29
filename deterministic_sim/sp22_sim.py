@@ -26,19 +26,10 @@ def main(**kwargs):
     GENERATION_TIME = params['generation_time']
     SYMPTOMATIC_RATE = params['symptomatic_rate']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
-    R0_REDUCTION = params['R0_reduction']
     DEC_INFECTIONS_PER_CONTACT = params['dec_effective_R0'] / \
                                  params['dec_contacts_of_key_group']
     DEC_DAYS_INFECTIOUS = micro.days_infectious(params['dec_days_between_tests'],
                                                 params['dec_isolation_delay'])
-
-    # TODO (hwr26): Update with Sam's auto-generation of these arrays
-    on_campus_frac = params['on_campus_frac']
-    isolation_frac_5_day = np.array([1, .4, .1]) # 80% 5 day / 20% 10 day
-    isolation_frac_10_day = np.array([1, 1, .5]) # 100% 10 day
-    ISOLATION_LEN = 3
-    ISOLATION_FRAC_ON_CAMPUS_5DAY = on_campus_frac * isolation_frac_5_day
-    ISOLATION_FRAC_ON_CAMPUS_10DAY = on_campus_frac * isolation_frac_10_day
 
     # =====================================================================
     # [Initialize] Assume a group's previous and new infections are divided
@@ -76,7 +67,10 @@ def main(**kwargs):
         plt.subplot(211)
         plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
         plt.subplot(212)
-        plt.plot(np.arange(T)*GENERATION_TIME, s.get_isolated(), label=label, color=color)
+        isolated = s.get_isolated(iso_lengths=params["isolation_durations"],
+                                  iso_props=params["isolation_fracs"],
+                                  on_campus_frac=params["on_campus_frac"])
+        plt.plot(np.arange(T)*GENERATION_TIME, isolated, label=label, color=color)
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
@@ -100,7 +94,10 @@ def main(**kwargs):
     plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
     plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
     plt.subplot(212)
-    plt.plot(np.arange(T) * GENERATION_TIME, s.get_isolated(), 'k', label='No surveillance')
+    isolated = s.get_isolated(iso_lengths=params["isolation_durations"],
+                              iso_props=params["isolation_fracs"],
+                              on_campus_frac=params["on_campus_frac"])
+    plt.plot(np.arange(T) * GENERATION_TIME, isolated, 'k', label='No surveillance')
 
 
     # ====================================
