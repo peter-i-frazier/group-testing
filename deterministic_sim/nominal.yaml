@@ -15,8 +15,8 @@ symptomatic_rate: .3            # used to compute discovered without surveillanc
 booster_effectiveness: 0.5      # reduction in transmission from boosters
 
 infected_from_outbreak: 1900
-infected_over_break: 175        # According to @Brian Liu's analysis
-initial_infections: 25          # According to @Brian Liu's analysis
+infected_over_break: 2500       # According to @Brian Liu's analysis
+initial_infections: 975         # According to @Brian Liu's analysis
 
 dec_effective_R0: 7             # calibrated from calibration.py by @hwr26
 R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
