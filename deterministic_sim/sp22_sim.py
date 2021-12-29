@@ -44,6 +44,14 @@ POP_FRAC = np.array(
     0.002608902751968122])
 MARGINAL_CONTACTS = np.arange(1,K+1)
 
+# These parameters are passed to get_isolated to get isolation days for different populations of students
+# under different isolation policies
+ISOLATION_LEN = 3
+ONCAMPUS_FRAC = 0.5 # fraction of students that live on campus
+ISOLATION_FRAC_ALL_5DAY = np.array([1, .4, .1])
+ISOLATION_FRAC_ALL_10DAY = np.array([1, 1, .5])
+ISOLATION_FRAC_ONCAMPUS_5DAY = ONCAMPUS_FRAC * ISOLATION_FRAC_ALL_5DAY
+ISOLATION_FRAC_ONCAMPUS_10DAY = ONCAMPUS_FRAC * ISOLATION_FRAC_ALL_10DAY
 
 def main():
 
@@ -77,7 +85,8 @@ def main():
         plt.subplot(211)
         plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
         plt.subplot(212)
-        plt.plot(np.arange(T)*generation_time, s.get_isolated(), label=label, color=color)
+        isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ONCAMPUS_5DAY)
+        plt.plot(np.arange(T)*generation_time, isolated, label=label, color=color)
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
@@ -99,7 +108,8 @@ def main():
     plt.plot(np.arange(T)*generation_time, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
     plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
     plt.subplot(212)
-    plt.plot(np.arange(T) * generation_time, s.get_isolated(), 'k', label='No surveillance')
+    isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ONCAMPUS_5DAY)
+    plt.plot(np.arange(T) * generation_time, isolated, 'k', label='No surveillance')
 
     # ====================================
     # [Plot] Comparison of testing regimes
@@ -115,7 +125,7 @@ def main():
     plt.rcParams.update({'font.size': 8})
     plt.legend()
     plt.xlabel('Weeks')
-    plt.ylabel('UG in Isolation')
+    plt.ylabel('UG in Isolation (on-campus 5day)')
 
     plt.savefig('sp22_sim.png', facecolor='w')
     plt.close()

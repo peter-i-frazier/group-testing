@@ -232,23 +232,52 @@ class sim:
     def get_discovered_for_group(self, group, normalize=False, cumulative=False):
         return self.get_metric_for_group('D', group, normalize, cumulative)
 
-    def get_isolated(self, group = False, isolation_len = 2):
+    def get_isolated(self, group = False, isolation_len = 2, isolation_frac = 1):
         '''
         Returns the number of people in isolation during the generation.
         isolation_len is the number of generations that isolation lasts.
         group is the group to look at.  If group is false, then aggregate across everyone.
+
+        isolation_frac is an optional argument that tells us what fraction of discovered positives
+        need isolation. It can either be a scalar float or a list of floats of length isolation_len.
+        If it is a list of floats, then isolation_frac[i] is the fraction of people discovered i generations ago
+        that require isolation in the current generation. For example, suppose 80% of people require isolation for
+        2 generations and 20% for only 1. Then isolation_frac = [1, .2] is appropriate because all of the
+        people discovered in the current generation require isolation and only 20% of those discovered in the previous
+        generation still require isolation.
+
+        Also, if the people discovered in a particular generation (say, i generations ago) only need isolation for a
+        fraction of the current generation, then it is appropriate to set isolation_frac[i] to that fraction.
+        For example, if isolation lasts 10 days for all individuals and the generation time is 4 days, we can set
+        isolation = 3, isolation_frac = [1, 1, .5], where isolation_frac[2] = 0.5 because the positives discovered 2
+        generations ago only need isolation for 10 - 2*4 = 2 days out of 4 in the current generation.
+
+        Two more examples illustrating both of these together:
+
+        If 80% of people require isolation for 5 days and 20% for 10 days, then set
+        isolation_len = 3,
+        isolation_frac[0] = 1,
+        isolation_frac[1] = 0.2*1 + 0.8*(5-4)/4 = 0.4
+        isolation_frac[2] = 0.2*(10-8)/4 = 0.1
+
+        If, in addition, we only care about on-campus isolation and 50% of students are on-campus, then set
+        isolation_len = 3, isolation_frac = [.5, .2, .05]
         '''
         if group == False:
             discovered = self.get_discovered()
         else:
             discovered = self.get_discovered_for_group(group)
 
+        if np.isscalar(isolation_frac):
+            isolation_frac = np.ones(isolation_len) * isolation_frac
+        assert(len(isolation_frac)) == isolation_len
+
         isolated = np.zeros(self.max_T)
         for t in range(self.max_T):
             for i in range(isolation_len):
                 if t-i >= 0:
                     # Add in the people who were discovered i generations ago
-                    isolated[t] = isolated[t] + discovered[t-i]
+                    isolated[t] = isolated[t] + isolation_frac[i] * discovered[t-i]
 
         return isolated
 
