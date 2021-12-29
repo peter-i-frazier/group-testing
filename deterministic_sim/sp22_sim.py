@@ -1,13 +1,15 @@
 import sys
 import numpy as np
+import json
 import yaml
 import micro
 from sim import sim
-from groups import well_mixed_infection_rate_one_meta_group
+from groups import meta_group, population
 import matplotlib
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 NOMINAL = yaml.safe_load(open("nominal.yaml", "r"))
 
@@ -15,6 +17,10 @@ def main(**kwargs):
 
     params = NOMINAL
     params.update(kwargs)
+
+    # Include the parameters defined in the JSON file
+    json_params = json.load(open(params["json_path"]))
+    params.update(json_params)
 
     T = params['T']
     GENERATION_TIME = params['generation_time']
@@ -39,35 +45,54 @@ def main(**kwargs):
     # proportionally to the amount of contact it has as a group.
     # =====================================================================
 
-    pop = params['total_pop'] * np.array(params['pop_frac'])
-    MARGINAL_CONTACTS = np.arange(1, params['K']+1)
-    b = MARGINAL_CONTACTS * np.array(params['pop_frac'])
+    # TODO (hwr26): To be replaced with code Sam is working on
+    pops = params["total_pops"][:]
+    for i in range(len(params["total_pops"])):
+        pops[i] = params["total_pops"][i]*np.array(params["pop_fracs"][i])
+
+    marginal_contacts = np.array([np.arange(1,len(pops[0])+1),
+                                  np.arange(1,len(pops[1])+1),
+                                  np.arange(1,len(pops[2])+1),
+                                  np.arange(1,len(pops[3])+1)])
+
+    tmp = []
+    for i in range(len(marginal_contacts)):
+        tmp += list(marginal_contacts[i])
+    marginal_contacts_flat = np.array(tmp)
+
+    tmp = []
+    for i in range(len(pops)):
+        tmp += list(pops[i])
+    pops_flat = np.array(tmp)
+
+    b = marginal_contacts_flat * pops_flat
     b =  b / np.sum(b)
     total_initial = params['infected_from_outbreak'] + params['infected_over_break']
     R0 = total_initial * b
     I0 = params['initial_infections'] * b
-    S0 = np.maximum(pop - R0 - I0, 0)
+    S0 = np.maximum(pops_flat - R0 - I0, 0)
 
     # ========================================
     # [Run] Reduce R0 once the semester begins
     # ========================================
 
     def sim_test_regime(tests_per_week, delay, color):
-        """Simulate a testing regime"""
         days_between_tests = 7 / tests_per_week
-        infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(days_between_tests,delay) / DEC_DAYS_INFECTIOUS
-        infection_rate = well_mixed_infection_rate_one_meta_group(pop, MARGINAL_CONTACTS, infections_per_contact)
-        s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=GENERATION_TIME)
-        s.step(4)
-        infection_rate = well_mixed_infection_rate_one_meta_group(pop, R0_REDUCTION * MARGINAL_CONTACTS, infections_per_contact)
-        s.step(T-1-4, infection_rate=infection_rate)
+        infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(days_between_tests, delay) / DEC_DAYS_INFECTIOUS
+        group_names = ['UG', 'GR', 'PR', 'FS']
+        meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
+                       for i in range(4)]
+        popul = population(meta_groups, np.array(params['meta_matrix']))
+        infection_matrix = popul.infection_matrix(infections_per_contact)
+        s = sim(T, S0, I0, R0, infection_rate=infection_matrix,
+                generation_time=GENERATION_TIME)
+        s.step(T-1)
 
         label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
         plt.subplot(211)
-        plt.plot(np.arange(T)*GENERATION_TIME/7, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
+        plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
         plt.subplot(212)
-        isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ON_CAMPUS_5DAY)
-        plt.plot(np.arange(T)*GENERATION_TIME/7, isolated, label=label, color=color)
+        plt.plot(np.arange(T)*GENERATION_TIME, s.get_isolated(), label=label, color=color)
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
@@ -78,19 +103,25 @@ def main(**kwargs):
 
     # No surveillance
     infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(np.inf,1) / DEC_DAYS_INFECTIOUS
-    infection_rate = well_mixed_infection_rate_one_meta_group(pop, MARGINAL_CONTACTS, infections_per_contact)
+    group_names = ['UG', 'GR', 'PR', 'FS']
+    meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
+                   for i in range(4)]
+    popul = population(meta_groups, np.array(params['meta_matrix']))
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=GENERATION_TIME,
-        infection_discovery_frac=infection_discovery_frac,
-        recovered_discovery_frac=recovered_discovery_frac)
+    infection_rate=popul.infection_matrix(infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate,
+            infection_discovery_frac=infection_discovery_frac,
+            recovered_discovery_frac=recovered_discovery_frac,
+            generation_time=GENERATION_TIME)
     s.step(T-1)
+
     plt.subplot(211)
-    plt.plot(np.arange(T)*GENERATION_TIME/7, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
-    plt.plot(np.arange(T)*GENERATION_TIME/7, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
     plt.subplot(212)
-    isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ON_CAMPUS_5DAY)
-    plt.plot(np.arange(T) * GENERATION_TIME/7, isolated, 'k', label='No surveillance')
+    plt.plot(np.arange(T) * GENERATION_TIME, s.get_isolated(), 'k', label='No surveillance')
+
 
     # ====================================
     # [Plot] Comparison of testing regimes

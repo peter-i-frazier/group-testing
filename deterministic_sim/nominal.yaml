@@ -1,5 +1,8 @@
-total_pop: 16000                # total UG population
-K: 12                           # number of distinct contact groups
+total_pops:                     # total UG population (by meta group)
+  - 16000  # UG
+  - 8000   # GR
+  - 3000   # VM/GM/LA
+  - 10000  # fac/staff
 T: 28                           # num generations (16 weeks with 4-day generations)
 
 symptomatic_rate: .3            # used to compute discovered without surveillance
@@ -16,29 +19,17 @@ dec_contacts_of_key_group: 6    # number of contacts among key group
 dec_days_between_tests: 7       # days between test (december 2021)
 dec_isolation_delay: 2          # isolation delay (december 2021)
 
-# Based on Xiangyu's adjusted moment match code, this is the fraction of the
-# population (UG-only?  or all students) broken out by the amount of contact
-# that they have, starting from low contact to high contact.
-# Assumes that group i has i+1 contacts per day.
-pop_frac:
-  - 0.46666204134859246
-  - 0.21110377424326393
-  - 0.13427835918082992
-  - 0.040993148549700376
-  - 0.05561449714374835
-  - 0.03772148571886847
-  - 0.020557396664413034
-  - 0.01829685176380435
-  - 0.003308325172067398
-  - 0.006056046991853723
-  - 0.0027991704708900224
-  - 0.002608902751968122
-
 # Define the isolation policy in use.
 on_campus_frac: 0.5             # fraction of students on campus
-isolation_durations:            # durations of isolation
+isolation_durations:            # durations of isolation (days)
   - 5
   - 10
 isolation_fracs:                # fraction of pop falling into various isolation
   - 0.8                         # durations
   - 0.2
+
+# Based on Xiangyu's adjusted moment match code, this is the fraction of the
+# population (UG-only?  or all students) broken out by the amount of contact
+# that they have, starting from low contact to high contact.
+# Assumes that group i has i+1 contacts per day.
+json_path: "nominal.json"       # path to JSON with additional params
