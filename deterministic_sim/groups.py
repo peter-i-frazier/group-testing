@@ -150,3 +150,15 @@ class population:
         for i in range(len(input)):
             tmp += list(input[i])
         return np.array(tmp)
+
+    def getSIRinit(self, total_pops, pop_fracs, infected_from_outbreak, infected_over_break, initial_infections):
+
+        marginal_contacts_flat = self.flatten(marginal_contacts)
+        pops_flat = self.flatten(pops)
+        b =  marginal_contacts_flat * pops_flat
+        b =  b / np.sum(b)
+        total_initial = infected_from_outbreak + infected_over_break
+        R0 = total_initial * b
+        I0 = initial_infections * b
+        S0 = np.maximum(pops_flat - R0 - I0, 0)
+        return S0, I0, R0
