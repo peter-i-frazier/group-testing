@@ -55,17 +55,15 @@ def main(**kwargs):
                                   np.arange(1,len(pops[2])+1),
                                   np.arange(1,len(pops[3])+1)])
 
-    tmp = []
-    for i in range(len(marginal_contacts)):
-        tmp += list(marginal_contacts[i])
-    marginal_contacts_flat = np.array(tmp)
 
-    tmp = []
-    for i in range(len(pops)):
-        tmp += list(pops[i])
-    pops_flat = np.array(tmp)
+    group_names = ['UG', 'GR', 'PR', 'FS']
+    meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
+                    for i in range(4)]
+    popul = population(meta_groups, np.array(params['meta_matrix']))
 
-    b = marginal_contacts_flat * pops_flat
+    marginal_contacts_flat = popul.flatten(marginal_contacts)
+    pops_flat = popul.flatten(pops)
+    b =  marginal_contacts_flat * pops_flat
     b =  b / np.sum(b)
     total_initial = params['infected_from_outbreak'] + params['infected_over_break']
     R0 = total_initial * b
@@ -79,10 +77,6 @@ def main(**kwargs):
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
         infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(days_between_tests, delay) / DEC_DAYS_INFECTIOUS
-        group_names = ['UG', 'GR', 'PR', 'FS']
-        meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
-                       for i in range(4)]
-        popul = population(meta_groups, np.array(params['meta_matrix']))
         infection_matrix = popul.infection_matrix(infections_per_contact)
         s = sim(T, S0, I0, R0, infection_rate=infection_matrix,
                 generation_time=GENERATION_TIME)
@@ -103,10 +97,6 @@ def main(**kwargs):
 
     # No surveillance
     infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(np.inf,1) / DEC_DAYS_INFECTIOUS
-    group_names = ['UG', 'GR', 'PR', 'FS']
-    meta_groups = [meta_group(group_names[i], pops[i], marginal_contacts[i]) \
-                   for i in range(4)]
-    popul = population(meta_groups, np.array(params['meta_matrix']))
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
     infection_rate=popul.infection_matrix(infections_per_contact)

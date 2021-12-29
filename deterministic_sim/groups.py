@@ -139,3 +139,14 @@ class population:
         Returns the group index associated with a groupname
         '''
         return self.groupname2idx[groupname]
+
+    def flatten(self, input):
+        '''
+        Returns a flattened version of inputted array 
+        amenable to usage in sim(), which only takes 1D SIR etc.
+        e.g. marginal contacts, or population counts per meta-group-group
+        '''
+        tmp = []
+        for i in range(len(input)):
+            tmp += list(input[i])
+        return np.array(tmp)
