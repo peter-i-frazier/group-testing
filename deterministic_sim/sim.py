@@ -235,12 +235,14 @@ class sim:
     def get_isolated(self, group = False, iso_lengths = [8], iso_props = [1]):
         '''
         Returns the number of people in isolation during the generation.
-        isolation_len is the number of generations that isolation lasts.
+        iso_lengths is the number days isolations lasts for each group (in ascending order)
         group is the group to look at.  If group is false, then aggregate across everyone.
 
-        isolation_frac is an optional argument that tells us what fraction of discovered positives
-        need isolation. It can either be a scalar float or a list of floats of length isolation_len.
-        If it is a list of floats, then isolation_frac[i] is the fraction of people discovered i generations ago
+        iso_props is the proportion of people in each isolation length group, so
+        len(iso_lengths) and len(iso_props) must be the same.
+
+        as an intermediate step, this function calculates isolation_frac, which tells us what fraction of discovered positives
+        need isolation. isolation_frac[i] is the fraction of people discovered i generations ago
         that require isolation in the current generation. For example, suppose 80% of people require isolation for
         2 generations and 20% for only 1. Then isolation_frac = [1, .2] is appropriate because all of the
         people discovered in the current generation require isolation and only 20% of those discovered in the previous
@@ -255,13 +257,11 @@ class sim:
         Two more examples illustrating both of these together:
 
         If 80% of people require isolation for 5 days and 20% for 10 days, then set
-        isolation_len = 3,
+        iso_lengths = [5,10] and iso_props = [0.8, 0.2] so that
         isolation_frac[0] = 1,
         isolation_frac[1] = 0.2*1 + 0.8*(5-4)/4 = 0.4
         isolation_frac[2] = 0.2*(10-8)/4 = 0.1
 
-        If, in addition, we only care about on-campus isolation and 50% of students are on-campus, then set
-        isolation_len = 3, isolation_frac = [.5, .2, .05]
         '''
         if group == False:
             discovered = self.get_discovered()
