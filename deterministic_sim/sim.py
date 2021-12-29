@@ -126,7 +126,7 @@ class sim:
         assert(t+1 < self.max_T) # enforce max generation
 
         # vector giving the fraction susceptible in each group
-        frac_susceptible = self.S[t] / (self.S[t] + self.I[t] + self.R[t])
+        frac_susceptible = np.divide(self.S[t], (self.S[t] + self.I[t] + self.R[t]), out=np.zeros_like(self.S[t]), where=(self.S[t] + self.I[t] + self.R[t])!=0) # self.S[t] / (self.S[t] + self.I[t] + self.R[t])
 
         # The number of new infections in each group that would result, if everyone were susceptible
         # A = I[t-1] is a vector containing the number of infections in each source group

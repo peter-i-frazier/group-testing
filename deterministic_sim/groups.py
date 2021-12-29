@@ -76,12 +76,12 @@ class population:
         k = len(meta_group_list)
         assert (k == n)
 
-        self.idx2groupname = []
-        for meta_group in meta_group_list:
-            for i in range(meta_group.K):
-                self.idx2groupname.append(meta_group.name + " " + i)
+        # self.idx2groupname = []
+        # for meta_group in meta_group_list:
+        #     for i in range(meta_group.K):
+        #         self.idx2groupname.append(meta_group.name + " " + str(i))
         
-        self.groupname2idx = {name: i for i, name in self.idx2groupname}
+        # self.groupname2idx = {name: i for i, name in self.idx2groupname}
 
     def infection_matrix(self, infections_per_contact_unit):
         '''
@@ -97,21 +97,21 @@ class population:
         '''
         dim_tot = 0 #total number of meta-group-groups
         cum_tot = [] #help keep track of location in res matrix
-        for i in meta_group_list:
+        for i in self.meta_group_list:
             cum_tot.append(dim_tot)
             dim_tot += i.K
         
         res = np.zeros((dim_tot, dim_tot))
-        for i in range(len(meta_group_list)): #source meta group
-            for j in range(meta_group_list[i].K): #source meta-group-group
-                for k in range(len(meta_group_list)): #exposed meta group
-                    for l in range(meta_group_list[k].K): #expoed meta-group-group
-                        q = meta_group_list[k].pop[l] * meta_group_list[k].contact_units[l] / np.sum(meta_group_list[k].pop * meta_group_list[k].contact_units)
+        for i in range(len(self.meta_group_list)): #source meta group
+            for j in range(self.meta_group_list[i].K): #source meta-group-group
+                for k in range(len(self.meta_group_list)): #exposed meta group
+                    for l in range(self.meta_group_list[k].K): #expoed meta-group-group
+                        q = self.meta_group_list[k].pop[l] * self.meta_group_list[k].contact_units[l] / np.sum(self.meta_group_list[k].pop * self.meta_group_list[k].contact_units)
                         res[cum_tot[i]+j, cum_tot[k]+l] = \
-                        infections_per_contact_unit * meta_group_list[i].contact_units[j] * meta_group_contact_matrix[i,k] * q
+                        infections_per_contact_unit * self.meta_group_list[i].contact_units[j] * self.meta_group_contact_matrix[i,k] * q
 
         return res
-        
+
     def idx_to_groupname(self, i):
         '''
         Returns a string naming the group indexed by i, e.g., "UG 6".
