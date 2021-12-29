@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 
 TOTAL_POP = 16000               # total UG population
 K = 12                          # number of distinct contact groups
-T = 20                          # num generations
+T = 28                          # num generations.  Set up to go 16 weeks with 4-day generations
 SYMPTOMATIC_RATE = .3           # fraction of new infections will be discovered
                                 # without surevillance
 BOOSTER_EFFECTIVENESS = 0.5     # reduction in transmission from boosters
@@ -83,10 +83,10 @@ def main():
 
         label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
         plt.subplot(211)
-        plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
+        plt.plot(np.arange(T)*generation_time/7, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
         plt.subplot(212)
         isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ONCAMPUS_5DAY)
-        plt.plot(np.arange(T)*generation_time, isolated, label=label, color=color)
+        plt.plot(np.arange(T)*generation_time/7, isolated, label=label, color=color)
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
@@ -105,11 +105,11 @@ def main():
         recovered_discovery_frac=recovered_discovery_frac)
     s.step(T-1)
     plt.subplot(211)
-    plt.plot(np.arange(T)*generation_time, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
-    plt.plot(np.arange(T)*generation_time, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    plt.plot(np.arange(T)*generation_time/7, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
+    plt.plot(np.arange(T)*generation_time/7, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
     plt.subplot(212)
     isolated = s.get_isolated(isolation_len=ISOLATION_LEN, isolation_frac=ISOLATION_FRAC_ONCAMPUS_5DAY)
-    plt.plot(np.arange(T) * generation_time, isolated, 'k', label='No surveillance')
+    plt.plot(np.arange(T) * generation_time/7, isolated, 'k', label='No surveillance')
 
     # ====================================
     # [Plot] Comparison of testing regimes
