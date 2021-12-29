@@ -34,4 +34,11 @@ pop_frac:
   - 0.0027991704708900224
   - 0.002608902751968122
 
-# TODO (hwr26): Add Peter's params for isolation lengths
+# Define the isolation policy in use.
+on_campus_frac: 0.5             # fraction of students on campus
+isolation_durations:            # durations of isolation
+  - 5
+  - 10
+isolation_fracs:                # fraction of pop falling into various isolation
+  - 0.8                         # durations
+  - 0.2
