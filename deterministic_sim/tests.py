@@ -1,7 +1,6 @@
 import numpy as np
-from groups import meta_group, population, well_mixed_infection_rate_one_meta_group
+from groups import meta_group, population
 from sim import sim
-import micro
 from micro import __days_infectious_perfect_sensitivity__, days_infectious
 import matplotlib.pyplot as plt
 
@@ -56,7 +55,8 @@ def test_noninfectious_group():
 
     infections_per_contact = 1
     marginal_contacts = np.array([0,1,2])
-    infection_rate = well_mixed_infection_rate_one_meta_group(pop, marginal_contacts, infections_per_contact)
+
+    infection_rate = meta_group("UG", pop, marginal_contacts).infection_matrix(infections_per_contact)
 
     s = sim(T, S0, I0, R0, infection_rate=infection_rate)
     s.step(T-1)
@@ -79,7 +79,7 @@ def test_sim_zero_prob_discvoered():
 
     infections_per_contact = 1
     marginal_contacts = np.array([0,1,2])
-    infection_rate = well_mixed_infection_rate_one_meta_group(pop, marginal_contacts, infections_per_contact)
+    infection_rate = meta_group("UG", pop, marginal_contacts).infection_matrix(infections_per_contact)
 
     generation_time = 4/7 # in units of weeks
 
