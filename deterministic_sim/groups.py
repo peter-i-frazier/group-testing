@@ -144,7 +144,7 @@ class population:
         res = []
         for metagroup_name in metagroup_names:
             tmp = []
-            for i in enumerate(self.idx2groupname):
+            for i in range(len(self.idx2groupname)):
                 if self.idx2groupname[i][0: len(metagroup_name)] == metagroup_name:
                     tmp.append(i)
             res.append(tmp)
