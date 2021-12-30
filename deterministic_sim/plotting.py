@@ -48,16 +48,16 @@ def plot_sm_test_regime_comparison(test_regime_names: List[str],
 
     # create and export plot
     plt.subplot(211)
-    plt.title(f'Symptomatic Rate = {params["symptomatic_rate"]}')
+    plt.title("Projections for Spring 2022 Semester")
     plt.rcParams.update({'font.size': 8})
     plt.legend()
-    plt.ylabel('UG Infected')
+    plt.ylabel('Cumulative Infected')
 
     plt.subplot(212)
     plt.rcParams.update({'font.size': 8})
     plt.legend()
-    plt.xlabel('Weeks')
-    plt.ylabel('UG in Isolation (on-campus 5day)')
+    plt.xlabel('Days')
+    plt.ylabel('Isolation (on-campus 5 day)')
 
     plt.savefig('sp22_sim.png', facecolor='w')
 
