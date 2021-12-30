@@ -34,7 +34,6 @@ def main(**kwargs):
     # proportionally to the amount of contact it has as a group.
     # =====================================================================
 
-
     population_count = params["population_count"]
     population_names = params["population_names"]
     initial_infections = params['initial_infections']
@@ -46,15 +45,11 @@ def main(**kwargs):
         contact_units = np.arange(1, len(pop) + 1)
         meta_groups.append(meta_group(name, pop, contact_units))
 
-    # TODO this needs to be updated to use the new yaml, which stores these as a vector
-    # TODO Xiangyu was going to do this
-    initial_infectious = params['initial_infections']
-    initial_recovered = params['infected_from_outbreak'] + params['infected_over_break']
-
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.get_init_SIR(initial_infectious, initial_recovered) # TODO update as part of the change a few lines above
+    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
 
-    population_contact_units = params['contact_units']
+    # TODO (hwr26): Unsure how this fits in?
+    population_contact_units = np.array(params['contact_units'])
 
     # ========================================
     # [Run] Reduce R0 once the semester begins
@@ -63,7 +58,7 @@ def main(**kwargs):
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
         ug_infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(days_between_tests, delay)
-        infection_rate = popul.infection_matrix(ug_infections_per_contact_unit * population_contact_units)
+        infection_rate = popul.infection_matrix(ug_infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
                 generation_time=GENERATION_TIME)
         s.step(4)
@@ -86,7 +81,7 @@ def main(**kwargs):
     sim_test_regime(2,1,"powderblue")
 
     # No surveillance
-    infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(np.inf,1) / DEC_DAYS_INFECTIOUS
+    infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
     infection_rate=popul.infection_matrix(infections_per_contact)

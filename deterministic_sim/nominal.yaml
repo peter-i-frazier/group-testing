@@ -10,32 +10,35 @@ population_names:               # names of populations (by meta group)
   - "FS"
 
 # contact units associated with group 0 (by meta group).
-# The number of contact units associated with group i in a meta-group mg is contact_units[mg] * i
-# The number of new infections that result from an infection in that group is then equal to the
-# number of contact units times a universal (across all meta-groups and groups) scaling that gives
-# the number of infections per day, times another scaling that gives the number of days that a person is
-# infectious.  The current number of contact units by meta-group is based on a rough analysis that Sam and
-# Peter did on the evening of Dec 28 looking at the fraction of contacts that become positive by groups.
+# The number of contact units associated with group i in a meta-group mg is
+# contact_units[mg] * i. The number of new infections that result from an
+# infection in that group is then equal to the number of contact units times a
+# universal (across all meta-groups and groups) scaling that gives the number
+# of infections per day, times another scaling that gives the number of days
+# that a person is infectious.  The current number of contact units by
+# meta-group is based on a rough analysis that Sam and Peter did on the evening
+# of Dec 28 looking at the fraction of contacts that become positive by groups.
 # Faculty/staff were about half of the student groups, who were all roughly equal.
 contact_units:
-  - 1 # UG
-  - 1 # GR
-  - 1 # VM/GM/LA
-  - 0.5 # fac/staff
+  - 1    # UG
+  - 1    # GR
+  - 1    # VM/GM/LA
+  - 0.5  # fac/staff
 initial_infections:             # According to @Brian Liu's analysis
-  - 975 #UG
-  - 0 # GR
-  - 0 # VM/GM/LA
-  - 0 # fac/staff
+  - 975  # UG
+  - 0    # GR
+  - 0    # VM/GM/LA
+  - 0    # fac/staff
 past_infections:                # According to @Brian Liu's analysis
-  - 1900 #UG, 1900 infected during outbreak, 2500 over break
-  - 0 # GR
-  - 0 # VM/GM/LA
-  - 0 # fac/staff
+  - 4400  # UG (1900 infected during outbreak + 2500 over break)
+  - 0     # GR
+  - 0     # VM/GM/LA
+  - 0     # fac/staff
 
 # An undergraduate in a group with a given number of contacts units
-# generates dec_ug_infected_per_day_unit * contact_units infections per day generated
-# during study week in the December Omicron surge. This is based on @hwr26's calibration from calibration.py.
+# generates dec_ug_infected_per_day_unit * contact_units infections per day
+# generated during study week in the December Omicron surge. This is based on
+# @hwr26's calibration from calibration.py.
 dec_ug_infected_per_day_unit: 0.22
 
 T: 28                           # num generations (16 weeks with 4-day generations)

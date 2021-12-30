@@ -186,13 +186,19 @@ class population:
 
         return self.get_init_SIR_vec(initial_infectious, initial_recovered)
 
-    def get_init_SIR_vec(self, initial_infectious : np.ndarray, initial_recovered : np.ndarray):
+    def get_init_SIR_vec(self, initial_infectious : np.ndarray,
+                         initial_recovered : np.ndarray):
+        """Return initial SIR vectors.
 
+        Args:
+            initial_infectious (np.ndarray): Initial infectious count (per meta group).
+            initial_recovered (np.ndarray): Initial recovered count (per meta group).
+        """
         SIR = []
         for i in range(len(self.meta_group_list)):
             group = self.meta_group_list[i]
             S0, I0, R0 = group.get_init_SIR(initial_infectious[i],
-                                         initial_recovered[i])
+                                            initial_recovered[i])
             SIR.append([S0, I0, R0])
         SIR = np.array(SIR)
 
