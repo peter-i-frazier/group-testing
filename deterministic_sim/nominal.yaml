@@ -31,10 +31,10 @@ outside_rates: #number of infections for each meta-group per person-day
 #   @hwr26: calibration-student.py
 #   @sst76: calibration-employee.py
 infections_per_day_per_contact_unit:
-  - 0.33
-  - 0.15
-  - 0.13
-  - 0.16
+  - 0.28
+  - 0.10
+  - 0.05
+  - 0.09
 
 T: 28                           # num generations (16 weeks with 4-day generations)
 
