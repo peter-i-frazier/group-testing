@@ -80,7 +80,7 @@ def plot_comprehensive_summary(s: sim, pop: population, params):
         discovered = s.get_total_discovered_for_different_groups(groups[i], cumulative=True)
         infectious_lbl = "Infected: " + params["population_names"][i]
         discovered_lbl = "Discovered: " + params["population_names"][i]
-        plt.subplot("24" + str(i + 1))
+        plt.subplot(int("24" + str(i + 1)))
         plt.plot(X, infectious, 'k--', label=infectious_lbl, color='r')
         plt.plot(X, discovered, 'k--', label=discovered_lbl, color='blue')
         plt.title("No surveillance")
