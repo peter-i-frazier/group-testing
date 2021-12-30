@@ -20,6 +20,12 @@ past_infections:                # According to @Brian Liu's analysis
   - 0     # VM/GM/LA
   - 0     # fac/staff
 
+outside_rates:
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.04
+
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:
 #   @hwr26: calibration-student.py

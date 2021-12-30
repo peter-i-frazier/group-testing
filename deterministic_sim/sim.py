@@ -20,7 +20,8 @@ class sim:
     def __init__(self, max_T: int, init_susceptible: np.ndarray,
                  init_infected: np.ndarray, init_recovered: np.ndarray,
                  infection_rate: np.ndarray, infection_discovery_frac: float = 1,
-                 recovered_discovery_frac: float = 1, generation_time: float = 1):
+                 recovered_discovery_frac: float = 1, generation_time: float = 1,
+                 outside_rate: float = 0):
         """Initialize an SIR-style simulation of COVID spread.
 
         Group dynamics can be captured by providing vectors of
@@ -86,6 +87,7 @@ class sim:
 
         assert (infection_rate.shape == (self.K, self.K))
         self.infection_rate = infection_rate
+        self.outside_rate = outside_rate
 
 
     def step(self, nsteps: int = 1, infection_rate: np.ndarray = None,
@@ -137,6 +139,9 @@ class sim:
 
         # Adjust this for the fact that not everyone is susceptible. This is an elementwise product.
         self.I[t+1] = self.I[t+1] * frac_susceptible
+
+        # Inject outside infections
+        self.I[t+1] += self.S[t] * self.outside_rate
 
         # We can't infect more than the number of susceptible people.
         # np.minimum applied to two arrays returns the elementwise minimum.
