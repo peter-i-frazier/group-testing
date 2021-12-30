@@ -203,6 +203,6 @@ class population:
         SIR = np.array(SIR)
 
         S0 = self.flatten(SIR[:,0])
-        R0 = self.flatten(SIR[:,1])
-        I0 = self.flatten(SIR[:,2])
+        I0 = self.flatten(SIR[:,1])
+        R0 = self.flatten(SIR[:,2])
         return S0, I0, R0
