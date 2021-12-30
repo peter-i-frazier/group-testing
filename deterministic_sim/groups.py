@@ -186,7 +186,7 @@ class population:
 
         return self.get_init_SIR_vec(initial_infectious, initial_recovered)
 
-    def get_init_SIR_vec(self, initial_infectious : ndarray, initial_recovered : ndarray):
+    def get_init_SIR_vec(self, initial_infectious : np.ndarray, initial_recovered : np.ndarray):
 
         SIR = []
         for i in range(len(self.meta_group_list)):
