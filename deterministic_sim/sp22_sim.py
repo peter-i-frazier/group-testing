@@ -15,8 +15,11 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 NOMINAL = yaml.safe_load(open("nominal.yaml", "r"))
 
 def main(**kwargs):
+    if "yaml" in kwargs:
+        params = yaml.safe_load(open(kwargs["yaml"], "r"))
+    else:
+        params = yaml.safe_load(open("nominal.yaml", "r"))
 
-    params = NOMINAL
     params.update(kwargs)
 
     # Include the parameters defined in the JSON file
@@ -106,6 +109,13 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
-    override_params = dict(arg.split('=') for arg in sys.argv[1:])
-    override_params = {k:float(v) for k,v in override_params.items()}
+    _override_params = dict(arg.split('=') for arg in sys.argv[1:])
+    override_params = {}
+    for k, v in _override_params.items():
+        if k == "yaml":
+            override_params[k] = v
+        elif k == "T":
+            override_params[k] = int(v)
+        else:
+            override_params[k] = float(v)
     main(**override_params)
