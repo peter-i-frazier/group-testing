@@ -109,6 +109,8 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
+    # Example: python sp22_sim.py yaml=nominal_us.yamal T=30
+    # By default, yaml=nominal.yaml
     _override_params = dict(arg.split('=') for arg in sys.argv[1:])
     override_params = {}
     for k, v in _override_params.items():
