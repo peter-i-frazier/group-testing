@@ -51,8 +51,14 @@ def main(**kwargs):
         contact_units = np.arange(1, len(pop) + 1)
         meta_groups.append(meta_group(name, pop, contact_units))
 
+
     popul = population(meta_groups, np.array(params['meta_matrix']))
     S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
+    outside_rates = params['outside_rates']
+    outside_rate = []
+    for i in range(len(outside_rates)):
+        outside_rate += ([outside_rates[i]]*meta_groups[i].K)
+    outside_rate = np.array(outside_rate)
 
     # ========================================
     # [Run] Reduce R0 once the semester begins
@@ -66,7 +72,8 @@ def main(**kwargs):
         infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * micro.days_infectious(days_between_tests, delay)
         infection_rate = popul.infection_matrix(infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
-                generation_time=GENERATION_TIME)
+                generation_time=GENERATION_TIME,
+                outside_rate = outside_rate)
         s.step(4)
         s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
@@ -90,7 +97,8 @@ def main(**kwargs):
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
             infection_discovery_frac=infection_discovery_frac,
             recovered_discovery_frac=recovered_discovery_frac,
-            generation_time=GENERATION_TIME)
+            generation_time=GENERATION_TIME,
+            outside_rate = outside_rate)
     s.step(4)
     s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
