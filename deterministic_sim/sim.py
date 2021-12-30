@@ -172,26 +172,37 @@ class sim:
         else:
             raise ValueError('metric argument must be one of S,I,R,D,H')
 
-    def get_metric_for_group(self, metric, group, normalize = False, cumulative = False):
+    def get_metric_for_group(self, metric, group_idxs, normalize = False, cumulative = False):
         '''
         Returns a vector where component t contains the number of people of a particular type (S,I,R,D,H)
-        in generation t in a specific group. If normalize is true, then this is normalized to the group's population
-        size.  For example, to get a vector containing the number of people with an active infection in group 0 and
-        each generation, call get_metric_in_group('I').
+        in generation t in a specific set of group. If normalize is true, then this is normalized to the group's
+        population size.  For example, to get a vector containing the number of people with an active infection in
+        group 0 and each generation, call get_metric_in_group('I').
         '''
-        assert(group>=0)
-        assert(group<self.K)
+        if type(group_idxs) == int:
+            group_idxs = [group_idxs]
 
-        y = self.__get_metric__(metric)[:,group]
+        # No duplicate idxs in the group_idx list
+        assert len(set(group_idxs)) == len(group_idxs)
+
+        total_y = np.zeros(self.t + 1)
+        for group in group_idxs:
+            assert(group>=0)
+            assert(group<self.K)
+
+            y = self.__get_metric__(metric)[:,group]
+            total_y += y
 
         if normalize:
-            pop = self.S[:, group] + self.I[:, group] + self.R[:, group]  # total population by time
-            y = y / pop
+            pop = 0
+            for group in group_idxs:
+                pop += self.S[:, group] + self.I[:, group] + self.R[:, group]  # total population by time
+            total_y = total_y / pop
 
         if cumulative:
-            return np.cumsum(y, axis=0)
+            return np.cumsum(total_y, axis=0)
         else:
-            return y
+            return total_y
 
 
     def get_metric(self, metric, aggregate=True, normalize=False, cumulative=False):

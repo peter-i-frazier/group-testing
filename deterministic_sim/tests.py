@@ -86,6 +86,56 @@ def test_sim4():
 
     assert(np.isclose(discovered, np.zeros(T)).all())
 
+def test_sim8():
+    # Scenario 1: With a meta_group 
+    K = 3
+    T = 20
+
+    # The populations are symmetric
+    pop = 100 * np.ones(3)/3
+    R0 = 100 * np.array([.1, .1, .1])
+    I0 = 100 * np.array([0, .01, .01])
+    S0 = pop - R0 - I0
+
+    infections_per_contact = 1
+    marginal_contacts = np.array([1,1,1])
+    mg = meta_group('Test', pop, marginal_contacts)
+    infection_rate = mg.infection_matrix(infections_per_contact)
+    generation_time = 4/7 # in units of weeks
+
+    s = sim(T,S0,I0,R0,infection_rate,0,0,generation_time)
+    s.step(T-1)
+
+    assert is_constant_population_size(s)
+
+    # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
+    # the number discovered should be 0
+    mg_discovered = s.get_discovered(cumulative=True)
+    mg_infected = s.get_infected(cumulative=True)
+
+    inf_1 = s.get_metric_for_group('I', [0,1,2], normalize=True)
+    # print(s.get_metric('I', aggregate=False, normalize=True))
+
+    # Scenario 2: No meta group
+    K = 3
+    T = 20
+
+    pop = np.array([100])
+    R0 = np.array([100 * 0.3]) 
+    I0 = np.array([100 * .02])
+    S0 = pop - R0 - I0
+
+    contact_rates = np.array([1])
+    infection_rate = np.outer(contact_rates,pop/100)
+
+    generation_time = 4/7 # in units of weeks
+
+    s = sim(T,S0,I0,R0,infection_rate,generation_time)
+    s.step(T-1)
+
+    inf_2 = s.get_metric('I', aggregate=False, normalize=True)
+    assert(np.isclose(inf_1, inf_2[:,0]).all())
+
 def test_sim3():
     total_pop = 16000 #total UG population
     K = 12 #number of distinct contact groups
@@ -109,6 +159,30 @@ def test_sim3():
     pop = total_pop * pop_frac
 
     # Calculate the probability of infection.
+    K = 3
+    T = 20
+
+    # The populations are symmetric
+    pop = 100 * np.ones(3)/3
+    R0 = 100 * np.array([.1, .1, .1])
+    I0 = 100 * np.array([0, .01, .01])
+    S0 = pop - R0 - I0
+
+    infections_per_contact = 1
+    marginal_contacts = np.array([0,1,2])
+    mg = meta_group('Test', pop, marginal_contacts)
+    infection_rate = mg.infection_matrix(infections_per_contact)
+    generation_time = 4/7 # in units of weeks
+
+    s = sim(T,S0,I0,R0,infection_rate,0,0,generation_time)
+    s.step(T-1)
+
+    assert is_constant_population_size(s)
+
+    # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
+    # the number discovered should be 0
+    discovered = s.get_discovered(cumulative=True)
+    infected = s.get_infected(cumulative=True)
     # A ballpark estimate is that R0 with 1x / wk testing and a 2-day delay from sampling to isolation is 5,
     # with a 4 day generation time.  We think that this outbreak was driven by the people with 6 contacts per period
     # above because the sum of their proportions of the UG population is about 1900 people. To achieve this, we set
