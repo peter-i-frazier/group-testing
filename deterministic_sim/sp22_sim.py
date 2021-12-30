@@ -53,7 +53,8 @@ def main(**kwargs):
 
 
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
+    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
+                                        weight="contacts")
     outside_rates = params['outside_rates']
     outside_rate = popul.get_outside_rate(outside_rates)
 
