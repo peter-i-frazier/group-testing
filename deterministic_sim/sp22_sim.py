@@ -94,20 +94,19 @@ def main(**kwargs):
     s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
     
-    # print(params["population_names"])
     groups = popul.metagroup_indices(params["population_names"])
-    # print(groups[0])
-    # print(s.get_metric_for_different_groups('I', groups[0]))
-    # print(s.get_total_infected_for_different_groups(groups[0]))
-
     for i in range(4):
-        plt.subplot("24" + str(i))
+        plt.subplot("24" + str(i + 1))
         plt.plot(np.arange(T)*GENERATION_TIME, 
                  s.get_total_infected_for_different_groups(groups[i], cumulative=True), 
-                 'k--', label="No surveillance, Infected: " + params["population_names"][i])
+                 'k--', label="Infected: " + params["population_names"][i], color='r')
         plt.plot(np.arange(T)*GENERATION_TIME, 
                  s.get_total_discovered_for_different_groups(groups[i], cumulative=True), 
-                 'k--', label="No surveillance, Discovered: " + params["population_names"][i])
+                 'k--', label="Discovered: " + params["population_names"][i], color='blue')
+
+        plt.title("No surveillance")
+        plt.legend()
+
 
     # for i in range(4):
     #     plt.subplot("24" + str(i))
@@ -147,19 +146,20 @@ def main(**kwargs):
     # [Plot] Comparison of testing regimes
     # ====================================
 
-    plt.subplot(211)
-    plt.title(f"Dec Effective R0 = {params['dec_effective_R0']}, Symptomatic Rate = {SYMPTOMATIC_RATE}")
-    plt.rcParams.update({'font.size': 8})
-    plt.legend()
-    plt.ylabel('UG Infected')
+    # @peter: Xiangyu commented the following out
+    # plt.subplot(211)
+    # plt.title(f"Dec Effective R0 = {params['dec_effective_R0']}, Symptomatic Rate = {SYMPTOMATIC_RATE}")
+    # plt.rcParams.update({'font.size': 8})
+    # plt.legend()
+    # plt.ylabel('UG Infected')
 
-    plt.subplot(212)
-    plt.rcParams.update({'font.size': 8})
-    plt.legend()
-    plt.xlabel('Weeks')
-    plt.ylabel('UG in Isolation (on-campus 5day)')
+    # plt.subplot(212)
+    # plt.rcParams.update({'font.size': 8})
+    # plt.legend()
+    # plt.xlabel('Weeks')
+    # plt.ylabel('UG in Isolation (on-campus 5day)')
 
-    plt.savefig('sp22_sim.png', facecolor='w')
+    plt.savefig('sp22_sim_xz.png', facecolor='w')
     plt.close()
 
 
