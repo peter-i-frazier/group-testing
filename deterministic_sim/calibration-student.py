@@ -10,14 +10,16 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 NOMINAL = yaml.safe_load(open("nominal.yaml", "r"))
 
-T = 5                           # 4 generations (16 days)
-INITIAL_INFECTIOUS = [6, 0, 0]  # initial infections for each group
+T = 6                           # 4 generations (20 days)
+INITIAL_INFECTIOUS = [1, 0, 0]  # initial infections for each group
 PAST_INFECTIONS = [0, 0, 0]     # recovered for each group
 
 # This is the parameter we aim to calibrate. It is the number of infections per
 # day per (metagroup-specific contact unit). This script calibrates this
 # parameter to the December Omicron surge.
-infections_per_day_per_contact_unit = np.array([0.25, 0.10, 0.10])
+# [UG, GR, PR]
+# TODO (hwr26): Investigate this. Seems a little strange right now.
+infections_per_day_per_contact_unit = np.array([0.28, 0.1, 0.05])
 
 
 def main():
@@ -54,11 +56,11 @@ def main():
     # [Run] Increase testing delay and reduce interaction over duration of sim
     # ========================================================================
 
-    # [12/1 to 12/9] 1x / week testing with 36hr delay
+    # [11/27 to 12/9] 1x / week testing with 36hr delay
     infections_per_contact = infections_per_day_per_contact_unit * micro.days_infectious(7,1.5)
     infection_rate = popul.infection_matrix(infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=GENRATION_TIME)
-    s.step(2)
+    s.step(3)
 
     # [12/10 to 12/16] 1x / week testing with 3 day delay
     infections_per_contact = infections_per_day_per_contact_unit * micro.days_infectious(7,3)
@@ -88,12 +90,12 @@ def main():
         group_name = params["population_names"][i]
         dec_daily_positives = list(pd.read_csv(f"data/dec_infections_{group_name}.csv")['positives'])
         dec_positives = np.cumsum(dec_daily_positives)
-        plt.plot(np.arange(15), dec_positives[:15], label=f"actual {group_name}", color=colors[i])
+        plt.plot(np.arange(20), dec_positives[:20], label=f"actual {group_name}", color=colors[i])
 
     plt.title(f"Actual vs. Simulated Infection Trajectories [Students]\n" + \
               f"infections_per_day_per_contact_unit: {str(infections_per_day_per_contact_unit)}")
     plt.rcParams.update({'font.size': 8})
-    plt.xlabel('Days Since Dec. 1')
+    plt.xlabel('Days Since Nov. 27')
     plt.ylabel('Cumulative Infected')
     plt.legend()
     plt.savefig(f'calibration-student.png', facecolor='w')
