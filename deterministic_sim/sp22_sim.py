@@ -93,12 +93,31 @@ def main(**kwargs):
     s.step(4)
     s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
-    # Iterate over meta-groups, plot infections for each
-    for i in range(4): # replace by number of meta-groups
-        plt.subplot('24' + i)
-        # Do this for the meta-group rather than for everyone
-        plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
-        plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
+    
+    # print(params["population_names"])
+    groups = popul.metagroup_indices(params["population_names"])
+    # print(groups[0])
+    # print(s.get_metric_for_different_groups('I', groups[0]))
+    # print(s.get_total_infected_for_different_groups(groups[0]))
+
+    for i in range(4):
+        plt.subplot("24" + str(i))
+        plt.plot(np.arange(T)*GENERATION_TIME, 
+                 s.get_total_infected_for_different_groups(groups[i], cumulative=True), 
+                 'k--', label="No surveillance, Infected: " + params["population_names"][i])
+        plt.plot(np.arange(T)*GENERATION_TIME, 
+                 s.get_total_discovered_for_different_groups(groups[i], cumulative=True), 
+                 'k--', label="No surveillance, Discovered: " + params["population_names"][i])
+
+    # for i in range(4):
+    #     plt.subplot("24" + str(i))
+    #     plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    #     plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
+    # # Iterate over meta-groups, plot infections for each
+    # for i in range(4): # replace by number of meta-groups
+    #     # Do this for the meta-group rather than for everyone
+    #     plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
+    #     plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')
 
     plt.subplot(245)
     # Peter
@@ -122,7 +141,7 @@ def main(**kwargs):
 
     plt.subplot(248)
     # Some text that includes all of the parameters that were used, the github commit, and a timestamp
-    plt.text()
+    # plt.text()
 
     # ====================================
     # [Plot] Comparison of testing regimes
