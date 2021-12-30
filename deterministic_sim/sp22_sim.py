@@ -25,6 +25,7 @@ def main(**kwargs):
     T = params['T']
     GENERATION_TIME = params['generation_time']
     SYMPTOMATIC_RATE = params['symptomatic_rate']
+    NO_SURVEILLANCE_TEST_RATE = params["no_surveillance_test_rate"]
     R0_REDUCTION = params['R0_reduction']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     CONTACT_UNITS = np.array(params['contact_units'])
@@ -81,7 +82,7 @@ def main(**kwargs):
     # No surveillance
     infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
     infection_discovery_frac = SYMPTOMATIC_RATE
-    recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
+    recovered_discovery_frac = NO_SURVEILLANCE_TEST_RATE
     infection_rate = popul.infection_matrix(CONTACT_UNITS * infections_per_contact_unit)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
             infection_discovery_frac=infection_discovery_frac,

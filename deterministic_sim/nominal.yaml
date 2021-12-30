@@ -44,6 +44,8 @@ dec_ug_infected_per_day_unit: 0.22
 T: 28                           # num generations (16 weeks with 4-day generations)
 
 symptomatic_rate: .3            # used to compute discovered without surveillance
+no_surveillance_test_rate: 0.01 # percent of the population tested in a generation
+                                # (under no surveillance)
 booster_effectiveness: 0.5      # reduction in transmission from boosters
 
 R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
