@@ -20,7 +20,7 @@ SYMPTOMATIC_RATE = .3   # fraction of new infections will be discovered
 # This is the parameter we aim to calibrate.  An employee in a group with a given number of contacts units
 # generates dec_fs_infected_per_day_unit * contact_units infections per day generated during study week in the December
 # Omicron surge
-dec_fs_infected_per_day_unit = 0.16
+dec_fs_infected_per_day_unit = 0.09
 
 generation_time = 4     # generation time (days)
 
@@ -52,6 +52,12 @@ def main():
     I0 = np.zeros(K)
     I0[INITIAL_GROUP] = INITIAL
     S0 = np.maximum(pop - R0 - I0, 0)
+    outside_rates = 2.27
+    # outside_rates = params['outside_rates']
+    outside_rate = np.zeros(K)
+    for i in range(K):
+        outside_rate[i] =  outside_rates*pop[i]/TOTAL_POP
+    outside_rate = np.array(outside_rate)
 
     # ========================================================================
     # [Run] Increase testing delay and reduce interaction over duration of sim
@@ -60,7 +66,7 @@ def main():
     # [12/1 to 12/9] 1x / week testing with 36hr delay
     infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,1.5)
     infection_rate = meta_group("FS", pop, MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time, outside_rate = outside_rate)
     s.step(2)
 
     # [12/10 to 12/16] 1x / week testing with 3 day delay
