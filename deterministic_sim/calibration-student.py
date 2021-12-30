@@ -11,13 +11,13 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 NOMINAL = yaml.safe_load(open("nominal.yaml", "r"))
 
 T = 5                           # 4 generations (16 days)
-INITIAL_INFECTIOUS = [6, 1, 1]  # initial infections for each group
+INITIAL_INFECTIOUS = [6, 0, 0]  # initial infections for each group
 PAST_INFECTIONS = [0, 0, 0]     # recovered for each group
 
 # This is the parameter we aim to calibrate. It is the number of infections per
 # day per (metagroup-specific contact unit). This script calibrates this
 # parameter to the December Omicron surge.
-infections_per_day_per_contact_unit = np.array([0.33, 0.15, 0.13])
+infections_per_day_per_contact_unit = np.array([0.25, 0.10, 0.10])
 
 
 def main():
@@ -46,7 +46,9 @@ def main():
         meta_groups.append(meta_group(name, pop, contact_units))
 
     popul = population(meta_groups, np.array(params['meta_matrix'])[:3,:3])
-    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
+    # Assume that infections were among the most social in the population
+    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
+                                        weight="most_social")
 
     # ========================================================================
     # [Run] Increase testing delay and reduce interaction over duration of sim
