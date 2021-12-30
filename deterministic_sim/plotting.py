@@ -48,7 +48,7 @@ def plot_sm_test_regime_comparison(test_regime_names: List[str],
 
     # create and export plot
     plt.subplot(211)
-    plt.title(f'dec_ug_infected_per_day_unit={params["dec_ug_infected_per_day_unit"]}, Symptomatic Rate = {params["symptomatic_rate"]}')
+    plt.title(f'Symptomatic Rate = {params["symptomatic_rate"]}')
     plt.rcParams.update({'font.size': 8})
     plt.legend()
     plt.ylabel('UG Infected')

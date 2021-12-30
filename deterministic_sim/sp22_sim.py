@@ -29,8 +29,8 @@ def main(**kwargs):
     NO_SURVEILLANCE_TEST_RATE = params["no_surveillance_test_rate"]
     R0_REDUCTION = params['R0_reduction']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
-    CONTACT_UNITS = np.array(params['contact_units'])
-    DEC_UG_INFECTED_PER_DAY_UNIT = params['dec_ug_infected_per_day_unit']
+    INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
+        np.array(params['infections_per_day_per_contact_unit'])
 
     # =====================================================================
     # [Initialize] Assume a group's previous and new infections are divided
@@ -60,8 +60,8 @@ def main(**kwargs):
     test_regime_colors = []
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(days_between_tests, delay)
-        infection_rate = popul.infection_matrix(CONTACT_UNITS * infections_per_contact_unit)
+        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * micro.days_infectious(days_between_tests, delay)
+        infection_rate = popul.infection_matrix(infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
                 generation_time=GENERATION_TIME)
         s.step(4)
@@ -80,10 +80,10 @@ def main(**kwargs):
     sim_test_regime(2,1,"powderblue")
 
     # No surveillance
-    infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
+    infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * micro.days_infectious(np.inf,1)
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = NO_SURVEILLANCE_TEST_RATE
-    infection_rate = popul.infection_matrix(CONTACT_UNITS * infections_per_contact_unit)
+    infection_rate = popul.infection_matrix(infections_per_contact_unit)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
             infection_discovery_frac=infection_discovery_frac,
             recovered_discovery_frac=recovered_discovery_frac,
@@ -102,7 +102,7 @@ def main(**kwargs):
     def new_plot():
         plotting.plot_comprehensive_summary(s, popul, params)
 
-    new_plot()
+    old_plot()
 
 
 if __name__ == "__main__":
