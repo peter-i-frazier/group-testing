@@ -223,3 +223,22 @@ class population:
         I0 = self.flatten(SIR[:,1])
         R0 = self.flatten(SIR[:,2])
         return S0, I0, R0
+
+    def get_outside_rate(self, outside_rates):
+        '''
+        Return flattened outside_rate array for inputting into sim().
+
+        Args:
+            outside_rates: list of #outside infections/day for each metagroup
+        '''
+        dim_tot = 0 #keep track of 2d structure within flattened array
+        cum_tot = []
+        for i in self.meta_group_list:
+            cum_tot.append(dim_tot)
+            dim_tot += i.K
+        outside_rate = np.zeros(dim_tot)
+        for i in range(len(self.meta_group_list)):
+            for j in range(self.meta_group_list[i].K):
+                outside_rate[cum_tot[i]+j] =  outside_rates[i]*self.meta_group_list[i].pop[j]/np.sum(self.meta_group_list[i].pop)
+        return np.array(outside_rate)
+
