@@ -20,11 +20,11 @@ past_infections:                # According to @Brian Liu's analysis
   - 0     # VM/GM/LA
   - 0     # fac/staff
 
-outside_rates:
-  - 0.01
-  - 0.01
-  - 0.01
-  - 0.04
+outside_rates: #number of infections for each meta-group per person-day
+  - 0
+  - 0
+  - 0
+  - 2.27        # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01 TODO REVISIT FOR OMICRON
 
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:

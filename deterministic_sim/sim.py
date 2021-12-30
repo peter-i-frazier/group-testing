@@ -21,7 +21,7 @@ class sim:
                  init_infected: np.ndarray, init_recovered: np.ndarray,
                  infection_rate: np.ndarray, infection_discovery_frac: float = 1,
                  recovered_discovery_frac: float = 1, generation_time: float = 1,
-                 outside_rate: float = 0):
+                 outside_rate = 0):
         """Initialize an SIR-style simulation of COVID spread.
 
         Group dynamics can be captured by providing vectors of
@@ -141,7 +141,7 @@ class sim:
         self.I[t+1] = self.I[t+1] * frac_susceptible
 
         # Inject outside infections
-        self.I[t+1] += np.maximum(self.S[t]-self.I[t+1],0) * self.outside_rate
+        self.I[t+1] += frac_susceptible * self.generation_time * self.outside_rate
 
         # We can't infect more than the number of susceptible people.
         # np.minimum applied to two arrays returns the elementwise minimum.
