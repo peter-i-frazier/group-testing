@@ -1,0 +1,44 @@
+# This is a yaml file to support simulation of undergrads only, without the other meta-groups.
+# This is simpler than the full simulation and should be easier to understand.
+
+population_count:               # population count (by meta group)
+  - 16000  # UG
+population_names:               # names of populations (by meta group)
+  - "UG"
+
+initial_infections:             # According to @Brian Liu's analysis
+  - 975  # UG
+past_infections:                # According to @Brian Liu's analysis
+  - 4400  # UG (1900 infected during outbreak + 2500 over break)
+
+# Number of infections per day per (meta-group-specific contact unit).
+# This is based on the following analysis:
+#   @hwr26: calibration-student.py
+#   @sst76: calibration-employee.py
+infections_per_day_per_contact_unit:
+  - 0.33 # UG
+
+T: 28                           # num generations (16 weeks with 4-day generations)
+
+symptomatic_rate: .3            # used to compute discovered without surveillance
+no_surveillance_test_rate: 0.01 # percent of the population tested in a generation
+                                # (under no surveillance)
+booster_effectiveness: 0.5      # reduction in transmission from boosters
+
+R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
+generation_time: 4              # generation time (days)
+
+# Define the isolation policy in use.
+on_campus_frac: 0.5             # fraction of students on campus
+isolation_durations:            # durations of isolation (days)
+  - 5
+  - 10
+isolation_fracs:                # fraction of pop falling into various isolation
+  - 0.8                         # durations
+  - 0.2
+
+# Based on Xiangyu's adjusted moment match code, this is the fraction of the
+# UG population broken out by the amount of contact
+# that they have, starting from low contact to high contact.
+# Assumes that group i has i+1 contacts per day.
+json_path: "nominal_ug.json"       # path to JSON with additional params
