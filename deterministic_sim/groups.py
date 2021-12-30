@@ -51,20 +51,33 @@ class meta_group:
         infection_rates = np.outer(r, q)
         return infection_rates
 
-    def get_init_SIR(self, initial_infectious, initial_recovered):
+
+    def get_init_SIR(self, initial_infectious: float, initial_recovered: float,
+                     weight: str = "population"):
         """Return initial SIR vectors.
 
-        Assuming initial infections and recovered are distributed proportional
-        to the population.
+        Specify a weight used to distribute the initial infections and initial
+        recovered across the groups within this metagroup.
 
         Args:
             initial_infectious (float): Initial infectious count.
             initial_recovered (float): Initial recovered count.
+            weight (str): {population, contacts, population x contacts, most_social}
         """
-        b = self.contact_units * self.pop
-        b =  b / np.sum(b)
-        R0 = initial_recovered * b
-        I0 = initial_infectious * b
+        if weight == "population":
+            w = self.pop
+        elif weight == "contacts":
+            w = self.contact_units
+        elif weight == "population x contacts":
+            w = self.contact_units * self.pop
+        elif weight == "most_social":
+            w = np.zeros(self.K)
+            w[-1] = 1
+        else:
+            raise ValueError("The provided weight is not supported.")
+        w = w / np.sum(w)  # normalize
+        R0 = initial_recovered * w
+        I0 = initial_infectious * w
         S0 = np.maximum(self.pop - R0 - I0, 0)
         return S0, I0, R0
 
@@ -186,19 +199,23 @@ class population:
 
         return self.get_init_SIR_vec(initial_infectious, initial_recovered)
 
+
     def get_init_SIR_vec(self, initial_infectious : np.ndarray,
-                         initial_recovered : np.ndarray):
+                         initial_recovered : np.ndarray,
+                         weight: str = "population"):
         """Return initial SIR vectors.
 
         Args:
             initial_infectious (np.ndarray): Initial infectious count (per meta group).
             initial_recovered (np.ndarray): Initial recovered count (per meta group).
+            weight (str): {population, contacts, population x contacts, most_social}
         """
         SIR = []
         for i in range(len(self.meta_group_list)):
             group = self.meta_group_list[i]
             S0, I0, R0 = group.get_init_SIR(initial_infectious[i],
-                                            initial_recovered[i])
+                                            initial_recovered[i],
+                                            weight=weight)
             SIR.append([S0, I0, R0])
         SIR = np.array(SIR)
 
