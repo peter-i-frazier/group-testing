@@ -27,6 +27,7 @@ def main(**kwargs):
     SYMPTOMATIC_RATE = params['symptomatic_rate']
     R0_REDUCTION = params['R0_reduction']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
+    CONTACT_UNITS = np.array(params['contact_units'])
     DEC_UG_INFECTED_PER_DAY_UNIT = params['dec_ug_infected_per_day_unit']
 
     # =====================================================================
@@ -48,17 +49,14 @@ def main(**kwargs):
     popul = population(meta_groups, np.array(params['meta_matrix']))
     S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
 
-    # TODO (hwr26): Unsure how this fits in?
-    population_contact_units = np.array(params['contact_units'])
-
     # ========================================
     # [Run] Reduce R0 once the semester begins
     # ========================================
 
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
-        ug_infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(days_between_tests, delay)
-        infection_rate = popul.infection_matrix(ug_infections_per_contact_unit)
+        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(days_between_tests, delay)
+        infection_rate = popul.infection_matrix(CONTACT_UNITS * infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
                 generation_time=GENERATION_TIME)
         s.step(4)
@@ -81,10 +79,10 @@ def main(**kwargs):
     sim_test_regime(2,1,"powderblue")
 
     # No surveillance
-    infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
+    infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
-    infection_rate=popul.infection_matrix(infections_per_contact)
+    infection_rate = popul.infection_matrix(CONTACT_UNITS * infections_per_contact_unit)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
             infection_discovery_frac=infection_discovery_frac,
             recovered_discovery_frac=recovered_discovery_frac,

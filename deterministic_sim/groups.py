@@ -125,7 +125,7 @@ class population:
                     for l in range(self.meta_group_list[k].K): #expoed meta-group-group
                         q = self.meta_group_list[k].pop[l] * self.meta_group_list[k].contact_units[l] / np.sum(self.meta_group_list[k].pop * self.meta_group_list[k].contact_units)
                         res[cum_tot[i]+j, cum_tot[k]+l] = \
-                        infections_per_contact_unit * self.meta_group_list[i].contact_units[j] * self.meta_group_contact_matrix[i,k] * q
+                        infections_per_contact_unit[i] * self.meta_group_list[i].contact_units[j] * self.meta_group_contact_matrix[i,k] * q
 
         return res
 
