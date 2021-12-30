@@ -52,16 +52,7 @@ def main(**kwargs):
     popul = population(meta_groups, np.array(params['meta_matrix']))
     S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections)
     outside_rates = params['outside_rates']
-    outside_rate = np.zeros(len(S0))
-    dim_tot = 0 #total number of meta-group-groups
-    cum_tot = [] #help keep track of location in res matrix
-    for i in meta_groups:
-        cum_tot.append(dim_tot)
-        dim_tot += i.K
-    for i in range(len(meta_groups)):
-        for j in range(meta_groups[i].K):
-            outside_rate[cum_tot[i]+j] =  outside_rates[i]*meta_groups[i].pop[j]/population_count[i]
-    outside_rate = np.array(outside_rate)
+    outside_rate = popul.get_outside_rate(outside_rates)
 
 
     # ========================================

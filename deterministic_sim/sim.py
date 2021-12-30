@@ -53,6 +53,8 @@ class sim:
             generation_time (float): Length of the generation interval in \
                 whatever units the user would like to use, e.g., days or weeks. \
                 This is not used, except to support plotting. Defaults to 1.
+            outside_rate: infections per day, weighed by population of each \
+                group in a meta-group.
         """
         assert (max_T > 0)
 
@@ -140,7 +142,7 @@ class sim:
         # Adjust this for the fact that not everyone is susceptible. This is an elementwise product.
         self.I[t+1] = self.I[t+1] * frac_susceptible
 
-        # Inject outside infections
+        # Inject outside infections, only susceptible
         self.I[t+1] += frac_susceptible * self.generation_time * self.outside_rate
 
         # We can't infect more than the number of susceptible people.
