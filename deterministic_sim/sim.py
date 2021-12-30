@@ -296,7 +296,7 @@ class sim:
         if group == False:
             discovered = self.get_discovered()
         else:
-            discovered = self.get_discovered_for_group(group)
+            discovered = self.get_total_discovered_for_different_groups(group)
 
         # only consider the on campus fraction (as off-campus don't require isolation)
         discovered = on_campus_frac * discovered
