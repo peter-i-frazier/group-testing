@@ -95,7 +95,7 @@ def main(**kwargs):
 
     # Iterate over meta-groups, plot infections for each
     for i in range(4): # replace by number of meta-groups
-        plt.subplot('24' + i)
+        plt.subplot('24' + str(i))
         # Do this for the meta-group rather than for everyone
         plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), 'k-', label='No surveillance, Discovered')
         plt.plot(np.arange(T)*GENERATION_TIME, s.get_infected(aggregate=True,cumulative=True), 'k--', label='No surveillance, Infected')

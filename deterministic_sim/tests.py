@@ -59,7 +59,7 @@ def test_noninfectious_group():
     infection_rate = meta_group("UG", pop, marginal_contacts).infection_matrix(infections_per_contact)
 
 def test_sim8():
-    # Scenario 1: With a meta_group 
+    # Scenario 1: With a meta_group
     K = 3
     T = 20
 
@@ -93,7 +93,7 @@ def test_sim8():
     T = 20
 
     pop = np.array([100])
-    R0 = np.array([100 * 0.3]) 
+    R0 = np.array([100 * 0.3])
     I0 = np.array([100 * .02])
     S0 = pop - R0 - I0
 
@@ -107,90 +107,6 @@ def test_sim8():
 
     inf_2 = s.get_metric('I', aggregate=False, normalize=True)
     assert(np.isclose(inf_1, inf_2[:,0]).all())
-
-def test_sim3():
-    total_pop = 16000 #total UG population
-    K = 12 #number of distinct contact groups
-    T = 20 #num generations
-
-    # Based on Xiangyu's adjusted moment match code, this is the fraction of the population (UG-only?  or all students)
-    # broken out by the amount of contact that they have, starting from low contact to high contact.
-    pop_frac = np.array(
-        [0.46666204134859246,
-         0.21110377424326393,
-         0.13427835918082992,
-         0.040993148549700376,
-         0.05561449714374835,
-         0.03772148571886847,
-         0.020557396664413034,
-         0.01829685176380435,
-         0.003308325172067398,
-         0.006056046991853723,
-         0.0027991704708900224,
-         0.002608902751968122])
-    pop = total_pop * pop_frac
-
-    # Calculate the probability of infection.
-    K = 3
-    T = 20
-
-    # The populations are symmetric
-    pop = 100 * np.ones(3)/3
-    R0 = 100 * np.array([.1, .1, .1])
-    I0 = 100 * np.array([0, .01, .01])
-    S0 = pop - R0 - I0
-
-    infections_per_contact = 1
-    marginal_contacts = np.array([0,1,2])
-    mg = meta_group('Test', pop, marginal_contacts)
-    infection_rate = mg.infection_matrix(infections_per_contact)
-    generation_time = 4/7 # in units of weeks
-
-    s = sim(T,S0,I0,R0,infection_rate,0,0,generation_time)
-    s.step(T-1)
-
-    assert is_constant_population_size(s)
-
-    # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
-    # the number discovered should be 0
-    discovered = s.get_discovered(cumulative=True)
-    infected = s.get_infected(cumulative=True)
-    # A ballpark estimate is that R0 with 1x / wk testing and a 2-day delay from sampling to isolation is 5,
-    # with a 4 day generation time.  We think that this outbreak was driven by the people with 6 contacts per period
-    # above because the sum of their proportions of the UG population is about 1900 people. To achieve this, we set
-    # infections_per_contact = 5/6 so that the number of secondary infections from someone with 6 contacts is 5.
-    # We then adjust this by multiplying by the number of days infectious under our testing strategy, divided by the
-    # number under our December Omicron outbreak.
-    # infections_per_contact = 5/6 * micro.days_infectious(3.5,1) / micro.days_infectious(7,2)
-    infections_per_contact = 5/6 * days_infectious(np.inf,1) / days_infectious(7,2)
-    generation_time = 4/7 # weeks
-
-    marginal_contacts = np.arange(1,K+1)
-    mg = meta_group('Test', pop, marginal_contacts)
-    infection_rate = mg.infection_matrix(infections_per_contact)
-
-    # There were roughly 1900 UG infected during the Omicron outbreak in December 2021.
-    # Assume that another 2000 will be infected during winter break
-    infected_before_semester = 1900 + 2000
-
-    # Assume 100 active infections to start the semester
-    initial_infections = 100
-
-    # Assume a group's previous and new infections are divided proportionally to the amount of contact it has as a
-    # group. This is its contact rate * population size
-    b = marginal_contacts * pop_frac
-    b =  b / np.sum(b)
-    R0 = infected_before_semester * b
-    I0 = initial_infections * b
-
-    S0 = np.maximum(pop - R0 - I0, 0) # Need to take the max with 0 because R0[i]+S0[i] can be bigger than pop[i]
-
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate)
-    s.step(T-1)
-
-    # The group with 0 contacts should not have any infections
-    assert(np.isclose(s.get_metric_for_group('I', 0),np.zeros(T)).all())
-    assert is_constant_population_size(s)
 
 
 def test_sim_zero_prob_discvoered():
