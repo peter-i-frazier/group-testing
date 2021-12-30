@@ -144,7 +144,7 @@ class population:
         res = []
         for metagroup_name in metagroup_names:
             tmp = []
-            for i in enumerate(self.idx2groupname):
+            for i in range(len(self.idx2groupname)):
                 if self.idx2groupname[i][0: len(metagroup_name)] == metagroup_name:
                     tmp.append(i)
             res.append(tmp)
@@ -183,6 +183,10 @@ class population:
         meta_group_prop = meta_group_pops / sum(meta_group_pops)
         initial_infectious = initial_infectious * meta_group_prop
         initial_recovered = initial_recovered * meta_group_prop
+
+        return self.get_init_SIR_vec(initial_infectious, initial_recovered)
+
+    def get_init_SIR_vec(self, initial_infectious : np.ndarray, initial_recovered : np.ndarray):
 
         SIR = []
         for i in range(len(self.meta_group_list)):

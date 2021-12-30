@@ -258,12 +258,19 @@ class sim:
 
     def get_infected_for_group(self, metric, group, normalize = False, cumulative = False):
         return self.get_metric_for_group('I', group, normalize, cumulative)
+    
+    def get_total_infected_for_different_groups(self, group, normalize = False, cumulative = False):
+        return self.get_metric_for_different_groups('I', group, normalize, cumulative).sum(axis=1)
 
     def get_discovered(self, aggregate=True, normalize=False, cumulative=False):
         return self.get_metric('D', aggregate, normalize, cumulative)
 
     def get_discovered_for_group(self, group, normalize=False, cumulative=False):
         return self.get_metric_for_group('D', group, normalize, cumulative)
+
+    def get_total_discovered_for_different_groups(self, group, normalize = False, cumulative = False):
+        return self.get_metric_for_different_groups('D', group, normalize, cumulative).sum(axis=1)
+
 
     def get_isolated(self, group = False, iso_lengths = [8], iso_props = [1],
                      on_campus_frac = 0.5):
