@@ -51,6 +51,23 @@ class meta_group:
         infection_rates = np.outer(r, q)
         return infection_rates
 
+    def get_init_SIR(self, initial_infectious, initial_recovered):
+        """Return initial SIR vectors.
+
+        Assuming initial infections and recovered are distributed proportional
+        to the population.
+
+        Args:
+            initial_infectious (float): Initial infectious count.
+            initial_recovered (float): Initial recovered count.
+        """
+        b = self.contact_units * self.pop
+        b =  b / np.sum(b)
+        R0 = initial_recovered * b
+        I0 = initial_infectious * b
+        S0 = np.maximum(self.pop - R0 - I0, 0)
+        return S0, I0, R0
+
 
 class population:
     '''
@@ -80,7 +97,7 @@ class population:
         for meta_group in meta_group_list:
             for i in range(meta_group.K):
                 self.idx2groupname.append(meta_group.name + " " + str(i))
-        
+
         self.groupname2idx = {name: i for i, name in enumerate(self.idx2groupname)}
 
     def infection_matrix(self, infections_per_contact_unit):
@@ -100,7 +117,7 @@ class population:
         for i in self.meta_group_list:
             cum_tot.append(dim_tot)
             dim_tot += i.K
-        
+
         res = np.zeros((dim_tot, dim_tot))
         for i in range(len(self.meta_group_list)): #source meta group
             for j in range(self.meta_group_list[i].K): #source meta-group-group
@@ -132,7 +149,7 @@ class population:
                     tmp.append(i)
             res.append(tmp)
         return res
-        
+
 
     def groupname_to_idx(self, groupname):
         '''
@@ -140,40 +157,42 @@ class population:
         '''
         return self.groupname2idx[groupname]
 
+    def flatten(self, input):
+        '''
+        Returns a flattened version of inputted array
+        amenable to usage in sim(), which only takes 1D SIR etc.
+        e.g. marginal contacts, or population counts per meta-group-group
+        '''
+        tmp = []
+        for i in range(len(input)):
+            tmp += list(input[i])
+        return np.array(tmp)
 
 
-### OLD CODE
+    def get_init_SIR(self, initial_infectious, initial_recovered):
+        """Return initial SIR vectors.
 
-def well_mixed_infection_rate_multiple_meta_groups(pop, marginal_contacts, infections_per_contact):
-    '''
-    marginal_contacts is a dictionary of histograms, e.g., where
-    { 'UG': [.1, .2, .3 ], 'Grad/Professional' : [.2, .1, .3] }
+        Assuming initial infections and recovered are distributed proportional
+        to the population.
 
-    '''
+        Args:
+            initial_infectious (float): Initial infectious count.
+            initial_recovered (float): Initial recovered count.
+        """
+        meta_group_pops = np.array([sum(g.pop) for g in self.meta_group_list])
+        meta_group_prop = meta_group_pops / sum(meta_group_pops)
+        initial_infectious = initial_infectious * meta_group_prop
+        initial_recovered = initial_recovered * meta_group_prop
 
-'''
-Returns an infection rate matrix that corresponds to well-mixed interactions between groups, where each group has a
-amount of contact during their infectious period (summed over all exposed groups) given by the vector
-marginal_contacts and a population size by the vector pop.  The number of infections per unit of contact in
-marginal_contact (infections_per_contact) is a scalar and applies to all contacts. The units of "marginal_contacts"
-could be total contacts over the course of someone's infectious period, in which case infections_per_contact is the
-same as the probability of transmission given contact.  It could also be the *rate* at which people have contact per
-day, in which case infections_per_contact should be the probability of transmission given contact times the expected
-length of a person's infectious period.
-'''
-def well_mixed_infection_rate_one_meta_group(pop, marginal_contacts, infections_per_contact):
-    assert (len(pop) == len(marginal_contacts))
-    frac_pop = pop / np.sum(pop)  # convert to a fraction
-    K = len(marginal_contacts)
+        SIR = []
+        for i in range(len(self.meta_group_list)):
+            group = self.meta_group_list[i]
+            S0, I0, R0 = group.get_init_SIR(initial_infectious[i],
+                                         initial_recovered[i])
+            SIR.append([S0, I0, R0])
+        SIR = np.array(SIR)
 
-    # An incoming contact lands in a population with a probability proportional to its number of outgoing contacts,
-    # which is q[i] = frac_pop[i]*marginal_contacts[i].
-    q = frac_pop * marginal_contacts / np.sum(frac_pop * marginal_contacts)
-
-    # The total number of people infected by a positive in group i is infections_per_contact * marginal_contacts[i]
-    r = infections_per_contact * marginal_contacts
-
-    # When a person in group i is infected, the number of people infected in group j is then r[i]*q[j]
-
-    infection_rates = np.outer(r, q)
-    return infection_rates
+        S0 = self.flatten(SIR[:,0])
+        R0 = self.flatten(SIR[:,1])
+        I0 = self.flatten(SIR[:,2])
+        return S0, I0, R0

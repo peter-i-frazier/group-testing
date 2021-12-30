@@ -1,0 +1,41 @@
+population_count:               # population count (by meta group)
+  - 16000  # UG
+  - 8000   # GR
+  - 3000   # VM/GM/LA
+  - 10000  # fac/staff
+population_names:               # names of populations (by meta group)
+  - "UG"
+  - "GR"
+  - "PR"
+  - "FS"
+
+T: 28                           # num generations (16 weeks with 4-day generations)
+
+symptomatic_rate: .3            # used to compute discovered without surveillance
+booster_effectiveness: 0.5      # reduction in transmission from boosters
+
+infected_from_outbreak: 1900
+infected_over_break: 2500       # According to @Brian Liu's analysis
+initial_infections: 975         # According to @Brian Liu's analysis
+
+dec_effective_R0: 7             # calibrated from calibration.py by @hwr26
+R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
+generation_time: 4              # generation time (days)
+dec_contacts_of_key_group: 6    # number of contacts among key group
+dec_days_between_tests: 7       # days between test (december 2021)
+dec_isolation_delay: 2          # isolation delay (december 2021)
+
+# Define the isolation policy in use.
+on_campus_frac: 0.5             # fraction of students on campus
+isolation_durations:            # durations of isolation (days)
+  - 5
+  - 10
+isolation_fracs:                # fraction of pop falling into various isolation
+  - 0.8                         # durations
+  - 0.2
+
+# Based on Xiangyu's adjusted moment match code, this is the fraction of the
+# population (UG-only?  or all students) broken out by the amount of contact
+# that they have, starting from low contact to high contact.
+# Assumes that group i has i+1 contacts per day.
+json_path: "nominal.json"       # path to JSON with additional params
