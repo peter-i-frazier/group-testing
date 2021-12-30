@@ -8,6 +8,7 @@ from groups import meta_group, population
 import matplotlib
 import matplotlib.pyplot as plt
 import warnings
+import plotting
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
@@ -54,6 +55,9 @@ def main(**kwargs):
     # [Run] Reduce R0 once the semester begins
     # ========================================
 
+    test_regime_names = []
+    test_regime_sims = []
+    test_regime_colors = []
     def sim_test_regime(tests_per_week, delay, color):
         days_between_tests = 7 / tests_per_week
         infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(days_between_tests, delay)
@@ -64,13 +68,9 @@ def main(**kwargs):
         s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
         label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
-        plt.subplot(211)
-        plt.plot(np.arange(T)*GENERATION_TIME, s.get_discovered(aggregate=True,cumulative=True), label=label, color=color)
-        plt.subplot(212)
-        isolated = s.get_isolated(iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"],
-                                  on_campus_frac=params["on_campus_frac"])
-        plt.plot(np.arange(T)*GENERATION_TIME, isolated, label=label, color=color)
+        test_regime_names.append(label)
+        test_regime_sims.append(s)
+        test_regime_colors.append(color)
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
@@ -96,19 +96,8 @@ def main(**kwargs):
     # ====================================
 
     def old_plot():
-        plt.subplot(211)
-        plt.title(f"dec_ug_infected_per_day_unit={DEC_UG_INFECTED_PER_DAY_UNIT}, Symptomatic Rate = {SYMPTOMATIC_RATE}")
-        plt.rcParams.update({'font.size': 8})
-        plt.legend()
-        plt.ylabel('UG Infected')
-
-        plt.subplot(212)
-        plt.rcParams.update({'font.size': 8})
-        plt.legend()
-        plt.xlabel('Weeks')
-        plt.ylabel('UG in Isolation (on-campus 5day)')
-
-        plt.savefig('sp22_sim.png', facecolor='w')
+        plotting.plot_sm_test_regime_comparison(test_regime_names,
+            test_regime_sims, test_regime_colors, s, params)
 
     def new_plot():
         groups = popul.metagroup_indices(params["population_names"])
