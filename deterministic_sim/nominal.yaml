@@ -28,7 +28,7 @@ initial_infections:             # According to @Brian Liu's analysis
   - 0 # VM/GM/LA
   - 0 # fac/staff
 past_infections:                # According to @Brian Liu's analysis
-  - 1900 #UG, 1900 infected during outbreak, 2500 over break
+  - 4400 #UG, 1900 infected during outbreak, 2500 over break
   - 0 # GR
   - 0 # VM/GM/LA
   - 0 # fac/staff
@@ -36,7 +36,7 @@ past_infections:                # According to @Brian Liu's analysis
 # An undergraduate in a group with a given number of contacts units
 # generates dec_ug_infected_per_day_unit * contact_units infections per day generated
 # during study week in the December Omicron surge. This is based on @hwr26's calibration from calibration.py.
-dec_ug_infected_per_day_unit = 0.22
+dec_ug_infected_per_day_unit: 0.22
 
 T: 28                           # num generations (16 weeks with 4-day generations)
 

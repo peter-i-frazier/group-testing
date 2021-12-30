@@ -46,15 +46,13 @@ def main(**kwargs):
         contact_units = np.arange(1, len(pop) + 1)
         meta_groups.append(meta_group(name, pop, contact_units))
 
-    # TODO this needs to be updated to use the new yaml, which stores these as a vector
-    # TODO Xiangyu was going to do this
-    initial_infectious = params['initial_infections']
-    initial_recovered = params['infected_from_outbreak'] + params['infected_over_break']
+    initial_infectious = np.array(params['initial_infections'])
+    initial_recovered = np.array(params['past_infections'])
 
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.get_init_SIR(initial_infectious, initial_recovered) # TODO update as part of the change a few lines above
+    S0, I0, R0 = popul.get_init_SIR_vec(initial_infectious, initial_recovered)
 
-    population_contact_units = params['contact_units']
+    population_contact_units = np.array(params['contact_units'])
 
     # ========================================
     # [Run] Reduce R0 once the semester begins
@@ -86,10 +84,10 @@ def main(**kwargs):
     sim_test_regime(2,1,"powderblue")
 
     # No surveillance
-    infections_per_contact = BOOSTER_EFFECTIVENESS * DEC_INFECTIONS_PER_CONTACT * micro.days_infectious(np.inf,1) / DEC_DAYS_INFECTIOUS
+    ug_infections_per_contact_unit = BOOSTER_EFFECTIVENESS * DEC_UG_INFECTED_PER_DAY_UNIT * micro.days_infectious(np.inf,1)
     infection_discovery_frac = SYMPTOMATIC_RATE
     recovered_discovery_frac = .01 # 1% of the population is tested for any reason in a given generation
-    infection_rate=popul.infection_matrix(infections_per_contact)
+    infection_rate=popul.infection_matrix(ug_infections_per_contact_unit * population_contact_units)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
             infection_discovery_frac=infection_discovery_frac,
             recovered_discovery_frac=recovered_discovery_frac,
@@ -100,7 +98,7 @@ def main(**kwargs):
     
     groups = popul.metagroup_indices(params["population_names"])
     for i in range(4):
-        plt.subplot("24" + str(i + 1))
+        plt.subplot(int("24" + str(i + 1)))
         plt.plot(np.arange(T)*GENERATION_TIME, 
                  s.get_total_infected_for_different_groups(groups[i], cumulative=True), 
                  'k--', label="Infected: " + params["population_names"][i], color='r')
