@@ -55,8 +55,15 @@ def test_noninfectious_group():
 
     infections_per_contact = 1
     marginal_contacts = np.array([0,1,2])
+    infection_rate = meta_group('Test', pop, marginal_contacts).infection_matrix(infections_per_contact)
 
-    infection_rate = meta_group("UG", pop, marginal_contacts).infection_matrix(infections_per_contact)
+    s = sim(T, S0, I0, R0, infection_rate=infection_rate)
+    s.step(T-1)
+
+    # The group with 0 contacts should not have any infections
+    assert(np.isclose(s.get_metric_for_group('I', 0),np.zeros(T)).all())
+    assert is_constant_population_size(s)
+
 
 def test_sim8():
     # Scenario 1: With a meta_group
@@ -80,13 +87,7 @@ def test_sim8():
 
     assert is_constant_population_size(s)
 
-    # Since no one is discovered (infection_discovery_frac and recovered_discovery_frac are 0 above),
-    # the number discovered should be 0
-    mg_discovered = s.get_discovered(cumulative=True)
-    mg_infected = s.get_infected(cumulative=True)
-
     inf_1 = s.get_metric_for_group('I', [0,1,2], normalize=True)
-    # print(s.get_metric('I', aggregate=False, normalize=True))
 
     # Scenario 2: No meta group
     K = 3
@@ -123,7 +124,6 @@ def test_sim_zero_prob_discvoered():
     infections_per_contact = 1
     marginal_contacts = np.array([0,1,2])
     infection_rate = meta_group("UG", pop, marginal_contacts).infection_matrix(infections_per_contact)
-
     generation_time = 4/7 # in units of weeks
 
     s = sim(T, S0, I0, R0, infection_rate=infection_rate,
