@@ -174,6 +174,28 @@ class sim:
         else:
             raise ValueError('metric argument must be one of S,I,R,D,H')
 
+    def get_metric_for_different_groups(self, metric, group, normalize = False, cumulative = False):
+        '''
+        Returns a matrix where [t, i] entry contains the number of people in group[i] of a particular type (S,I,R,D,H)
+        in generation t. If normalize is true, then this is normalized to the group's population
+        size.  For example, to get a vector containing the number of people with an active infection in groups [0, 1] and
+        each generation, call get_metric_for_different_groups('I', [0, 1]).
+        '''
+        assert(len(group)>0)
+        assert(min(group) >= 0)
+        assert(max(group) < self.K)
+
+        y = self.__get_metric__(metric)[:,group]
+
+        if normalize:
+            pop = self.S[:, group] + self.I[:, group] + self.R[:, group]  # total population by time
+            y = y / pop
+
+        if cumulative:
+            return np.cumsum(y, axis=0)
+        else:
+            return y
+
     def get_metric_for_group(self, metric, group, normalize = False, cumulative = False):
         '''
         Returns a vector where component t contains the number of people of a particular type (S,I,R,D,H)
