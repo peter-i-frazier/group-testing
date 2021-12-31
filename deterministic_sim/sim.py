@@ -146,7 +146,7 @@ class sim:
         self.I[t+1] = self.I[t+1] * frac_susceptible
 
         # Inject outside infections, only susceptible
-        self.I[t+1] += frac_susceptible * self.generation_time * self.outside_rate
+        self.I[t+1] += frac_susceptible * self.generation_time * outside_rate
 
         # We can't infect more than the number of susceptible people.
         # np.minimum applied to two arrays returns the elementwise minimum.
