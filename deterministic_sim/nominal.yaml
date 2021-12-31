@@ -75,7 +75,8 @@ infections_per_day_per_contact_unit:
   - 0.28
   - 0.10
   - 0.10
-  - 0.09 # TODO (pf98): we need to increase this because of Omicron
+  - 0.015 # @sst calibration during the Dec 31 meeting gives 0.005.  Increasing this 3x for Omicron.
+
 
 
 T: 28                           # num generations (16 weeks with 4-day generations)
