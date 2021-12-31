@@ -59,15 +59,18 @@ class meta_group:
         Specify a weight used to distribute the initial infections and initial
         recovered across the groups within this metagroup.
 
+        Use "population" if each person is equally likely to be infected.
+        Use "population x contacts" if a person's probability of being infected
+        is proportional to their amount of contact.
+        Use "most social" if we know that the initial infections were among the most social.
+
         Args:
             initial_infectious (float): Initial infectious count.
             initial_recovered (float): Initial recovered count.
-            weight (str): {population, contacts, population x contacts, most_social}
+            weight (str): {population, population x contacts, most_social}
         """
         if weight == "population":
             w = self.pop
-        elif weight == "contacts":
-            w = self.contact_units
         elif weight == "population x contacts":
             w = self.contact_units * self.pop
         elif weight == "most_social":
@@ -208,7 +211,7 @@ class population:
         Args:
             initial_infectious (np.ndarray): Initial infectious count (per meta group).
             initial_recovered (np.ndarray): Initial recovered count (per meta group).
-            weight (str): {population, contacts, population x contacts, most_social}
+            weight (str): {population, population x contacts, most_social}
         """
         SIR = []
         for i in range(len(self.meta_group_list)):
