@@ -30,7 +30,7 @@ def main(**kwargs):
     GENERATION_TIME = params['generation_time']
     SYMPTOMATIC_RATE = params['symptomatic_rate']
     NO_SURVEILLANCE_TEST_RATE = params["no_surveillance_test_rate"]
-    R0_REDUCTION = params['R0_reduction']
+    CLASSWORK_TRANSMISSION_MULTIPLIER = params['classwork_transmission_multiplier']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
         np.array(params['infections_per_day_per_contact_unit'])
@@ -86,8 +86,12 @@ def main(**kwargs):
                 recovered_discovery_frac=recovered_discovery_frac,
                 generation_time=GENERATION_TIME,
                 outside_rate=outside_rate)
-        s.step(4)
-        s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
+        # 3 generations = 12 days, modeling 7 days of no instruction, followed by roughly a week of not much HW in
+        # the first week of virtual classes
+        s.step(3)
+        infections_per_contact_unit = CLASSWORK_TRANSMISSION_MULTIPLIER * infections_per_contact_unit
+        infection_rate = popul.infection_matrix(infections_per_contact_unit)
+        s.step(T-1-3, infection_rate=infection_rate)
 
         test_regime_names.append(label)
         test_regime_sims.append(s)

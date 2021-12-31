@@ -58,6 +58,15 @@ outside_rates: #number of infections for each meta-group per person-day TODO pf9
   - 15          # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
                 # pf98 more recently we've see roughly 15 per day across the entire employee population
 
+# multiplier to apply to transmission once virtual instruction classwork makes students busy
+# (after 3 generations / 12 days pass from the start of the simulation --- this is 7 pre-semester days and 5 days
+# during virtual instruction )
+classwork_transmission_multiplier:
+  - 0.85  # UG
+  - 1     # GR, we model them as not being affected by classwork
+  - 0.85  # VM/GM/LA
+  - 1     # fac/staff
+
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:
 #   @hwr26: calibration-student.py
@@ -68,6 +77,7 @@ infections_per_day_per_contact_unit:
   - 0.10
   - 0.09 # TODO (pf98): we need to increase this because of Omicron
 
+
 T: 28                           # num generations (16 weeks with 4-day generations)
 
 symptomatic_rate: .3            # used to compute discovered without surveillance
@@ -75,7 +85,6 @@ no_surveillance_test_rate: 0.01 # percent of the population tested in a generati
                                 # (under no surveillance)
 booster_effectiveness: 0.5      # reduction in transmission from boosters
 
-R0_reduction: 0.85              # reduction in R0 (after 16 days / 4 generations)
 generation_time: 4              # generation time (days)
 
 # Define the isolation policy in use.
