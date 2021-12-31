@@ -127,7 +127,13 @@ def plot_comprehensive_summary(test_regime_names: List[str],
 
     param_txt = ''
     for param_name in params:
-        param_txt = param_txt + '\n' + param_name + ':' + str(params[param_name])
+        param = params[param_name]
+        if param_name == 'meta_matrix':
+            np.set_printoptions(precision = 2)
+            param_txt = param_txt + '\nmeta_matrix:\n' + str(np.matrix(param))
+        else:
+            param_txt = param_txt + '\n' + param_name + ':' + str(param)
+
     plt.rcParams.update({'font.size': 8})
     plt.text(0,-0.3,param_txt)
     #plt.ylim(0,1)
