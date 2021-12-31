@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 TOTAL_POP = 10000       # total fac/staff population
 K = 11                  # number of distinct contact groups
-T = 5                   # num generations
+T = 19                   # num generations
 INITIAL_GROUP = 10      # index of group containing initial infections
 INITIAL = 1             # number of initial infections
 SYMPTOMATIC_RATE = .3   # fraction of new infections will be discovered
@@ -20,7 +20,7 @@ SYMPTOMATIC_RATE = .3   # fraction of new infections will be discovered
 # This is the parameter we aim to calibrate.  An employee in a group with a given number of contacts units
 # generates dec_fs_infected_per_day_unit * contact_units infections per day generated during study week in the December
 # Omicron surge
-dec_fs_infected_per_day_unit = 0.09
+dec_fs_infected_per_day_unit = 0.005
 
 generation_time = 4     # generation time (days)
 
@@ -67,16 +67,16 @@ def main():
     infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,1.5)
     infection_rate = meta_group("FS", pop, MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time, outside_rate = outside_rate)
-    s.step(2)
+    s.step(18)
 
-    # [12/10 to 12/16] 1x / week testing with 3 day delay
-    infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
-    infection_rate = meta_group("FS", pop, 0.5 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
-    s.step(1, infection_rate=infection_rate)
+    # # [12/10 to 12/16] 1x / week testing with 3 day delay
+    # infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
+    # infection_rate = meta_group("FS", pop, 0.5 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
+    # s.step(1, infection_rate=infection_rate)
 
-    infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
-    infection_rate = meta_group("FS", pop, 0.33 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
-    s.step(1, infection_rate=infection_rate)
+    # infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
+    # infection_rate = meta_group("FS", pop, 0.33 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
+    # s.step(1, infection_rate=infection_rate)
 
     # ==================================================
     # [Plot] Actual Infections vs. Simulation Infections
@@ -86,18 +86,18 @@ def main():
     plt.plot(np.arange(T)*generation_time, I, label="simulated")
 
     # plot actual counts
-    dec_daily_positives = list(pd.read_csv("data/dec_infections_fs.csv")['positives'])
-    dec_positives = np.cumsum(dec_daily_positives)
-    plt.plot(np.arange(15), dec_positives[:15], label="actual")
+    fall_daily_positives = list(pd.read_csv("data/fall_infections_fs.csv")['positives'])
+    fall_positives = np.cumsum(fall_daily_positives)
+    plt.plot(np.arange(78), fall_positives[:78], label="actual")
 
 
     plt.title(f"Actual vs. Simulated Infection Trajectories\n"
-              f"dec_fs_infected_per_day_unit={dec_fs_infected_per_day_unit}, Symptomatic Rate = {SYMPTOMATIC_RATE}")
+              f"fall_fs_infected_per_day_unit={dec_fs_infected_per_day_unit}, Symptomatic Rate = {SYMPTOMATIC_RATE}")
     plt.rcParams.update({'font.size': 8})
-    plt.xlabel('Days Since Dec. 1')
+    plt.xlabel('Days Since Sep. 15')
     plt.ylabel('Cumulative Infected')
     plt.legend()
-    plt.savefig('calibration_fs.png', facecolor='w')
+    plt.savefig('calibration_fs_fall.png', facecolor='w')
     plt.close()
 
 
