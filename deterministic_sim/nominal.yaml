@@ -16,31 +16,47 @@ population_names:               # names of populations (by meta group)
 # Arrival testing scenario 1:
 #   all students do a pre-departure antigen test with sensitivity 50%,
 #   all students again an arrival PCR test with sensitivity 67% and no isolation delay,
-#   then the chance of a positive getting through is .5*.33 = 0.165
 #   This would give 2506 + (1-.165) 965 = 3312 immune and .165 * 965 = 160 infectious to start
-#   Add 1900 immune to get 5212
+#   Add 1900 from the Dec Omicron surge to get 5212
 # Arrival testing scenario 2:
 #   half of students do a pre-departure test with sensitivity 50%,
 #   75% of students (independently chosen) do an arrival PCR 67% sensitivity and no test delay
 #   then the chance of a positive getting through is (.5 + .5*.5) * (.25 + .75*.33) = 0.37
 #   This would give 2506 + (1-.37) 965 = 3114 immune and .37 * 965 = 357 infectious to start
 #   Add 1900 immune to get 5014
-initial_infections:             # According to @Brian Liu's analysis + arrival testing
-  - 160  # UG
-  - 0    # GR
-  - 0    # VM/GM/LA
-  - 0    # fac/staff
+# The google sheet below works out these numbers, and also the number of people who will need to be isolated from the
+#   people infected over break with immunity that are not found in pre-departure testing and from the active infections
+#   that are found in arrival testing
+#   https://docs.google.com/spreadsheets/d/1bWOtKMsK4dBm47GPHWb3LhiPNuYlXFHvDr-f0BIv7IY/edit?usp=sharing
+# For GR and Professional students past infections, we take the UG numbers, take out the 1900 from the Dec Omicron
+#   outbreak and divide by 2.  This gives (5011-1900)/2 = 1555. Scaling by population size gives
+#   1555 * 8000 / 16000 = 777 for GR and 1555 * 3000 / 16000 =  292 for professional students.
+# For UG initial infections, we take the UG active infections, cut by 2, and scale by the population size.  This gives
+#   (360 / 2) * 8000 / 16000 = 90 for GR and (360 / 2) * 3000 / 16000 = 34 for professional students.
+# For faculty / staff, past_infections we take roughly 15 per day (roughly how many infections we've been seeing),
+#   over 40 days to get 600. For active infections, we take 15 per day over 3 days
+initial_infections:
+  - 360  # UG (scenario 2 above)
+  - 90    # GR
+  - 34    # VM/GM/LA
+  - 30    # fac/staff
 past_infections:                # According to @Brian Liu's analysis
-  - 5212  # UG (scenario 1 above)
+  - 5011  # UG (scenario 2 above)
+  - 777   # GR
+  - 292   # VM/GM/LA
+  - 600    # fac/staff (based on roughly 15 per day over 40 days)
+additional_isolations:
+  - 2243  # UG (scenario 2 above)
   - 0     # GR
   - 0     # VM/GM/LA
   - 0     # fac/staff
 
-outside_rates: #number of infections for each meta-group per person-day
+outside_rates: #number of infections for each meta-group per person-day TODO pf98 is this per person-day?  or per day across the whole group?
   - 0
   - 0
   - 0
-  - 2.27        # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01 TODO REVISIT FOR OMICRON
+  - 15          # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
+                # pf98 more recently we've see roughly 15 per day across the entire employee population
 
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:
