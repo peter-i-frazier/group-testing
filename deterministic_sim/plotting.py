@@ -116,6 +116,17 @@ def plot_comprehensive_summary(test_regime_names: List[str],
                                  params, popul, [metagroups[i]])
     plt.subplot(425)
     plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
+
+    plt.subplot(427)
+    plt.axis('off')
+
+    param_txt = ''
+    for param_name in params:
+        param_txt = param_txt + '\n' + param_name + ':' + str(params[param_name])
+    plt.rcParams.update({'font.size': 8})
+    plt.text(0,-0.3,param_txt)
+    #plt.ylim(0,1)
+
     plt.savefig('sp22_sim.png', facecolor='w')
 
 def plot_comprehensive_summary_old(s: sim, pop: population, params):
