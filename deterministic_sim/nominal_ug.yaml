@@ -7,9 +7,9 @@ population_names:               # names of populations (by meta group)
   - "UG"
 
 initial_infections:             # According to @Brian Liu's analysis
-  - 975  # UG
+  - 160  # UG
 past_infections:                # According to @Brian Liu's analysis
-  - 4400  # UG (1900 infected during outbreak + 2500 over break)
+  - 5212  # UG (1900 infected during outbreak + 2500 over break)
 outside_rates: #number of infections for each meta-group per person-day
   - 0 # UG
 
@@ -19,7 +19,7 @@ outside_rates: #number of infections for each meta-group per person-day
 #   @hwr26: calibration-student.py
 #   @sst76: calibration-employee.py
 infections_per_day_per_contact_unit:
-  - 0.33 # UG
+  - 0.28 # UG
 
 T: 28                           # num generations (16 weeks with 4-day generations)
 

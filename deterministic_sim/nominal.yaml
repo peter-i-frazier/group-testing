@@ -9,13 +9,29 @@ population_names:               # names of populations (by meta group)
   - "PR"
   - "FS"
 
-initial_infections:             # According to @Brian Liu's analysis
-  - 975  # UG
+# @Brian Liu's analysis says:
+# 2506 students who are infected and recover from 12/22/2021 - 1/25/2022
+# 965 arrival positives in the period 1/26/2022 - 2/7/2022 (not including arrival testing)
+# In addition we have ~1900 infected during the outbreak
+# Arrival testing scenario 1:
+#   all students do a pre-departure antigen test with sensitivity 50%,
+#   all students again an arrival PCR test with sensitivity 67% and no isolation delay,
+#   then the chance of a positive getting through is .5*.33 = 0.165
+#   This would give 2506 + (1-.165) 965 = 3312 immune and .165 * 965 = 160 infectious to start
+#   Add 1900 immune to get 5212
+# Arrival testing scenario 2:
+#   half of students do a pre-departure test with sensitivity 50%,
+#   75% of students (independently chosen) do an arrival PCR 67% sensitivity and no test delay
+#   then the chance of a positive getting through is (.5 + .5*.5) * (.25 + .75*.33) = 0.37
+#   This would give 2506 + (1-.37) 965 = 3114 immune and .37 * 965 = 357 infectious to start
+#   Add 1900 immune to get 5014
+initial_infections:             # According to @Brian Liu's analysis + arrival testing
+  - 160  # UG
   - 0    # GR
   - 0    # VM/GM/LA
   - 0    # fac/staff
 past_infections:                # According to @Brian Liu's analysis
-  - 4400  # UG (1900 infected during outbreak + 2500 over break)
+  - 5212  # UG (scenario 1 above)
   - 0     # GR
   - 0     # VM/GM/LA
   - 0     # fac/staff
