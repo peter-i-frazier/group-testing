@@ -67,16 +67,28 @@ def main(**kwargs):
     test_regime_sims = []
     test_regime_colors = []
     def sim_test_regime(tests_per_week, delay, color):
-        days_between_tests = 7 / tests_per_week
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * micro.days_infectious(days_between_tests, delay)
+        if tests_per_week == 0: # No surveillance
+            days_between_tests = np.inf
+            infection_discovery_frac = SYMPTOMATIC_RATE
+            recovered_discovery_frac = NO_SURVEILLANCE_TEST_RATE
+            label = "No surveillance"
+        else:
+            days_between_tests = 7 / tests_per_week
+            infection_discovery_frac = 1
+            recovered_discovery_frac = 1
+            label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
+
+        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
+                                      micro.days_infectious(days_between_tests, delay)
         infection_rate = popul.infection_matrix(infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
+                infection_discovery_frac=infection_discovery_frac,
+                recovered_discovery_frac=recovered_discovery_frac,
                 generation_time=GENERATION_TIME,
-                outside_rate = outside_rate)
+                outside_rate=outside_rate)
         s.step(4)
         s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
 
-        label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
         test_regime_names.append(label)
         test_regime_sims.append(s)
         test_regime_colors.append(color)
@@ -87,19 +99,7 @@ def main(**kwargs):
     sim_test_regime(2,2,"navy")
     sim_test_regime(2,1.5,"royalblue")
     sim_test_regime(2,1,"powderblue")
-
-    # No surveillance
-    infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * micro.days_infectious(np.inf,1)
-    infection_discovery_frac = SYMPTOMATIC_RATE
-    recovered_discovery_frac = NO_SURVEILLANCE_TEST_RATE
-    infection_rate = popul.infection_matrix(infections_per_contact_unit)
-    s = sim(T, S0, I0, R0, infection_rate=infection_rate,
-            infection_discovery_frac=infection_discovery_frac,
-            recovered_discovery_frac=recovered_discovery_frac,
-            generation_time=GENERATION_TIME,
-            outside_rate = outside_rate)
-    s.step(4)
-    s.step(T-1-4, infection_rate=R0_REDUCTION * infection_rate)
+    sim_test_regime(0,1,"black") # No surveillance
 
     # ====================================
     # [Plot] Comparison of testing regimes
@@ -107,10 +107,10 @@ def main(**kwargs):
 
     def old_plot():
         plotting.plot_sm_test_regime_comparison(test_regime_names,
-            test_regime_sims, test_regime_colors, s, params)
+            test_regime_sims, test_regime_colors, params)
 
     def new_plot():
-        plotting.plot_comprehensive_summary(s, popul, params)
+        plotting.plot_comprehensive_summary(test_regime_sims[-1], popul, params)
 
     old_plot()
 
