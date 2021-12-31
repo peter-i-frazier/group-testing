@@ -110,7 +110,8 @@ def main(**kwargs):
             test_regime_sims, test_regime_colors, params)
 
     def new_plot():
-        plotting.plot_comprehensive_summary(test_regime_sims[-1], popul, params)
+        plotting.plot_comprehensive_summary(test_regime_names,
+            test_regime_sims, test_regime_colors, params, popul)
 
     old_plot()
 
