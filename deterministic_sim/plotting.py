@@ -96,6 +96,7 @@ def plot_oncampus_isolated(test_regime_names: List[str],
                                   on_campus_frac=params["on_campus_frac"])
         plt.plot(X, isolated, label=label, color=color)
 
+    plt.title("On-campus Isolation")
     plt.rcParams.update({'font.size': 8})
     plt.legend()
     plt.xlabel('Days')
@@ -108,14 +109,18 @@ def plot_comprehensive_summary(test_regime_names: List[str],
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
 
-    windows = [421, 422, 423, 424]
+    plt.subplot(421)
+    plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params)
+
+    plt.subplot(422)
+    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
+
+    windows = [423, 424, 425, 426]
     metagroups = ['UG', 'PR', 'GR', 'FS']
     for i in range(4):
         plt.subplot(windows[i])
         plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, \
                                  params, popul, [metagroups[i]])
-    plt.subplot(425)
-    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
 
     plt.subplot(427)
     plt.axis('off')
