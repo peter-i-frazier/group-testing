@@ -10,6 +10,9 @@ initial_infections:             # According to @Brian Liu's analysis
   - 975  # UG
 past_infections:                # According to @Brian Liu's analysis
   - 4400  # UG (1900 infected during outbreak + 2500 over break)
+outside_rates: #number of infections for each meta-group per person-day
+  - 0 # UG
+
 
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:
