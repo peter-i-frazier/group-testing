@@ -94,7 +94,8 @@ class sim:
 
     def step(self, nsteps: int = 1, infection_rate: np.ndarray = None,
              infection_discovery_frac: float = None,
-             recovered_discovery_frac: float = None):
+             recovered_discovery_frac: float = None,
+             outside_rate = None):
         """Take n steps forward in the simulation.
 
         As parameters like infection_rate can change over time, this function
@@ -126,6 +127,8 @@ class sim:
             infection_discovery_frac = self.infection_discovery_frac
         if recovered_discovery_frac is None:
             recovered_discovery_frac = self.recovered_discovery_frac
+        if outside_rate is None:
+            outside_rate = self.outside_rate
 
         t = self.t
 
