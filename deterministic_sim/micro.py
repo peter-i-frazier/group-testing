@@ -105,6 +105,9 @@ def days_infectious(days_between_tests, isolation_delay, sensitivity = .6, max_i
     D = isolation_delay
     R = max_infectious_days
 
+    if T == np.inf or D == np.inf:
+        return max_infectious_days
+
     n = 0
     prob = 1 # This contains Prob(N>=n)
     y = 0 # This is the sum of Prob(N=n') * E[days_infectious | N=n'] over 0 <= n' < n
