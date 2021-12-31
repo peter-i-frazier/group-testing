@@ -20,10 +20,18 @@ def plot_sm_test_regime_comparison(test_regime_names: List[str],
         test_regime_colors (List[str]): List of colors for test regime trajectories.
         params: Parameters used to run the simulation.
     """
-    plt.subplot(211)
+    plt.subplot(311)
     plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params)
-    plt.subplot(212)
+    plt.subplot(312)
     plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
+
+    # plt.subplot(313)
+    param_txt = ''
+    for param_name in params:
+        param_txt = param_txt + '\n' + param_name + ':' + str(params[param_name])
+    plt.rcParams.update({'font.size': 5})
+    plt.text(-20,-600,param_txt)
+
     plt.savefig('sp22_sim.png', facecolor='w')
 
 
