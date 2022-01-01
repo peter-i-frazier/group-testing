@@ -9,7 +9,7 @@ from typing import List
 from functools import reduce
 from operator import iconcat, add
 
-def plot_sm_test_regime_comparison(test_regime_names: List[str],
+def plot_sm_test_regime_comparison(outfile : str, test_regime_names: List[str],
                                    test_regime_sims: List[sim], test_regime_colors: List[str],
                                    params):
 
@@ -24,7 +24,7 @@ def plot_sm_test_regime_comparison(test_regime_names: List[str],
     plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params)
     plt.subplot(212)
     plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
-    plt.savefig('sp22_sim_simple.png', facecolor='w')
+    plt.savefig(outfile, facecolor='w')
     plt.close()
 
 
@@ -104,7 +104,7 @@ def plot_oncampus_isolated(test_regime_names: List[str],
     plt.xlabel('Days')
     plt.ylabel('Isolation (on-campus 5 day)')
 
-def plot_comprehensive_summary(test_regime_names: List[str],
+def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
                                    test_regime_sims: List[sim], test_regime_colors: List[str],
                                    params, popul):
     """Plot a comprehensive summary of the simulation run."""
@@ -150,5 +150,5 @@ def plot_comprehensive_summary(test_regime_names: List[str],
     plt.rcParams.update({'font.size': 8})
     plt.text(0,-0.5,param_txt)
 
-    plt.savefig('sp22_sim_comprehensive.png', facecolor='w')
+    plt.savefig(outfile, facecolor='w')
     plt.close()
