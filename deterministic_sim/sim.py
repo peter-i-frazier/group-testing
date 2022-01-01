@@ -349,4 +349,22 @@ class sim:
     def get_generation_time(self):
         return self.generation_time
 
+    def get_frac_susceptible(self):
+        '''Returns a vector giving the fraction susceptible in each group'''
+        t = self.t
+        # self.S[t] / (self.S[t] + self.I[t] + self.R[t])
+        return np.divide(self.S[t], (self.S[t] + self.I[t] + self.R[t]), \
+                         out=np.zeros_like(self.S[t]), where=(self.S[t] + self.I[t] + self.R[t])!=0)
 
+
+    def get_frac_infected(self):
+        '''Returns a vector giving the fraction infected in each group'''
+        t = self.t
+        # self.I[t] / (self.S[t] + self.I[t] + self.R[t])
+        return np.divide(self.I[t], (self.S[t] + self.I[t] + self.R[t]), \
+                     out=np.zeros_like(self.S[t]), where=(self.S[t] + self.I[t] + self.R[t]) != 0)
+
+    def get_pop_count(self):
+        '''Returns the total number of people in each group'''
+        t = self.t
+        return self.S[t] + self.I[t] + self.R[t]
