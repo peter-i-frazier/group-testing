@@ -34,6 +34,8 @@ def main(**kwargs):
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
         np.array(params['infections_per_day_per_contact_unit'])
+    MAX_INFECTIOUS_DAYS = params['max_infectious_days']
+    PCR_SENSITIVITY = params['pcr_sensitivity']
 
     # =====================================================================
     # [Initialize] Assume a group's previous and new infections are divided
@@ -59,9 +61,9 @@ def main(**kwargs):
     outside_rate = popul.get_outside_rate(outside_rates)
 
 
-    # ========================================
-    # [Run] Reduce R0 once the semester begins
-    # ========================================
+    # ==================================================
+    # [Run] Reduce transmission once the semester begins
+    # ==================================================
 
     test_regime_names = []
     test_regime_sims = []
@@ -78,8 +80,10 @@ def main(**kwargs):
             recovered_discovery_frac = 1
             label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
 
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
-                                      micro.days_infectious(days_between_tests, delay)
+        days_infectious = micro.days_infectious(days_between_tests, delay, sensitivity = PCR_SENSITIVITY, \
+                                                max_infectious_days=MAX_INFECTIOUS_DAYS)
+        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * days_infectious
+
         infection_rate = popul.infection_matrix(infections_per_contact_unit)
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
                 infection_discovery_frac=infection_discovery_frac,

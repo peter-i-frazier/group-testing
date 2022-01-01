@@ -97,6 +97,15 @@ isolation_fracs:                # fraction of pop falling into various isolation
   - 0.8                         # durations
   - 0.2
 
+# A person is modeled as having constant infectiousness beginning some time
+# after exposure and lasting an additional max_infectious_days. It is only during this
+# infectious period that the infection is modeled as being detectable in PCR.
+max_infectious_days: 6
+
+# Sensitivity of a PCR test during the infectious period. The PCR test is modeled as having 0
+# sensitivity in the period between exposure and the start of the infectious period.
+pcr_sensitivity: 0.6
+
 # Based on Xiangyu's adjusted moment match code, this is the fraction of the
 # population (UG-only?  or all students) broken out by the amount of contact
 # that they have, starting from low contact to high contact.
