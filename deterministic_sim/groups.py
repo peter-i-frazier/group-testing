@@ -116,6 +116,7 @@ class population:
 
         self.groupname2idx = {name: i for i, name in enumerate(self.idx2groupname)}
 
+
     def infection_matrix(self, infections_per_contact_unit):
         '''
         Returns an infection rate matrix that corresponds to well-mixed interactions within each meta-group,
@@ -144,6 +145,13 @@ class population:
                         infections_per_contact_unit[i] * self.meta_group_list[i].contact_units[j] * self.meta_group_contact_matrix[i,k] * q
 
         return res
+
+    def metagroup_names(self):
+        '''
+        Returns a list of the names of the metagroups in this population
+        '''
+        return [mg.name for mg in self.meta_group_list]
+
 
     def idx_to_groupname(self, i):
         '''
