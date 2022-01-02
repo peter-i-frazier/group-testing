@@ -253,3 +253,27 @@ class population:
                 outside_rate[cum_tot[i]+j] =  outside_rates[i]*self.meta_group_list[i].pop[j]/np.sum(self.meta_group_list[i].pop)
         return np.array(outside_rate)
 
+    def get_num_groups(self):
+        ''' Returns the number of groups '''
+        return len(self.idx2groupname)
+
+    def metagroup2group(self, v : np.array):
+        '''
+        Given a list of floats v giving values corresponding to metagroups,
+        returns a longer vector that has value v[mg] for all groups in metagroup mg
+        '''
+        out = np.zeros(self.get_num_groups())
+        assert(len(v) == len(self.meta_group_list))
+
+        # The output vector is arranged such that the first meta-group has entries
+        # corresponding to its groups first, then the second meta-group han entries
+        # corresponding to its groups, etc.
+
+        j = 0 # This will be our output index
+        for i in range(len(self.meta_group_list)): # iterate over the meta-groups
+            K = self.meta_group_list[i].K # number of groups in the meta-group
+            out[j:K+j] = v[i] # write K copies of the number v[i]
+            j += K
+        assert(j == self.get_num_groups())
+
+        return out

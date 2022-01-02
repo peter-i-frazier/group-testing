@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 class sim:
     '''
@@ -19,8 +20,10 @@ class sim:
     '''
     def __init__(self, max_T: int, init_susceptible: np.ndarray,
                  init_infected: np.ndarray, init_recovered: np.ndarray,
-                 infection_rate: np.ndarray, infection_discovery_frac: float = 1,
-                 recovered_discovery_frac: float = 1, generation_time: float = 1,
+                 infection_rate: np.ndarray,
+                 infection_discovery_frac: Union[float,np.ndarray] = 1,
+                 recovered_discovery_frac: Union[float,np.ndarray] = 1,
+                 generation_time: float = 1,
                  outside_rate = 0):
         """Initialize an SIR-style simulation of COVID spread.
 
@@ -46,10 +49,13 @@ class sim:
             infection_rate (np.ndarray): Matrix where infection_rate[i,j] is \
                 the number of new infections that an infected person in \
                 group i creates in group j
-            infection_discovery_frac (float): Fraction of infections being \
-                discovered in the generation that they start. Defaults to 1.
-            recovered_discovery_frac (float): Fraction of recovered being \
-                discovered in each generation. Defaults to 1.
+            infection_discovery_frac (float or np.ndarray): Fraction of \
+                infections discovered in the generation that they start.
+                Can be specified globally (as a float) or separately for \
+                each group (as a np.ndarray). Defaults to 1.
+            recovered_discovery_frac (float or np.ndarray): Fraction of recovered \
+                discovered in each generation. Can be specified globally (as a float) \
+                or separately for each group (as a np.ndarray). Defaults to 1.
             generation_time (float): Length of the generation interval in \
                 whatever units the user would like to use, e.g., days or weeks. \
                 This is not used, except to support plotting. Defaults to 1.
@@ -61,14 +67,24 @@ class sim:
         self.max_T = max_T # Maximum number of periods we can simulate
         self.t = 0 # current time period
         self.generation_time = generation_time
-        assert (infection_discovery_frac >= 0) and (infection_discovery_frac <= 1)
-        assert (recovered_discovery_frac >= 0) and (recovered_discovery_frac <= 1)
-        self.infection_discovery_frac = infection_discovery_frac
-        self.recovered_discovery_frac = recovered_discovery_frac
 
         self.K = len(init_susceptible) # Number of groups
         assert (len(init_infected) == self.K)
         assert (len(init_recovered) == self.K)
+
+        if np.isscalar(infection_discovery_frac):
+            infection_discovery_frac = infection_discovery_frac * np.ones(self.K)
+
+        if np.isscalar(recovered_discovery_frac):
+            recovered_discovery_frac = recovered_discovery_frac * np.ones(self.K)
+
+        assert (infection_discovery_frac >= 0).all()
+        assert (infection_discovery_frac <= 1).all()
+        assert (recovered_discovery_frac >= 0).all()
+        assert (recovered_discovery_frac <= 1).all()
+
+        self.infection_discovery_frac = infection_discovery_frac
+        self.recovered_discovery_frac = recovered_discovery_frac
 
         self.S = np.zeros((self.max_T, self.K)) # susceptible
         self.I = np.zeros((self.max_T, self.K)) # infected
@@ -80,8 +96,8 @@ class sim:
         self.S[0] = init_susceptible
         self.R[0] = init_recovered
 
-        self.D[0] = self.I[0]*self.infection_discovery_frac
-        self.H[0] = self.I[0]*(1-self.infection_discovery_frac)
+        self.D[0] = np.multiply(self.I[0],self.infection_discovery_frac) # elementwise multiplication
+        self.H[0] = np.multiply(self.I[0],1-self.infection_discovery_frac) # elementwise multiplication
 
         assert ((init_susceptible >= 0).all())
         assert ((init_infected >= 0).all())
@@ -93,8 +109,8 @@ class sim:
 
 
     def step(self, nsteps: int = 1, infection_rate: np.ndarray = None,
-             infection_discovery_frac: float = None,
-             recovered_discovery_frac: float = None,
+             infection_discovery_frac: Union[float,np.ndarray] = None,
+             recovered_discovery_frac: Union[float,np.ndarray] = None,
              outside_rate = None):
         """Take n steps forward in the simulation.
 
@@ -105,12 +121,13 @@ class sim:
             infection_rate (np.ndarray): Matrix where infection_rate[i,j] is \
                 the number of new infections that an infected person in \
                 group i creates in group j. Defaults to self.infection_rate.
-            infection_discovery_frac (float): Fraction of infections being \
-                discovered in the generation that they start. \
-                Defaults to self.infection_discovery_frac.
-            recovered_discovery_frac (float): Fraction of recovered being \
-                discovered in each generation. \
-                Defaults to self.recovered_discovery_frac.
+            infection_discovery_frac (float or np.ndarray): Fraction of \
+                infections discovered in the generation that they start.
+                Can be specified globally (as a float) or separately for \
+                each group (as a np.ndarray). Defaults to 1.
+            recovered_discovery_frac (float or np.ndarray): Fraction of recovered \
+                discovered in each generation. Can be specified globally (as a float) \
+                or separately for each group (as a np.ndarray). Defaults to 1.
         """
         assert(nsteps >= 1)
         # take multiple steps if necessary
@@ -123,10 +140,21 @@ class sim:
 
         if infection_rate is None:
             infection_rate = self.infection_rate
+
         if infection_discovery_frac is None:
             infection_discovery_frac = self.infection_discovery_frac
+        elif np.isscalar(infection_discovery_frac):
+            infection_discovery_frac = infection_discovery_frac * np.ones(self.K)
+        assert (infection_discovery_frac >= 0).all()
+        assert (infection_discovery_frac <= 1).all()
+
         if recovered_discovery_frac is None:
             recovered_discovery_frac = self.recovered_discovery_frac
+        elif np.isscalar(recovered_discovery_frac):
+            recovered_discovery_frac = recovered_discovery_frac * np.ones(self.K)
+        assert (recovered_discovery_frac >= 0).all()
+        assert (recovered_discovery_frac <= 1).all()
+
         if outside_rate is None:
             outside_rate = self.outside_rate
 
@@ -157,14 +185,14 @@ class sim:
         self.R[t+1] = self.R[t]+self.I[t]
 
         # The old hidden recoveries are either discovered (with probability recovered_discovery_frac) or move forward
-        # into the next time period as hidden recoveries
-        self.D[t+1] = self.H[t]*recovered_discovery_frac # discovery of old hidden recoveries
-        self.H[t+1] = self.H[t]*(1-recovered_discovery_frac)
+        # into the next time period as hidden recoveries. np.multiply is elementwise multiplication.
+        self.D[t+1] = np.multiply(self.H[t],recovered_discovery_frac) # discovery of old hidden recoveries
+        self.H[t+1] = np.multiply(self.H[t],1-recovered_discovery_frac)
 
         # New infections are either discovered immediately (with probability infection_discovery_frac) or
-        # become hidden recoveries
-        self.D[t+1] = self.D[t+1] + self.I[t+1] * infection_discovery_frac
-        self.H[t+1] = self.H[t+1] + self.I[t+1] * (1-infection_discovery_frac)
+        # become hidden recoveries.
+        self.D[t+1] = self.D[t+1] + np.multiply(self.I[t+1], infection_discovery_frac)
+        self.H[t+1] = self.H[t+1] + np.multiply(self.I[t+1], 1-infection_discovery_frac)
 
         self.t = self.t + 1 # Move time forward by one step
 

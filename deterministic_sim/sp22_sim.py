@@ -5,6 +5,7 @@ import yaml
 import micro
 from sim import sim
 from groups import meta_group, population
+from testing_regime import TestingRegime
 import matplotlib
 import matplotlib.pyplot as plt
 import warnings
@@ -63,26 +64,28 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     test_regime_names = []
     test_regime_sims = []
     test_regime_colors = []
-    def sim_test_regime(tests_per_week, delay, color):
-        if tests_per_week == 0: # No surveillance
-            days_between_tests = np.inf
-            infection_discovery_frac = SYMPTOMATIC_RATE
-            recovered_discovery_frac = NO_SURVEILLANCE_TEST_RATE
-            label = "No surveillance"
-        else:
-            days_between_tests = 7 / tests_per_week
-            infection_discovery_frac = 1
-            recovered_discovery_frac = 1
-            label = "%dx/wk, %.1fd delay" % (tests_per_week, delay)
 
-        days_infectious = micro.days_infectious(days_between_tests, delay, sensitivity = PCR_SENSITIVITY, \
-                                                max_infectious_days=MAX_INFECTIOUS_DAYS)
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * days_infectious
+    def sim_test_regime(tests_per_week, delay, color, label = None):
 
+        regime = TestingRegime(popul,tests_per_week,delay,\
+                               PCR_SENSITIVITY,MAX_INFECTIOUS_DAYS,\
+                               SYMPTOMATIC_RATE,NO_SURVEILLANCE_TEST_RATE)
+
+        if label is None:
+            label = regime.get_name()
+
+        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
+                                      np.multiply(INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
+                                                  regime.get_days_infectious())
+
+        # This infection rate is before we have applied testing, boosters,
+        # and any period-specific changes to transmission rates. It is a matrix where entry [i,j]
+        # is the number of
         infection_rate = popul.infection_matrix(infections_per_contact_unit)
+
         s = sim(T, S0, I0, R0, infection_rate=infection_rate,
-                infection_discovery_frac=infection_discovery_frac,
-                recovered_discovery_frac=recovered_discovery_frac,
+                infection_discovery_frac=popul.metagroup2group(regime.get_infection_discovery_frac()),
+                recovered_discovery_frac=popul.metagroup2group(regime.get_recovered_discovery_frac()),
                 generation_time=GENERATION_TIME,
                 outside_rate=outside_rate)
         # 3 generations = 12 days, modeling 7 days of no instruction, followed by roughly a week of not much HW in
@@ -95,6 +98,92 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         test_regime_names.append(label)
         test_regime_sims.append(s)
         test_regime_colors.append(color)
+
+    def sim_test_complex_regime(tests_per_week, delay, transmission_multipliers, \
+                                period_lengths, color, label):
+        '''
+        tests_per_week, delay, transmission_multipliers, and period_lengths should all be lists of the same length.
+        These correspond to different periods of time that we wish to simulate.
+        Period i is described by the i-th element in each of these lists.
+
+        tests_per_week[i] should be either a scalar giving a value to apply across the whole population,
+        or should be a dictionary whose keys are the meta-group names (as specified in the population)
+        and whose value is the number of tests to do for that meta-group in the period.
+
+        delay[i] should be structured similarly and gives the test delay associated with this meta-group
+        in this period.
+
+        transmission_multipliers[i] is either a float or a list of floats (one for each meta-group).
+        It multplies transmission by for each meta-group in this period.
+
+        period_lengths[i] is the number of generations that this period lasts
+
+        color is the name of a color to use in plotting for this testing regime
+
+        label is a string to use in legends when referring to this testing regime
+        '''
+        for i in range(len(period_lengths)):
+            regime = TestingRegime(popul, tests_per_week[i], delay[i], \
+                                   PCR_SENSITIVITY, MAX_INFECTIOUS_DAYS, \
+                                   SYMPTOMATIC_RATE, NO_SURVEILLANCE_TEST_RATE)
+            # infections_per_contact_unit =
+            #   BOOSTER_EFFECTIVENESS * transmission_multipliers[i] * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
+            #   regime.get_days_infectious()
+            infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
+                                          np.multiply(transmission_multipliers[i], \
+                                                      np.multiply(
+                                                          INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
+                                                          regime.get_days_infectious()))
+            infection_rate = popul.infection_matrix(infections_per_contact_unit)
+            infection_discovery_frac = popul.metagroup2group(regime.get_infection_discovery_frac())
+            recovered_discovery_frac = popul.metagroup2group(regime.get_recovered_discovery_frac())
+            if i == 0: # instantiate simulation object
+                s = sim(T, S0, I0, R0, infection_rate,
+                        infection_discovery_frac=infection_discovery_frac ,
+                        recovered_discovery_frac=recovered_discovery_frac,
+                        generation_time=GENERATION_TIME, outside_rate=outside_rate)
+            s.step(period_lengths[i], infection_rate=infection_rate,
+               infection_discovery_frac = infection_discovery_frac,
+               recovered_discovery_frac = recovered_discovery_frac)
+
+        test_regime_names.append(label)
+        test_regime_sims.append(s)
+        test_regime_colors.append(color)
+
+    # This tests UG and Professional students 2x week during virtual instruction (first 6 generations),
+    # and then stops surveiling them. It does not surveil GR or FS.
+    sim_test_complex_regime(
+        [ { 'UG':2, 'GR':0, 'PR':2, 'FS':0},
+          {'UG': 2, 'GR': 0, 'PR': 2, 'FS': 0},
+          0 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
+        [ 1, 1, 1], #test delay
+        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
+        [ 3, 3, T-6-1 ], # period lengths
+        'green', 'UG+Professional 2x/wk in virtual instruction')
+
+    """
+    TODO pf98
+    
+    I ran these three different simulations and confirmed via inspection of the plots that they 
+    gave the same output is the same. It would be good to move this into a test case.
+    
+    sim_test_regime(2,1,"powderblue")
+    
+    sim_test_complex_regime(
+        [ { 'UG':2, 'GR':2, 'PR':2, 'FS':2}, 2 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
+        [ 1, 1], #test delay
+        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
+        [ 3, T-3-1 ], # period lengths
+        'powderblue', '2x/wk test')
+
+    sim_test_complex_regime(
+        [ 2, 2 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
+        [ 1, 1], #test delay
+        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
+        [ 3, T-3-1 ], # period lengths
+        'powderblue', '2x/wk test')
+        
+    """
 
     sim_test_regime(1,2,"crimson")
     sim_test_regime(1,1.5,"orangered")
