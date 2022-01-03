@@ -35,13 +35,13 @@ population_names:               # names of populations (by meta group)
 #   (360 / 2) * 8000 / 16000 = 90 for GR and (360 / 2) * 3000 / 16000 = 34 for professional students.
 # For faculty / staff, past_infections we take roughly 15 per day (roughly how many infections we've been seeing),
 #   over 40 days to get 600. For active infections, we take 15 per day over 3 days
-initial_infections:
-  - 360  # UG (scenario 2 above)
+initial_infections: # realistic scenario 2 above
+  - 360  # UG
   - 90    # GR
   - 34    # VM/GM/LA
   - 30    # fac/staff
-past_infections:                # According to @Brian Liu's analysis
-  - 5011  # UG (scenario 2 above)
+past_infections: # realistic scenario 2 above
+  - 5011  # UG
   - 777   # GR
   - 292   # VM/GM/LA
   - 600    # fac/staff (based on roughly 15 per day over 40 days)
@@ -51,12 +51,22 @@ additional_isolations:
   - 0     # VM/GM/LA
   - 0     # fac/staff
 
-outside_rates: #number of infections for each meta-group per person-day TODO pf98 is this per person-day?  or per day across the whole group?
-  - 0
-  - 0
-  - 0
-  - 15          # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
+# In the modeling team's spring 2021 projections, based on fall 2020 data, we estimated per-person
+# outside infection rates of 1.42E-5 for the greek/athlete population, 7.11E-6 for other UG, and
+# 6.45E-6 for graduate students.  During this period, we estimated 1.209 E-4 for faculty and staff.
+# This puts the most social student population at about 1/10 of the employee rate per-person.
+# Let's use this same rule of thumb for spring 2022, setting the student meta-groups to 1/10 of the
+# employee per-person rate. With faculty and staff at 5 per day, this gives:
+# - a UG number of 5*(16K/10K)/10 = 0.8
+# - a GR number of 5*(8K/10K)/10 = 0.4
+# - a PR number of 5*(3K/10K)/10 = 0.15
+outside_rates: #number of infections for each meta-group per day across the whole meta-group
+  - 0.8
+  - 0.4
+  - 0.15
+  - 5           # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
                 # pf98 more recently we've see roughly 15 per day across the entire employee population
+                # Cutting this to 5 because by the time the semester starts new cases should be less frequent
 
 # multiplier to apply to transmission once virtual instruction classwork makes students busy
 # (after 3 generations / 12 days pass from the start of the simulation --- this is 7 pre-semester days and 5 days
@@ -81,7 +91,7 @@ infections_per_day_per_contact_unit:
 
 T: 28                           # num generations (16 weeks with 4-day generations)
 
-symptomatic_rate: .3            # used to compute discovered without surveillance
+symptomatic_rate: .35           # used to compute discovered without surveillance
 no_surveillance_test_rate: 0.01 # percent of the population tested in a generation
                                 # (under no surveillance)
 booster_effectiveness: 0.5      # reduction in transmission from boosters
@@ -104,7 +114,7 @@ max_infectious_days: 6
 
 # Sensitivity of a PCR test during the infectious period. The PCR test is modeled as having 0
 # sensitivity in the period between exposure and the start of the infectious period.
-pcr_sensitivity: 0.6
+pcr_sensitivity: 0.9
 
 # Based on Xiangyu's adjusted moment match code, this is the fraction of the
 # population (UG-only?  or all students) broken out by the amount of contact
