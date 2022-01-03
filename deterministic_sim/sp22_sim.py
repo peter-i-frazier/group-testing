@@ -206,7 +206,6 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # =================
     # [Plot] Make plots
     # ==================
-
     if simple_plot:
         plotting.plot_sm_test_regime_comparison(out_file, test_regime_names,
             test_regime_sims, test_regime_colors, params)
@@ -214,6 +213,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         plotting.plot_comprehensive_summary(out_file, test_regime_names,
             test_regime_sims, test_regime_colors, params, popul, SIMPLE_PARAM_SUMMARY)
 
+    plotting.plot_hospitalization('sp22_sim_hosp.png', test_regime_names, test_regime_sims, test_regime_colors, params, popul)
 def usage():
     ''' Print usage message '''
     print('Usage:')
