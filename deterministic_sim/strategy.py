@@ -5,6 +5,7 @@ from typing import List
 class Strategy:
 
     def __init__(self,
+        name: str,
         pct_discovered_in_pre_departure: float,
         pct_discovered_in_arrival_test: float,
         testing_regimes: List[TestingRegime],
@@ -13,6 +14,7 @@ class Strategy:
         """Initialize a strategy for Spring 2022 Covid-19 response.
 
         Args:
+            name (str): Name for this strategy.
             pct_discovered_in_pre_departure (float): Percentage of active \
                 positives who are discovered as a result of pre-departure testing.
             pct_discovered_in_arrival_test (float): Percentage of active \
@@ -24,6 +26,7 @@ class Strategy:
             period_lengths (List[int]): Length (in generations) of each period \
                 of the simulation.
         """
+        self.name = name
         self.pct_discovered_in_pre_departure = pct_discovered_in_pre_departure
         self.pct_discovered_in_arrival_test = pct_discovered_in_arrival_test
         self.testing_regimes = testing_regimes
