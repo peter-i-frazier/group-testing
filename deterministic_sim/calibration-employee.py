@@ -63,20 +63,13 @@ def main():
     # [Run] Increase testing delay and reduce interaction over duration of sim
     # ========================================================================
 
-    # [12/1 to 12/9] 1x / week testing with 36hr delay
-    infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,1.5)
+    # About half of employees are tested 1x / week, the other half are not tested
+    # To approximate this, let's divide the period of testing (7 days) by the fraction being tested with this period
+    # (50%) to get a testing period of 14 days.  Later we can improve this.
+    infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(14,1)
     infection_rate = meta_group("FS", pop, MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time, outside_rate = outside_rate)
     s.step(18)
-
-    # # [12/10 to 12/16] 1x / week testing with 3 day delay
-    # infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
-    # infection_rate = meta_group("FS", pop, 0.5 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
-    # s.step(1, infection_rate=infection_rate)
-
-    # infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(7,3)
-    # infection_rate = meta_group("FS", pop, 0.33 * MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
-    # s.step(1, infection_rate=infection_rate)
 
     # ==================================================
     # [Plot] Actual Infections vs. Simulation Infections
