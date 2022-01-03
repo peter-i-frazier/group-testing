@@ -33,6 +33,12 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     MAX_INFECTIOUS_DAYS = params['max_infectious_days']
     PCR_SENSITIVITY = params['pcr_sensitivity']
 
+    # If set, this replaces the detailed description of parameters in the plot with a simple summary
+    if 'simple_param_summary' in params:
+        SIMPLE_PARAM_SUMMARY = params['simple_param_summary']
+    else:
+        SIMPLE_PARAM_SUMMARY = None
+
     # =====================================================================
     # [Initialize] Assume a group's previous and new infections are divided
     # proportionally to the amount of contact it has as a group.
@@ -151,15 +157,18 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         test_regime_colors.append(color)
 
     # This tests UG and Professional students 2x week during virtual instruction (first 6 generations),
-    # and then stops surveiling them. It does not surveil GR or FS.
-    sim_test_complex_regime(
-        [ { 'UG':2, 'GR':0, 'PR':2, 'FS':0},
-          {'UG': 2, 'GR': 0, 'PR': 2, 'FS': 0},
-          0 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
-        [ 1, 1, 1], #test delay
-        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
-        [ 3, 3, T-6-1 ], # period lengths
-        'green', 'UG+Professional 2x/wk in virtual instruction')
+    # and then stops surveilling them. It does not surveil GR or FS.
+    # TODO pf98 rather than hard-coding the test regimes we want to plot, let's put them into a separate yaml file
+    plot = 1
+    if plot == 1:
+        sim_test_complex_regime(
+            [ { 'UG':2, 'GR':0, 'PR':2, 'FS':0},
+              {'UG': 2, 'GR': 0, 'PR': 2, 'FS': 0},
+              0 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
+            [ 1, 1, 1], #test delay
+            [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
+            [ 3, 3, T-6-1 ], # period lengths
+            'purple', 'UG+Prof. 2x/wk in virtual instr., no other surveillance ')
 
     """
     TODO pf98
@@ -185,12 +194,13 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         
     """
 
-    sim_test_regime(1,2,"crimson")
-    sim_test_regime(1,1.5,"orangered")
-    sim_test_regime(1,1,"coral")
-    sim_test_regime(2,2,"navy")
-    sim_test_regime(2,1.5,"royalblue")
-    sim_test_regime(2,1,"powderblue")
+    if plot == 2:
+        sim_test_regime(1,2,"crimson")
+        sim_test_regime(1,1,"orangered") # used to be coral in the plots with 1.5 day delay
+        sim_test_regime(2,2,"navy")
+        sim_test_regime(2,1,"royalblue") # used to be powderblue in the plots with 1.5 day delay
+
+    # plots 1 and 2
     sim_test_regime(0,1,"black") # No surveillance
 
     # =================
@@ -202,7 +212,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
             test_regime_sims, test_regime_colors, params)
     else:
         plotting.plot_comprehensive_summary(out_file, test_regime_names,
-            test_regime_sims, test_regime_colors, params, popul)
+            test_regime_sims, test_regime_colors, params, popul, SIMPLE_PARAM_SUMMARY)
 
 def usage():
     ''' Print usage message '''
@@ -250,6 +260,8 @@ if __name__ == "__main__":
         elif k == "T":
             # This yaml over
             override_params[k] = int(v)
+        elif k == 'simple_param_summary':
+            override_params[k] = v # string
         else:
             override_params[k] = float(v)
 

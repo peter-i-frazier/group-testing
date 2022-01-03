@@ -8,6 +8,23 @@ warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 from typing import List
 from functools import reduce
 from operator import iconcat, add
+from datetime import datetime
+from textwrap import fill
+
+
+
+
+# TODO pf98 this really belongs somewhere else, e.g. in the yaml
+def long_metagroup_name(x):
+    if x == 'PR':
+        return 'Professional'
+    elif x == 'FS':
+        return 'Employees'
+    elif x == 'GR':
+        return 'Grad-Research'
+    else:
+        return x
+
 
 def plot_sm_test_regime_comparison(outfile : str, test_regime_names: List[str],
                                    test_regime_sims: List[sim], test_regime_colors: List[str],
@@ -66,18 +83,28 @@ def plot_infected_discovered(test_regime_names: List[str],
             plt.plot(X, infected, label=label + '(Infected)', color=color, linestyle = 'dashed')
 
     if metagroup_names == None:
-        plt.title("Spring Semester Infections, Students+Employees")
+        plt.title("Spring Semester Infections, Students+Employees", fontsize=8)
     else:
         # Plots all of the metagroup names together
-        plt.title("Infections " + reduce(add, metagroup_names))
+        plt.title("Infections " + reduce(add, [long_metagroup_name(x) for x in metagroup_names]), \
+                  fontsize = 8)
+
     plt.rcParams.update({'font.size': 8})
     if legend:
-        plt.legend()
+        # Shrink current axis by 40%
+        ax = plt.gca()
+        #box = ax.get_position()
+        #ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
+
+        # Put a legend to the right of the current axis
+        # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20),
+                  fancybox=True, shadow=True, ncol=3)
     plt.ylabel('Cumulative Infected')
 
 def plot_oncampus_isolated(test_regime_names: List[str],
                            test_regime_sims: List[sim], test_regime_colors: List[str],
-                           params):
+                           params, legend = True):
     """Plot the number of rooms of isolation required to isolate on-campus students under
     the passed set of test regimes.
 
@@ -98,27 +125,27 @@ def plot_oncampus_isolated(test_regime_names: List[str],
                                   on_campus_frac=params["on_campus_frac"])
         plt.plot(X, isolated, label=label, color=color)
 
-    plt.title("On-campus Isolation")
+    plt.title("On-campus Isolation", fontsize = 8)
     plt.rcParams.update({'font.size': 8})
-    plt.legend()
+    if legend:
+        plt.legend()
     plt.xlabel('Days')
     plt.ylabel('Isolation (on-campus 5 day)')
 
 def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
                                    test_regime_sims: List[sim], test_regime_colors: List[str],
-                                   params, popul):
+                                   params, popul, simple_param_summary = None):
     """Plot a comprehensive summary of the simulation run."""
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
+    plt.rcParams.update({'font.size': 8})
 
-    window = 421
+    plt.subplot(411) # Take up the whole top row
+    plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params, legend = True)
+    window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params, legend = False)
-    window += 1
-
-    plt.subplot(window)
-    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
+    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params, legend = False)
     window += 1
 
     metagroups = popul.metagroup_names()
@@ -135,6 +162,21 @@ def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
     plt.axis('off')
     window += 1
 
+
+    plt.rcParams.update({'font.size': 8})
+    if simple_param_summary is None:
+        plt.text(0,-0.5,param2txt(params))
+    else:
+        now = datetime.now()
+        plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
+
+    plt.tight_layout(pad=1)
+
+    plt.savefig(outfile, facecolor='w')
+    plt.close()
+
+
+def param2txt(params):
     param_txt = ''
     for param_name in params:
         param = params[param_name]
@@ -146,9 +188,4 @@ def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
             1 == 1
         else:
             param_txt = param_txt + '\n' + param_name + ':' + str(param)
-
-    plt.rcParams.update({'font.size': 8})
-    plt.text(0,-0.5,param_txt)
-
-    plt.savefig(outfile, facecolor='w')
-    plt.close()
+    return param_txt
