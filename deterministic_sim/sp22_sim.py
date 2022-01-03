@@ -73,9 +73,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
     def sim_test_regime(tests_per_week, delay, color, label = None):
 
-        regime = TestingRegime(popul,tests_per_week,delay,\
-                               PCR_SENSITIVITY,MAX_INFECTIOUS_DAYS,\
-                               SYMPTOMATIC_RATE,NO_SURVEILLANCE_TEST_RATE)
+        regime = TestingRegime(popul,tests_per_week,delay,params)
 
         if label is None:
             label = regime.get_name()
@@ -129,9 +127,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         label is a string to use in legends when referring to this testing regime
         '''
         for i in range(len(period_lengths)):
-            regime = TestingRegime(popul, tests_per_week[i], delay[i], \
-                                   PCR_SENSITIVITY, MAX_INFECTIOUS_DAYS, \
-                                   SYMPTOMATIC_RATE, NO_SURVEILLANCE_TEST_RATE)
+            regime = TestingRegime(popul, tests_per_week[i], delay[i], params)
             # infections_per_contact_unit =
             #   BOOSTER_EFFECTIVENESS * transmission_multipliers[i] * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
             #   regime.get_days_infectious()
@@ -172,12 +168,12 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
     """
     TODO pf98
-    
-    I ran these three different simulations and confirmed via inspection of the plots that they 
+
+    I ran these three different simulations and confirmed via inspection of the plots that they
     gave the same output is the same. It would be good to move this into a test case.
-    
+
     sim_test_regime(2,1,"powderblue")
-    
+
     sim_test_complex_regime(
         [ { 'UG':2, 'GR':2, 'PR':2, 'FS':2}, 2 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
         [ 1, 1], #test delay
@@ -191,7 +187,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
         [ 3, T-3-1 ], # period lengths
         'powderblue', '2x/wk test')
-        
+
     """
 
     if plot == 2:

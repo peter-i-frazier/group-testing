@@ -20,9 +20,7 @@ class TestingRegime:
 
     def __init__(self, popul: population,
                  tests_per_week: Union[float, dict],
-                 test_delay: Union[float, dict],
-                 sensitivity : float, max_infectious_days : float,
-                 symptomatic_rate : float, no_surveillance_test_rate : float):
+                 test_delay: Union[float, dict], params):
 
         K = len(popul.metagroup_names()) # number of meta-groups
         self.days_infectious = np.zeros(K)
@@ -69,13 +67,13 @@ class TestingRegime:
             # for this meta-group
             if _tests_per_week == 0:
                 _days_between_tests = np.inf
-                self.infection_discovery_frac[i] = symptomatic_rate
-                self.recovered_discovery_frac[i] = no_surveillance_test_rate
+                self.infection_discovery_frac[i] = params["symptomatic_rate"]
+                self.recovered_discovery_frac[i] = params["no_surveillance_test_rate"]
             else:
                 _days_between_tests = 7 / _tests_per_week
                 self.infection_discovery_frac[i] = 1
                 self.recovered_discovery_frac[i] = 1
 
             self.days_infectious[i] = days_infectious(_days_between_tests, _test_delay, \
-                                                 sensitivity=sensitivity, \
-                                                 max_infectious_days=max_infectious_days)
+                                                 sensitivity=params["pcr_sensitivity"], \
+                                                 max_infectious_days=params["max_infectious_days"])
