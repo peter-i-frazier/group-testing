@@ -206,7 +206,9 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # =================
     # [Plot] Make plots
     # ==================
-
+    plt.rcParams["figure.figsize"] = (18,16)
+    plt.rcParams['font.size'] = 24
+    plt.rcParams['lines.linewidth'] = 6
     if simple_plot:
         plotting.plot_sm_test_regime_comparison(out_file, test_regime_names,
             test_regime_sims, test_regime_colors, params)
