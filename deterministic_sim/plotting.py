@@ -37,6 +37,11 @@ def plot_sm_test_regime_comparison(outfile : str, test_regime_names: List[str],
         test_regime_colors (List[str]): List of colors for test regime trajectories.
         params: Parameters used to run the simulation.
     """
+
+    plt.rcParams["figure.figsize"] = (18,16)
+    plt.rcParams['font.size'] = 30
+    plt.rcParams['lines.linewidth'] = 6
+    plt.rcParams['legend.fontsize'] = 22
     plt.subplots_adjust(hspace = 0.8)
     plt.subplot(211)
     plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params)
