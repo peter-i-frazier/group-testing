@@ -51,6 +51,63 @@ additional_isolations:
   - 0     # VM/GM/LA
   - 0     # fac/staff
 
+
+# ====== TO REPLACE ABOVE ========
+
+# The google sheet below works out these numbers, and also the number of people
+# who will need to be isolated from the people infected over break with immunity
+# that are not found in pre-departure testing and from the active infections
+# that are found in arrival testing
+# https://docs.google.com/spreadsheets/d/1bWOtKMsK4dBm47GPHWb3LhiPNuYlXFHvDr-f0BIv7IY/edit?usp=sharing
+
+dec_surge_infections:
+  - 1900  # UG
+  - 0     # GR
+  - 0     # VM/GM/LA
+  - 0     # fac/staff
+
+# @Brian Liu's analysis:
+# 2506 UG students are infected and recover from 12/22/2021 - 1/25/2022
+# Divide by 2 and scale by population size to get GR and VM/GM/LA.
+# Take 15 per day for 40 days to get fac/staff
+winter_break_infections:
+  - 2506  # UG
+  - 627   # GR          [(2506/2) * (8000/16000)]
+  - 235   # GVM/GM/LAR  [(2506/2) * (3000/16000)]
+  - 600   # fac/staff   [15 * 40]
+
+# @Brian Liu's analysis:
+# 965 UG positives in the period 1/26/2022 - 2/7/2022
+# Divide by 2 and scale by population size to get GR and VM/GM/LA.
+# Take 15 per day for 3 days to get fac/staff
+active_infections:
+  - 965   # UG
+  - 241   # GR          [(965/2) * (8000/16000)]
+  - 90    # GVM/GM/LAR  [(965/2) * (3000/16000)]
+  - 45    # fac/staff   [15 * 3]
+
+
+# Arrival testing scenario 1:
+#   all students do a pre-departure antigen test with sensitivity 50%,
+#   all students again an arrival PCR test with sensitivity 67% and no isolation delay,
+#     0.5 caught in pre-departure
+#     (1 - 0.5) * 0.67 = 0.335 caught in arrival testing
+#     1 - 0.5 - 0.335 = 0.165 not caught
+# Arrival testing scenario 2:
+#   half of students do a pre-departure test with sensitivity 50%,
+#   75% of students (independently chosen) do an arrival PCR 67% sensitivity and no test delay
+#     0.5 * 0.5 = 0.25 caught in pre-departure
+#     (1 - 0.25) * (0.75 * 0.67) = 0.38 caught in arrival testing
+#     1 - 0.25 - 0.38 = 0.37 not caught
+
+# TODO (hwr26): These params should be defined in sp22_sim.py when initializing
+# the Strategy object
+# Arrival testing scenario 1
+pct_caught_in_pre_departure: 0.5
+pct_caught_in_arrival_test: 0.335
+
+# ============================
+
 # In the modeling team's spring 2021 projections, based on fall 2020 data, we estimated per-person
 # outside infection rates of 1.42E-5 for the greek/athlete population, 7.11E-6 for other UG, and
 # 6.45E-6 for graduate students.  During this period, we estimated 1.209 E-4 for faculty and staff.
