@@ -144,7 +144,7 @@ def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
     """Plot a comprehensive summary of the simulation run."""
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
-    #plt.rcParams.update({'font.size': 8})
+    plt.rcParams.update({'font.size': 8})
 
     plt.subplot(411) # Take up the whole top row
     plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params, legend = True)
