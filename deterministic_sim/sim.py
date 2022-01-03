@@ -347,11 +347,9 @@ class sim:
         '''
         if group == False:
             total_arrival_arrival_discovered = sum(arrival_discovered)
-            tmp1 = np.zeros(self.max_T)
-            tmp1[0] = total_arrival_arrival_discovered / 2
-            tmp2 = np.zeros(self.max_T)
-            tmp2[1] = total_arrival_arrival_discovered / 2
-            discovered = self.get_discovered() + tmp1 + tmp2
+            discovered = self.get_discovered()
+            discovered[0] += total_arrival_arrival_discovered / 2
+            discovered[1] += total_arrival_arrival_discovered / 2
         else:
             discovered = self.get_discovered_for_group(group)
             # TODO: Xiangyu
