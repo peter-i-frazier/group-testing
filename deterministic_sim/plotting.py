@@ -122,9 +122,9 @@ def plot_oncampus_isolated(test_regime_names: List[str],
 
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
         isolated = s.get_isolated(iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"],
-                                  on_campus_frac=params["on_campus_frac"])
-        plt.plot(X, isolated, label=label, color=color)
+                                  iso_props=params["isolation_fracs"])
+        on_campus_isolated = params["on_campus_frac"] * isolated
+        plt.plot(X, on_campus_isolated, label=label, color=color)
 
     plt.title("On-campus Isolation")
     #plt.rcParams.update({'font.size': 8})
