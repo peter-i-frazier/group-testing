@@ -39,16 +39,18 @@ class Strategy:
         self.transmission_multipliers = transmission_multipliers
         self.period_lengths = period_lengths
 
-    def get_initial_and_past_infections(self, params):
-        """Return the initial and past infections vectors used to init sim.
+    def get_initial_infections(self, params):
+        """Return the initial infections when this strategy is used."""
+        active_infections = np.array(params["active_infections"])
+        pct_discovered = self.pct_discovered_in_pre_departure + \
+                         self.pct_discovered_in_arrival_test
+        return (1 - pct_discovered) * active_infections
 
-        Args:
-            params (Dict): Parameters for the simultion
-        """
+    def get_past_infections(self, params):
+        """Return the past infections (recovered) when this strategy is used."""
         dec_surge_infections = np.array(params["dec_surge_infections"])
         winter_break_infections = np.array(params["winter_break_infections"])
         active_infections = np.array(params["active_infections"])
-
         pct_discovered = self.pct_discovered_in_pre_departure + \
                          self.pct_discovered_in_arrival_test
         # all of these past infections begin as recovered in the simulation
@@ -57,5 +59,4 @@ class Strategy:
         past_infections = dec_surge_infections + \
                           winter_break_infections + \
                           (pct_discovered * active_infections)
-        initial_infections = (1 - pct_discovered) * active_infections
-        return past_infections, initial_infections
+        return past_infections

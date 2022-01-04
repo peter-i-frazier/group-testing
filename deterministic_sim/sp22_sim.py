@@ -156,7 +156,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
             infection_discovery_frac = popul.metagroup2group(regime.get_infection_discovery_frac())
             recovered_discovery_frac = popul.metagroup2group(regime.get_recovered_discovery_frac())
 
-            past_infections, initial_infections = strategy.get_initial_and_past_infections(params)
+            initial_infections = strategy.get_initial_infections(params)
+            past_infections = strategy.get_past_infections(params)
             S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
                                                 weight="population x contacts")
             outside_rates = params['outside_rates']
