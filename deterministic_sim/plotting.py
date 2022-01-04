@@ -87,19 +87,11 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     else:
         plt.title("Infections " + reduce(add, [params["population_names"][x] for x in metagroup_names]))
 
-    # TODO (hwr26): Can all these comments be removed?
-    #plt.rcParams.update({'font.size': 8})
     if legend:
-        # Shrink current axis by 40%
         ax = plt.gca()
-        #box = ax.get_position()
-        #ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
-
-        # Put a legend to the right of the current axis
-        # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        # Put legend below the current axis because it's too big
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20),
                   fancybox=True, shadow=True, ncol=2)
-        # ax.legend(loc = 'lower right', prop={'size': 16}, bbox_to_anchor = (1,0.45))
     plt.ylabel('Cumulative Infected')
 
 
