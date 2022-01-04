@@ -14,7 +14,26 @@ import plotting
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
+
+def initialize_population(params):
+    """Initialize the population from the simulation params."""
+
+    population_count = params["population_count"]
+    population_names = params["population_names"]
+    meta_groups = []
+    for i in range(len(population_count)):
+        name = population_names[i]
+        pop = population_count[i] * np.array(params['pop_fracs'][i])
+        contact_units = np.arange(1, len(pop) + 1)
+        meta_groups.append(meta_group(name, pop, contact_units))
+    return population(meta_groups, np.array(params['meta_matrix']))
+
+
 def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', **kwargs):
+
+    # =======================
+    # [Initialize Parameters]
+    # =======================
 
     params = yaml.safe_load(open(yaml_file, "r"))
     params.update(kwargs)
@@ -36,32 +55,22 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     else:
         SIMPLE_PARAM_SUMMARY = None
 
-    # =====================================================================
-    # [Initialize Population]
-    # =====================================================================
-
-    population_count = params["population_count"]
-    population_names = params["population_names"]
-    meta_groups = []
-    for i in range(len(population_count)):
-        name = population_names[i]
-        pop = population_count[i] * np.array(params['pop_fracs'][i])
-        contact_units = np.arange(1, len(pop) + 1)
-        meta_groups.append(meta_group(name, pop, contact_units))
-
-    popul = population(meta_groups, np.array(params['meta_matrix']))
-
-    # =====================================================================
+    # ========================================================================
     # [Initialize Strategies]
-    # =====================================================================
+    # TODO (hwr26): At a future point, would be nice to store this information
+    # in multiple YAML files.
+    # ========================================================================
 
-    # TODO (hwr26): Is this the correct way to initialize this?
+    popul = initialize_population(params)
+
+    # some common testing regimes used in these strategies
     no_testing_testing_regime=TestingRegime(popul=popul, tests_per_week=0,
                                             test_delay=1, params=params)
     ug_prof_2x_week_testing_regime= \
         TestingRegime(popul=popul, tests_per_week={ 'UG':2, 'GR':0, 'PR':2, 'FS':0},
                       test_delay=1, params=params)
 
+    # No extra testing (note all strategies assume testing for cause)
     no_testing_strategy = \
         Strategy(name="No Testing",
              pct_discovered_in_pre_departure=0,
@@ -84,6 +93,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     #     (1 - 0.25) * (0.75 * 0.67) = 0.38 caught in arrival testing
     #     1 - 0.25 - 0.38 = 0.37 not caught
 
+    # Pre-departure + arrival testing. No surveillance at any point
     arrival_testing_strategy = \
         Strategy(name="Only Pre-Departure + Arrival Testing",
              pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
@@ -92,7 +102,9 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
              transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
              period_lengths=[3,T-3-1])
 
-
+    # Pre-departure + arrival testing. Surveillance of UG and professional
+    # students before classes and during virtual instruction at 2x/wk.
+    # It does not surveil GR or FS.
     surge_testing_strategy = \
         Strategy(name="UG+Prof. 2x/wk in Virtual Instr. Only",
              pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
@@ -118,6 +130,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
         strategy = \
             Strategy(name=regime.name,
+                # TODO (hwr26): This matches what we had before but we should
+                # choose a scenario to run with
                 pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
                 pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
                 testing_regimes=[regime, regime],
@@ -161,16 +175,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         test_regime_sims.append(s)
         test_regime_colors.append(color)
 
-
-    # This tests UG and Professional students 2x week during virtual instruction (first 6 generations),
-    # and then stops surveilling them. It does not surveil GR or FS.
-    # TODO pf98 rather than hard-coding the test regimes we want to plot, let's put them into a separate yaml file
-    plot = 1
-    if plot == 1:
-        sim_test_strategy(surge_testing_strategy, 'purple')
-
     """
-    TODO pf98
+    TODO (hwr26): I don't think this is necessary anymore..
 
     I ran these three different simulations and confirmed via inspection of the plots that they
     gave the same output is the same. It would be good to move this into a test case.
@@ -190,21 +196,27 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
         [ 3, T-3-1 ], # period lengths
         'powderblue', '2x/wk test')
-
     """
+    plot = 3
 
+    if plot == 1:
+        sim_test_strategy(surge_testing_strategy, 'purple')
+        sim_test_regime(0,1,"black") # No surveillance
     if plot == 2:
         sim_test_regime(1,2,"crimson")
         sim_test_regime(1,1,"orangered") # used to be coral in the plots with 1.5 day delay
         sim_test_regime(2,2,"navy")
         sim_test_regime(2,1,"royalblue") # used to be powderblue in the plots with 1.5 day delay
-
-    # plots 1 and 2
-    sim_test_regime(0,1,"black") # No surveillance
+        sim_test_regime(0,1,"black") # No surveillance
+    if plot == 3:
+        sim_test_strategy(no_testing_strategy, 'black')
+        sim_test_strategy(arrival_testing_strategy, 'royalblue')
+        sim_test_strategy(surge_testing_strategy, 'purple')
 
     # =================
     # [Plot] Make plots
     # ==================
+
     if simple_plot:
         plotting.plot_sm_test_regime_comparison(out_file, test_regime_names,
             test_regime_sims, test_regime_colors, params)
