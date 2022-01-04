@@ -29,6 +29,12 @@ class Strategy:
         self.name = name
         self.pct_discovered_in_pre_departure = pct_discovered_in_pre_departure
         self.pct_discovered_in_arrival_test = pct_discovered_in_arrival_test
+
+        n = len(period_lengths)
+        assert len(testing_regimes) == n
+        assert len(transmission_multipliers) == n
+
+        self.periods = n
         self.testing_regimes = testing_regimes
         self.transmission_multipliers = transmission_multipliers
         self.period_lengths = period_lengths
