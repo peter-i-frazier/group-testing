@@ -13,6 +13,19 @@ from datetime import datetime
 from textwrap import fill
 
 
+class Trajectory:
+
+    def __init__(self, strategy: Strategy, sim: sim, color: str):
+        """Manage all of the objects associated with a trajectory on a graph.
+
+        Args:
+            strategy (Strategy): Strategy that was used to run the simulation.
+            sim (sim): Simulation which used the provided strategy.
+            color (str): Color of the trajectory when plotting.
+        """
+        self.strategy = strategy
+        self.sim = sim
+        self.color = color
 
 
 # TODO pf98 this really belongs somewhere else, e.g. in the yaml
@@ -27,17 +40,10 @@ def long_metagroup_name(x):
         return x
 
 
-def plot_sm_test_regime_comparison(outfile : str, test_regime_names: List[str],
-                                   test_regime_sims: List[sim], test_regime_colors: List[str],
+def plot_sm_test_regime_comparison(outfile : str, trajectories: List[Trajectory],
                                    params):
 
-    """Plot a comparison of various test regimes (including no surveillance).
-    Args:
-        test_regime_names (List[str]): Names of test regimes.
-        test_regime_sims (List[sim]): List of test regime simulations.
-        test_regime_colors (List[str]): List of colors for test regime trajectories.
-        params: Parameters used to run the simulation.
-    """
+    """Plot a comparison of various test regimes (including no surveillance)."""
 
     plt.rcParams["figure.figsize"] = (18,16)
     plt.rcParams['font.size'] = 30
@@ -45,30 +51,27 @@ def plot_sm_test_regime_comparison(outfile : str, test_regime_names: List[str],
     plt.rcParams['legend.fontsize'] = 22
     plt.subplots_adjust(hspace = 0.8)
     plt.subplot(211)
-    plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params)
+    plot_infected_discovered(trajectories, params)
     plt.subplot(212)
-    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params)
+    plot_oncampus_isolated(trajectories, params)
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
 
 
-def plot_infected_discovered(test_regime_names: List[str],
-                             test_regime_sims: List[sim], test_regime_colors: List[str],
-                             params, popul = None, metagroup_names : List[str] = None, legend = True):
+def plot_infected_discovered(trajectories: List[Trajectory],
+                             params, popul = None, metagroup_names : List[str] = None,
+                             legend = True):
     """Plot infected and discovered under several test regimes (including no surveillance).
 
     Args:
-        test_regime_names (List[str]): Names of test regimes.
-        test_regime_sims (List[sim]): List of test regime simulations.
-        test_regime_colors (List[str]): List of colors for test regime trajectories.
         params: Parameters used to run the simulation.
         metagroup_names: list of names of meta-group(s) to plot, None to plot the sum across groups.
     """
-    for i in range(len(test_regime_names)):
-        label = test_regime_names[i]
-        s = test_regime_sims[i]
-        color = test_regime_colors[i]
+    for trajectory in trajectories:
+        label = trajectory.strategy.name
+        s = trajectory.sim
+        color = trajectory.color
 
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
         if metagroup_names == None:
@@ -109,26 +112,17 @@ def plot_infected_discovered(test_regime_names: List[str],
         # ax.legend(loc = 'lower right', prop={'size': 16}, bbox_to_anchor = (1,0.45))
     plt.ylabel('Cumulative Infected')
 
-def plot_oncampus_isolated(strategies: List[Strategy],
-                           test_regime_names: List[str],
-                           test_regime_sims: List[sim], test_regime_colors: List[str],
+def plot_oncampus_isolated(trajectories: List[Trajectory],
                            params, legend = True):
     """Plot the number of rooms of isolation required to isolate on-campus students under
-    the passed set of test regimes.
-
-    Args:
-        test_regime_names (List[str]): Names of test regimes.
-        test_regime_sims (List[sim]): List of test regime simulations.
-        test_regime_colors (List[str]): List of colors for test regime trajectories.
-        params: Parameters used to run the simulation.
-    """
-    for i in range(len(test_regime_names)):
-        label = test_regime_names[i]
-        s = test_regime_sims[i]
-        color = test_regime_colors[i]
+    the passed set of test regimes."""
+    for trajectory in trajectories:
+        label = trajectory.strategy.name
+        s = trajectory.sim
+        color = trajectory.color
 
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
-        isolated = s.get_isolated(arrival_discovered=sum(strategies[i].get_active_discovered(params)),
+        isolated = s.get_isolated(arrival_discovered=sum(trajectory.strategy.get_active_discovered(params)),
                                   iso_lengths=params["isolation_durations"],
                                   iso_props=params["isolation_fracs"])
         on_campus_isolated = params["on_campus_frac"] * isolated
@@ -142,21 +136,19 @@ def plot_oncampus_isolated(strategies: List[Strategy],
     plt.ylabel('Isolation (on-campus 5 day)')
 
 def plot_comprehensive_summary(outfile: str,
-                                strategies: List[Strategy],
-                                   test_regime_names: List[str],
-                                   test_regime_sims: List[sim], test_regime_colors: List[str],
-                                   params, popul, simple_param_summary = None):
+                               trajectories: List[Trajectory],
+                               params, popul, simple_param_summary = None):
     """Plot a comprehensive summary of the simulation run."""
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
     plt.rcParams.update({'font.size': 8})
 
     plt.subplot(411) # Take up the whole top row
-    plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, params, legend = True)
+    plot_infected_discovered(trajectories, params, legend = True)
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_oncampus_isolated(strategies, test_regime_names, test_regime_sims, test_regime_colors, params, legend = False)
+    plot_oncampus_isolated(trajectories, params, legend = False)
     window += 1
 
     metagroups = popul.metagroup_names()
@@ -166,8 +158,7 @@ def plot_comprehensive_summary(outfile: str,
         for i in range(len(metagroups)):
             plt.subplot(window)
             window += 1
-            plot_infected_discovered(test_regime_names, test_regime_sims, test_regime_colors, \
-                                     params, popul, [metagroups[i]], legend = False)
+            plot_infected_discovered(trajectories, params, popul, [metagroups[i]], legend = False)
 
     plt.subplot(window)
     plt.axis('off')
@@ -186,9 +177,9 @@ def plot_comprehensive_summary(outfile: str,
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
-def plot_hospitalization(outfile, test_regime_names: List[str],
-                             test_regime_sims: List[sim], test_regime_colors: List[str],
-                             params, popul, legend = True):
+def plot_hospitalization(outfile,
+                         trajectories: List[Trajectory],
+                         params, popul, legend = True):
     """Plot infected and discovered under several test regimes (including no surveillance).
 
     Args:
@@ -204,10 +195,10 @@ def plot_hospitalization(outfile, test_regime_names: List[str],
     plt.rcParams['font.size'] = 15
     plt.rcParams['lines.linewidth'] = 6
     plt.rcParams['legend.fontsize'] = 12
-    for i in range(len(test_regime_names)):
-        label = test_regime_names[i]
-        s = test_regime_sims[i]
-        color = test_regime_colors[i]
+    for trajectory in trajectories:
+        label = trajectory.strategy.name
+        s = trajectory.sim
+        color = trajectory.color
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
 
         hospitalized = np.zeros(s.max_T)

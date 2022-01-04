@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import json
 import yaml
+from plotting import Trajectory
 from strategy import Strategy
 import micro
 from sim import sim
@@ -120,10 +121,6 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # [Run] Compare a list of strategies
     # ==================================
 
-    strategies = []
-    test_regime_names = []
-    test_regime_sims = []
-    test_regime_colors = []
 
     def sim_test_regime(tests_per_week, delay, color):
 
@@ -173,10 +170,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
                infection_discovery_frac = infection_discovery_frac,
                recovered_discovery_frac = recovered_discovery_frac)
 
-        strategies.append(strategy)
-        test_regime_names.append(strategy.name)
-        test_regime_sims.append(s)
-        test_regime_colors.append(color)
+        return Trajectory(strategy, s, color)
 
     """
     TODO (hwr26): I don't think this is necessary anymore..
@@ -203,31 +197,35 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     plot = 3
 
     if plot == 1:
-        sim_test_strategy(surge_testing_strategy, 'purple')
-        sim_test_regime(0,1,"black") # No surveillance
+        trajectories = [
+            sim_test_strategy(surge_testing_strategy, 'purple'),
+            sim_test_regime(0,1,"black") # No surveillance
+        ]
     if plot == 2:
-        sim_test_regime(1,2,"crimson")
-        sim_test_regime(1,1,"orangered") # used to be coral in the plots with 1.5 day delay
-        sim_test_regime(2,2,"navy")
-        sim_test_regime(2,1,"royalblue") # used to be powderblue in the plots with 1.5 day delay
-        sim_test_regime(0,1,"black") # No surveillance
+        trajectories = [
+            sim_test_regime(1,2,"crimson"),
+            sim_test_regime(1,1,"orangered"), # used to be coral in the plots with 1.5 day delay
+            sim_test_regime(2,2,"navy"),
+            sim_test_regime(2,1,"royalblue"), # used to be powderblue in the plots with 1.5 day delay
+            sim_test_regime(0,1,"black") # No surveillance
+        ]
     if plot == 3:
-        sim_test_strategy(no_testing_strategy, 'black')
-        sim_test_strategy(arrival_testing_strategy, 'royalblue')
-        sim_test_strategy(surge_testing_strategy, 'purple')
+        trajectories = [
+            sim_test_strategy(no_testing_strategy, 'black'),
+            sim_test_strategy(arrival_testing_strategy, 'royalblue'),
+            sim_test_strategy(surge_testing_strategy, 'purple')
+        ]
 
     # =================
     # [Plot] Make plots
     # ==================
 
     if simple_plot:
-        plotting.plot_sm_test_regime_comparison(out_file, test_regime_names,
-            test_regime_sims, test_regime_colors, params)
+        plotting.plot_sm_test_regime_comparison(out_file, trajectories, params)
     else:
-        plotting.plot_comprehensive_summary(out_file, strategies, test_regime_names,
-            test_regime_sims, test_regime_colors, params, popul, SIMPLE_PARAM_SUMMARY)
+        plotting.plot_comprehensive_summary(out_file, trajectories, params, popul, SIMPLE_PARAM_SUMMARY)
 
-    plotting.plot_hospitalization('sp22_sim_hosp.png', test_regime_names, test_regime_sims, test_regime_colors, params, popul)
+    plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, params, popul)
 
 
 def usage():
