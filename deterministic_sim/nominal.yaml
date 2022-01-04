@@ -42,6 +42,12 @@ active_infections:
   - 90    # GVM/GM/LAR  [(965/2) * (3000/16000)]
   - 45    # fac/staff   [15 * 3]
 
+# @Yujia's analyis
+hospitalization_rates:
+  - 0.00025  # UG         [1/4000]
+  - 0.00025  # GR         [1/4000]
+  - 0.00025  # VM/GM/LA   [1/4000]
+  - 0.005    # fac/staff  [1/200]
 
 # In the modeling team's spring 2021 projections, based on fall 2020 data, we estimated per-person
 # outside infection rates of 1.42E-5 for the greek/athlete population, 7.11E-6 for other UG, and

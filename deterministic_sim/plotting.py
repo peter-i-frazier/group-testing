@@ -188,7 +188,7 @@ def plot_comprehensive_summary(outfile: str,
 
 def plot_hospitalization(outfile, test_regime_names: List[str],
                              test_regime_sims: List[sim], test_regime_colors: List[str],
-                             params, popul, metagroup_names : List[str] = None, legend = True):
+                             params, popul, legend = True):
     """Plot infected and discovered under several test regimes (including no surveillance).
 
     Args:
@@ -209,30 +209,16 @@ def plot_hospitalization(outfile, test_regime_names: List[str],
         s = test_regime_sims[i]
         color = test_regime_colors[i]
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
-        if metagroup_names == None:
-            infected = s.get_infected(aggregate=True, cumulative=True)
-        else:
-            group_idx = popul.metagroup_indices(metagroup_names)
-            # Since metagroup_names is a list of metagroup names, group_idix will be a list of lists.
-            # We want to flatten it. See https://stackabuse.com/python-how-to-flatten-list-of-lists/
-            group_idx = reduce(iconcat, group_idx, [])
-            infected = s.get_total_infected_for_different_groups(group_idx, cumulative=True)
-        infected = s.get_infected(aggregate=False, cumulative=True)
-        hospitalized = np.copy(infected)
-        for i in range(len(infected)):
-            for j in range(len(hospitalized[0])):
-                if 'FS' in popul.idx_to_groupname(j):
-                    hospitalized[i][j] = hospitalized[i][j]/200 #from yujia's number
-                else:
-                    hospitalized[i][j] = hospitalized[i][j]/4000 #from yujia's number
-        hospitalized = np.sum(hospitalized, axis=1)
-        plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
 
-    if metagroup_names == None:
+        hospitalized = np.zeros(s.max_T)
+        group_idxs = popul.metagroup_indices(['UG', 'GR', 'PR', 'FS'])
+        for i in range(4):
+            hospitalized += \
+                s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
+                params["hospitalization_rates"][i]
+
+        plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
         plt.title("Spring Semester Hospitalizations, Students+Employees")
-    else:
-        # Plots all of the metagroup names together
-        plt.title("Infections " + reduce(add, [long_metagroup_name(x) for x in metagroup_names]))
 
     #plt.rcParams.update({'font.size': 8})
     if legend:
