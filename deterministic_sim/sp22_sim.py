@@ -120,6 +120,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # [Run] Compare a list of strategies
     # ==================================
 
+    strategies = []
     test_regime_names = []
     test_regime_sims = []
     test_regime_colors = []
@@ -172,6 +173,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
                infection_discovery_frac = infection_discovery_frac,
                recovered_discovery_frac = recovered_discovery_frac)
 
+        strategies.append(strategy)
         test_regime_names.append(strategy.name)
         test_regime_sims.append(s)
         test_regime_colors.append(color)
@@ -222,7 +224,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         plotting.plot_sm_test_regime_comparison(out_file, test_regime_names,
             test_regime_sims, test_regime_colors, params)
     else:
-        plotting.plot_comprehensive_summary(out_file, test_regime_names,
+        plotting.plot_comprehensive_summary(out_file, strategies, test_regime_names,
             test_regime_sims, test_regime_colors, params, popul, SIMPLE_PARAM_SUMMARY)
 
     plotting.plot_hospitalization('sp22_sim_hosp.png', test_regime_names, test_regime_sims, test_regime_colors, params, popul)

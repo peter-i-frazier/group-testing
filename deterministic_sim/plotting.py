@@ -1,4 +1,5 @@
 import numpy as np
+from strategy import Strategy
 from groups import population
 from sim import sim
 import matplotlib
@@ -108,7 +109,8 @@ def plot_infected_discovered(test_regime_names: List[str],
         # ax.legend(loc = 'lower right', prop={'size': 16}, bbox_to_anchor = (1,0.45))
     plt.ylabel('Cumulative Infected')
 
-def plot_oncampus_isolated(test_regime_names: List[str],
+def plot_oncampus_isolated(strategies: List[Strategy],
+                           test_regime_names: List[str],
                            test_regime_sims: List[sim], test_regime_colors: List[str],
                            params, legend = True):
     """Plot the number of rooms of isolation required to isolate on-campus students under
@@ -126,7 +128,8 @@ def plot_oncampus_isolated(test_regime_names: List[str],
         color = test_regime_colors[i]
 
         X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
-        isolated = s.get_isolated(iso_lengths=params["isolation_durations"],
+        isolated = s.get_isolated(arrival_discovered=sum(strategies[i].get_active_discovered(params)),
+                                  iso_lengths=params["isolation_durations"],
                                   iso_props=params["isolation_fracs"])
         on_campus_isolated = params["on_campus_frac"] * isolated
         plt.plot(X, on_campus_isolated, label=label, color=color)
@@ -138,7 +141,9 @@ def plot_oncampus_isolated(test_regime_names: List[str],
     plt.xlabel('Days')
     plt.ylabel('Isolation (on-campus 5 day)')
 
-def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
+def plot_comprehensive_summary(outfile: str,
+                                strategies: List[Strategy],
+                                   test_regime_names: List[str],
                                    test_regime_sims: List[sim], test_regime_colors: List[str],
                                    params, popul, simple_param_summary = None):
     """Plot a comprehensive summary of the simulation run."""
@@ -151,7 +156,7 @@ def plot_comprehensive_summary(outfile : str, test_regime_names: List[str],
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_oncampus_isolated(test_regime_names, test_regime_sims, test_regime_colors, params, legend = False)
+    plot_oncampus_isolated(strategies, test_regime_names, test_regime_sims, test_regime_colors, params, legend = False)
     window += 1
 
     metagroups = popul.metagroup_names()

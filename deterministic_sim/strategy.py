@@ -60,3 +60,12 @@ class Strategy:
                           winter_break_infections + \
                           (pct_discovered * active_infections)
         return past_infections
+
+    def get_active_discovered(self, params):
+        """Return the active discovered when this strategy is used.
+
+        Currently, active discovered refers only to those active cases found
+        through arrival testing (NOT pre-departure testing).
+        """
+        active_infections = np.array(params["active_infections"])
+        return active_infections * self.pct_discovered_in_arrival_test
