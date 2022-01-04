@@ -39,18 +39,16 @@ class Strategy:
         self.transmission_multipliers = transmission_multipliers
         self.period_lengths = period_lengths
 
-    def get_initial_and_past_infections(self, dec_surge_infections: np.ndarray,
-        winter_break_infections: np.ndarray, active_infections: np.ndarray):
+    def get_initial_and_past_infections(self, params):
         """Return the initial and past infections vectors used to init sim.
 
         Args:
-            dec_surge_infections (np.ndarray): Number of infections from the \
-                December surge per metagroup.
-            winter_break_infections (np.ndarray): Number of infections over the \
-                winter break per metagroup.
-            active_infections (np.ndarray): Number of active infections at the \
-                beginning of the semster for each metagroup.
+            params (Dict): Parameters for the simultion
         """
+        dec_surge_infections = np.array(params["dec_surge_infections"])
+        winter_break_infections = np.array(params["winter_break_infections"])
+        active_infections = np.array(params["active_infections"])
+
         pct_discovered = self.pct_discovered_in_pre_departure + \
                          self.pct_discovered_in_arrival_test
         # all of these past infections begin as recovered in the simulation
