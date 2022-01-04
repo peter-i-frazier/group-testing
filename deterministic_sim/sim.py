@@ -310,7 +310,7 @@ class sim:
         return self.get_metric_for_different_groups('D', group, normalize, cumulative).sum(axis=1)
 
 
-    def get_isolated(self, arrival_discovered: np.ndarray, arrival_duration=2.0, group = False, iso_lengths = [8], iso_props = [1]):
+    def get_isolated(self, arrival_discovered: np.ndarray=None, arrival_duration=2.0, group = False, iso_lengths = [8], iso_props = [1]):
         '''
         Returns the number of people in isolation during the generation.
         iso_lengths is the number days isolations lasts for each group (in ascending order)
@@ -346,8 +346,9 @@ class sim:
         '''
         if group == False:
             discovered = self.get_discovered()
-            discovered[0] += arrival_discovered / 2
-            discovered[1] += arrival_discovered / 2
+            if arrival_discovered is not None:
+                discovered[0] += arrival_discovered / 2
+                discovered[1] += arrival_discovered / 2
         else:
             discovered = self.get_discovered_for_group(group)
             # TODO: Xiangyu
