@@ -310,7 +310,7 @@ class sim:
         return self.get_metric_for_different_groups('D', group, normalize, cumulative).sum(axis=1)
 
 
-    def get_isolated(self, arrival_discovered: np.ndarray=None, arrival_duration=2, group = False, iso_lengths = [8], iso_props = [1]):
+    def get_isolated(self, arrival_discovered: np.ndarray=None, arrival_duration=3, group = False, iso_lengths = [8], iso_props = [1]):
         '''
         Returns the number of people in isolation during the generation.
         iso_lengths is the number days isolations lasts for each group (in ascending order)
@@ -354,6 +354,12 @@ class sim:
             # TODO: Xiangyu
             # Should we call get_discovered_for_group or get_total_discovered_for_different_groups
             # how to deduce which meta-group are these groups corresponded to.
+            # TODO: Peter. get_discovered_for_group is correct.  Getting the appropriate number of arrival_discovered
+            # for the groups is hard. In principle, we'd have to call the group code to figure out the meta-groups
+            # associated with all of the groups being asked about.  Then we'd need to figure out what population of
+            # each meta-group is reflected in the groups being passed (in most cases it will be all of the population).
+            # Then we'll need to multiply that fraction by the arrival_discovered for each meta-group.
+            # e.g., we could add a function in population called population.fraction_by_metagroup
             raise Exception("Xiangyu unfinished")
 
 
