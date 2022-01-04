@@ -194,12 +194,12 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         [ 3, T-3-1 ], # period lengths
         'powderblue', '2x/wk test')
     """
-    plot = 3
+    plot = 1
 
     if plot == 1:
         trajectories = [
             sim_test_strategy(surge_testing_strategy, 'purple'),
-            sim_test_regime(0,1,"black") # No surveillance
+            sim_test_strategy(arrival_testing_strategy, 'black'),
         ]
     if plot == 2:
         trajectories = [
@@ -211,8 +211,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         ]
     if plot == 3:
         trajectories = [
-            sim_test_strategy(no_testing_strategy, 'black'),
-            sim_test_strategy(arrival_testing_strategy, 'royalblue'),
+            sim_test_strategy(no_testing_strategy, 'royalblue'),
+            sim_test_strategy(arrival_testing_strategy, 'black'),
             sim_test_strategy(surge_testing_strategy, 'purple')
         ]
 
