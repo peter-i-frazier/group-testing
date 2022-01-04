@@ -28,11 +28,10 @@ class Trajectory:
         self.color = color
 
 
-def plot_sm_test_regime_comparison(outfile : str, trajectories: List[Trajectory],
-                                   params):
-
-    """Plot a comparison of various test regimes (including no surveillance)."""
-
+def plot_small_summary(outfile : str,
+                       trajectories: List[Trajectory],
+                       params):
+    """Plot a small summary of the simulation run."""
     plt.rcParams["figure.figsize"] = (18,16)
     plt.rcParams['font.size'] = 30
     plt.rcParams['lines.linewidth'] = 6
@@ -41,40 +40,42 @@ def plot_sm_test_regime_comparison(outfile : str, trajectories: List[Trajectory]
     plt.subplot(211)
     plot_infected_discovered(trajectories, params)
     plt.subplot(212)
-    plot_oncampus_isolated(trajectories, params)
+    plot_on_campus_isolated(trajectories, params)
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
 
-
 def plot_infected_discovered(trajectories: List[Trajectory],
-                             params, popul = None, metagroup_names : List[str] = None,
+                             params,
+                             popul = None,
+                             metagroup_names : List[str] = None,
                              legend = True):
-    """Plot infected and discovered under several test regimes (including no surveillance).
+    """Plot infected and discovered for several trajectories.
 
     Args:
         params: Parameters used to run the simulation.
-        metagroup_names: list of names of meta-group(s) to plot, None to plot the sum across groups.
+        metagroup_names: list of names of meta-group(s) to plot, \
+            None to plot the sum across groups.
     """
+    # plot each trajectory
     for trajectory in trajectories:
         label = trajectory.strategy.name
         s = trajectory.sim
         color = trajectory.color
 
-        X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
+        X = np.arange(s.max_T) * s.generation_time  # days in the semester
         if metagroup_names == None:
             discovered = s.get_discovered(aggregate=True, cumulative=True)
             infected = s.get_infected(aggregate=True, cumulative=True)
         else:
             group_idx = popul.metagroup_indices(metagroup_names)
-            # Since metagroup_names is a list of metagroup names, group_idix will be a list of lists.
-            # We want to flatten it. See https://stackabuse.com/python-how-to-flatten-list-of-lists/
-            group_idx = reduce(iconcat, group_idx, [])
+            group_idx = reduce(iconcat, group_idx, [])  # flatten
             discovered = s.get_total_discovered_for_different_groups(group_idx, cumulative=True)
             infected = s.get_total_infected_for_different_groups(group_idx, cumulative=True)
-        if np.isclose(discovered,infected).all():
-            # Discovered and infected are the same, or almost the same.  This occurs when we do surveillance.
-            # Only plot one line
+        if np.isclose(discovered, infected).all():
+            # Discovered and infected are the same, or almost the same.
+            # This occurs when we do surveillance.
+            # Only plot one line.
             plt.plot(X, discovered, label=label, color=color, linestyle = 'solid')
         else:
             plt.plot(X, discovered, label=label + '(Discovered)', color=color, linestyle = 'solid')
@@ -83,9 +84,9 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     if metagroup_names == None:
         plt.title("Spring Semester Infections, Students+Employees")
     else:
-        # Plots all of the metagroup names together
         plt.title("Infections " + reduce(add, [params["population_names"][x] for x in metagroup_names]))
 
+    # TODO (hwr26): Can all these comments be removed?
     #plt.rcParams.update({'font.size': 8})
     if legend:
         # Shrink current axis by 40%
@@ -100,16 +101,18 @@ def plot_infected_discovered(trajectories: List[Trajectory],
         # ax.legend(loc = 'lower right', prop={'size': 16}, bbox_to_anchor = (1,0.45))
     plt.ylabel('Cumulative Infected')
 
-def plot_oncampus_isolated(trajectories: List[Trajectory],
-                           params, legend = True):
-    """Plot the number of rooms of isolation required to isolate on-campus students under
-    the passed set of test regimes."""
+
+def plot_on_campus_isolated(trajectories: List[Trajectory],
+                            params,
+                            legend = True):
+    """Plot the number of rooms of isolation required to isolate on-campus
+    students under the passed set of test regimes."""
     for trajectory in trajectories:
         label = trajectory.strategy.name
         s = trajectory.sim
         color = trajectory.color
 
-        X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
+        X = np.arange(s.max_T) * s.generation_time  # days in the semester
         isolated = s.get_isolated(arrival_discovered=sum(trajectory.strategy.get_active_discovered(params)),
                                   iso_lengths=params["isolation_durations"],
                                   iso_props=params["isolation_fracs"])
@@ -117,11 +120,11 @@ def plot_oncampus_isolated(trajectories: List[Trajectory],
         plt.plot(X, on_campus_isolated, label=label, color=color)
 
     plt.title("On-campus Isolation")
-    #plt.rcParams.update({'font.size': 8})
     if legend:
         plt.legend()
     plt.xlabel('Days')
     plt.ylabel('Isolation (on-campus 5 day)')
+
 
 def plot_comprehensive_summary(outfile: str,
                                trajectories: List[Trajectory],
@@ -136,7 +139,7 @@ def plot_comprehensive_summary(outfile: str,
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_oncampus_isolated(trajectories, params, legend = False)
+    plot_on_campus_isolated(trajectories, params, legend = False)
     window += 1
 
     metagroups = popul.metagroup_names()
@@ -152,7 +155,6 @@ def plot_comprehensive_summary(outfile: str,
     plt.axis('off')
     window += 1
 
-
     #plt.rcParams.update({'font.size': 8})
     if simple_param_summary is None:
         plt.text(0,-0.5,param2txt(params))
@@ -165,20 +167,11 @@ def plot_comprehensive_summary(outfile: str,
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
+
 def plot_hospitalization(outfile,
                          trajectories: List[Trajectory],
                          params, popul, legend = True):
-    """Plot infected and discovered under several test regimes (including no surveillance).
-
-    Args:
-        outfile: name of output .png
-        test_regime_names (List[str]): Names of test regimes.
-        test_regime_sims (List[sim]): List of test regime simulations.
-        test_regime_colors (List[str]): List of colors for test regime trajectories.
-        params: Parameters used to run the simulation.
-        popul: Population object, used only for getting meta-group/group names
-        metagroup_names: list of names of meta-group(s) to plot, None to plot the sum across groups.
-    """
+    """Plot total hospitalizations for multiple trajectories."""
     plt.rcParams["figure.figsize"] = (8,6)
     plt.rcParams['font.size'] = 15
     plt.rcParams['lines.linewidth'] = 6
@@ -187,7 +180,7 @@ def plot_hospitalization(outfile,
         label = trajectory.strategy.name
         s = trajectory.sim
         color = trajectory.color
-        X = np.arange(s.max_T) * s.generation_time # Days in the semester, to plot on the x-axis
+        X = np.arange(s.max_T) * s.generation_time  # days in the semester
 
         hospitalized = np.zeros(s.max_T)
         group_idxs = popul.metagroup_indices(['UG', 'GR', 'PR', 'FS'])
@@ -216,6 +209,9 @@ def param2txt(params):
         elif param_name == 'pop_fracs':
             # skip
             1 == 1
+        elif param_name == 'population_names':
+            param_txt +=  f"\n{param_name}: {str(list(param.keys()))}"
         else:
             param_txt = param_txt + '\n' + param_name + ':' + str(param)
     return param_txt
+
