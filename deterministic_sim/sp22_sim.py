@@ -20,7 +20,7 @@ def initialize_population(params):
     """Initialize the population from the simulation params."""
 
     population_count = params["population_count"]
-    population_names = params["population_names"]
+    population_names = list(params["population_names"].keys())
     meta_groups = []
     for i in range(len(population_count)):
         name = population_names[i]

@@ -28,18 +28,6 @@ class Trajectory:
         self.color = color
 
 
-# TODO pf98 this really belongs somewhere else, e.g. in the yaml
-def long_metagroup_name(x):
-    if x == 'PR':
-        return 'Professional'
-    elif x == 'FS':
-        return 'Employees'
-    elif x == 'GR':
-        return 'Grad-Research'
-    else:
-        return x
-
-
 def plot_sm_test_regime_comparison(outfile : str, trajectories: List[Trajectory],
                                    params):
 
@@ -96,7 +84,7 @@ def plot_infected_discovered(trajectories: List[Trajectory],
         plt.title("Spring Semester Infections, Students+Employees")
     else:
         # Plots all of the metagroup names together
-        plt.title("Infections " + reduce(add, [long_metagroup_name(x) for x in metagroup_names]))
+        plt.title("Infections " + reduce(add, [params["population_names"][x] for x in metagroup_names]))
 
     #plt.rcParams.update({'font.size': 8})
     if legend:

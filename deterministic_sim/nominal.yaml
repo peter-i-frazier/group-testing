@@ -4,11 +4,10 @@ population_count:               # population count (by meta group)
   - 3000   # VM/GM/LA
   - 10000  # fac/staff
 population_names:               # names of populations (by meta group)
-  - "UG"
-  - "GR"
-  - "PR"
-  - "FS"
-
+  UG: "UG"
+  GR: "Grad-Research"
+  PR: "Professional"
+  FS: "Employees"
 
 # The google sheet below works out these numbers, and also the number of people
 # who will need to be isolated from the people infected over break with immunity
