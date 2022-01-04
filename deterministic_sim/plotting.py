@@ -106,6 +106,7 @@ def plot_on_campus_isolated(trajectories: List[Trajectory],
         color = trajectory.color
 
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
+        # TODO pf, this should be restricted to UG only, is that correct?  That is probably waiting for the TODO in get_isolated
         isolated = s.get_isolated(arrival_discovered=sum(trajectory.strategy.get_active_discovered(params)),
                                   iso_lengths=params["isolation_durations"],
                                   iso_props=params["isolation_fracs"])
