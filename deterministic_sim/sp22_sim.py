@@ -226,7 +226,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         plotting.plot_comprehensive_summary(out_file, trajectories, params, popul, SIMPLE_PARAM_SUMMARY)
 
     plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, params, popul)
-
+    plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories, params, popul)
 
 def usage():
     ''' Print usage message '''

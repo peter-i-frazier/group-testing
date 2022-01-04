@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from strategy import Strategy
 from groups import population
 from sim import sim
@@ -215,3 +216,64 @@ def param2txt(params):
             param_txt = param_txt + '\n' + param_name + ':' + str(param)
     return param_txt
 
+
+def summary_statistics(outfile: str,
+                       trajectories: List[Trajectory],
+                       params, popul):
+    """Output a CSV file with summary statistics"""
+
+    df = {}
+
+    def get_peak_hotel_rooms(trajectory):
+        s = trajectory.sim
+        strat = trajectory.strategy
+        isolated = s.get_isolated(arrival_discovered=sum(strat.get_active_discovered(params)),
+                                  iso_lengths=params["isolation_durations"],
+                                  iso_props=params["isolation_fracs"])
+        on_campus_isolated = params["on_campus_frac"] * isolated
+        return int(np.ceil(np.max(on_campus_isolated)))
+
+    df["Hotel Room Peaks"] = \
+        {t.strategy.name : get_peak_hotel_rooms(t) for t in trajectories}
+
+    def get_total_hotel_rooms(trajectory):
+        s = trajectory.sim
+        strat = trajectory.strategy
+        isolated = s.get_isolated(arrival_discovered=sum(strat.get_active_discovered(params)),
+                                  iso_lengths=params["isolation_durations"],
+                                  iso_props=params["isolation_fracs"])
+        on_campus_isolated = params["on_campus_frac"] * isolated
+        return int(np.ceil(np.sum(on_campus_isolated)))
+
+    df["Total Hotel Rooms"] = \
+        {t.strategy.name : get_total_hotel_rooms(t) for t in trajectories}
+
+    def get_ug_prof_days_in_isolation_in_person(trajectory):
+        # TODO (hwr26): Waiting on unresolved TODO in get_isolated
+        raise Exception("Unfinished")
+
+    def get_ug_prof_days_in_isolation(trajectory):
+        # TODO (hwr26): Waiting on unresolved TODO in get_isolated
+        raise Exception("Unfinished")
+
+    def get_total_hospitalizations(trajectory):
+        s = trajectory.sim
+        hospitalized = np.zeros(s.max_T)
+        group_idxs = popul.metagroup_indices(['UG', 'GR', 'PR', 'FS'])
+        for i in range(4):
+            hospitalized += \
+                s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
+                params["hospitalization_rates"][i]
+        return int(np.ceil(hospitalized[-1]))
+
+    df["Hospitalizations"] = \
+        {t.strategy.name : get_total_hospitalizations(t) for t in trajectories}
+
+    def get_cumulative_infections(trajectory):
+        infected = trajectory.sim.get_infected(aggregate=True, cumulative=True)
+        return int(np.ceil(infected[-1]))
+
+    df["Cumulative Infections"] = \
+        {t.strategy.name : get_cumulative_infections(t) for t in trajectories}
+
+    pd.DataFrame(df).T.to_csv(outfile)

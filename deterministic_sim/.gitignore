@@ -1,3 +1,4 @@
 # sim results
 *.png
+sp22_sim_summary_stats.csv
 test.ipynb
