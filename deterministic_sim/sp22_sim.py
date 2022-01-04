@@ -97,6 +97,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # Pre-departure + arrival testing. No surveillance at any point
     arrival_testing_strategy = \
         Strategy(name="Only Pre-Departure + Arrival Testing",
+             # pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
+             # pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
              pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
              pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
              testing_regimes=[no_testing_testing_regime, no_testing_testing_regime],
@@ -108,7 +110,9 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # It does not surveil GR or FS.
     surge_testing_strategy = \
         Strategy(name="UG+Prof. 2x/wk in Virtual Instr. Only",
-             pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
+             # pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
+             # pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
+             pct_discovered_in_pre_departure=0.25,  # Using Scenario 2
              pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
              testing_regimes=[ug_prof_2x_week_testing_regime,
                               ug_prof_2x_week_testing_regime,

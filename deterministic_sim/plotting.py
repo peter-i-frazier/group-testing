@@ -41,7 +41,7 @@ def plot_small_summary(outfile : str,
     plt.subplot(211)
     plot_infected_discovered(trajectories, params)
     plt.subplot(212)
-    plot_on_campus_isolated(trajectories, params)
+    plot_isolated(trajectories, params, oncampus=True)
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
@@ -95,29 +95,88 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     plt.ylabel('Cumulative Infected')
 
 
-def plot_on_campus_isolated(trajectories: List[Trajectory],
+def _get_isolated(s : sim, params,
+                  popul = None,
+                  metagroup_names = None,
+                  metagroup_idx = None,
+                  active_discovered = None):
+    """
+    Helper function that gets the number isolated from a simulation object (which does not include the additional
+    arrival positives) for some or all metagroups.  If you are getting all metagroups, popul, metagroup_names,
+    and metagroup_idx should be None.
+    active_discovered is either None or a numpy array (one for each metagroup)
+    """
+
+    if metagroup_names is None:
+        if active_discovered is not None:
+            active_discovered = sum(active_discovered) # Need to aggregate over all the metagroups
+        isolated = s.get_isolated(arrival_discovered=active_discovered,
+                                  iso_lengths=params["isolation_durations"],
+                                  iso_props=params["isolation_fracs"])
+        return isolated
+
+    # Here, metagroup_names is not none
+    # TODO: assert that metagroup_idx has the right length, population is not none
+
+    # Get the list of group indices
+    group_idx = popul.metagroup_indices(metagroup_names)  # these indices are at the group level, but in a list of lists
+    idx = reduce(iconcat, group_idx, [])  # flatten to just a list
+
+    # Get the active discovered for the desired metagroup indices
+    if active_discovered is not None:
+        metagroup_active_discovered = sum(active_discovered[metagroup_idx])
+    else:
+        metagroup_active_discovered = None
+
+    isolated = s.get_isolated(group=idx, arrival_discovered=metagroup_active_discovered,
+                              iso_lengths=params["isolation_durations"],
+                              iso_props=params["isolation_fracs"])
+
+    return isolated
+
+# TODO pf98: Instead of defaulting metagroup_names and metagroup_idx to the explicit list of metagroups,
+# set them to None and have the code do the aggregation
+def plot_isolated(trajectories: List[Trajectory],
                             params,
-                            legend = True):
+                            legend = True,
+                            popul = None, metagroup_names = None, metagroup_idx = None,
+                            oncampus = False):
     """Plot the number of rooms of isolation required to isolate on-campus
-    students under the passed set of test regimes."""
+    students under the passed set of test regimes.
+    popul, metagroups_names and metagroup_idx are only needed if we getting specific metagroups.
+    If so,  metagroups_names and metagroup_idx indicate the metagroups that we wish to include
+    Turn on the oncampus flag to apply the oncampus_frac
+    """
     for trajectory in trajectories:
         label = trajectory.strategy.name
         s = trajectory.sim
         color = trajectory.color
 
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
-        # TODO pf, this should be restricted to UG only, is that correct?  That is probably waiting for the TODO in get_isolated
-        isolated = s.get_isolated(arrival_discovered=sum(trajectory.strategy.get_active_discovered(params)),
-                                  iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"])
-        on_campus_isolated = params["on_campus_frac"] * isolated
-        plt.plot(X, on_campus_isolated, label=label, color=color)
 
-    plt.title("On-campus Isolation")
+        isolated = _get_isolated(s,params,popul=popul,
+                                 metagroup_names=metagroup_names,
+                                 metagroup_idx=metagroup_idx,
+                                 active_discovered=trajectory.strategy.get_active_discovered(params))
+
+        if oncampus:
+            on_campus_isolated = params["on_campus_frac"] * isolated
+            plt.plot(X, on_campus_isolated, label=label, color=color)
+            if metagroup_names is None:
+                plt.title("On-campus Isolation (Students+Employees)")
+            else:
+                plt.title("On-campus Isolation (" + str(metagroup_names) + ")")
+        else:
+            plt.plot(X, isolated, label=label, color=color)
+            if metagroup_names is None:
+                plt.title("Isolation (Students+Employees)")
+            else:
+                plt.title("Isolation (" + str(metagroup_names) + ")")
+
     if legend:
         plt.legend()
     plt.xlabel('Days')
-    plt.ylabel('Isolation (on-campus 5 day)')
+    plt.ylabel('Isolation (5 day)')
 
 
 def plot_comprehensive_summary(outfile: str,
@@ -133,7 +192,13 @@ def plot_comprehensive_summary(outfile: str,
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_on_campus_isolated(trajectories, params, legend = False)
+    plot_isolated(trajectories, params, popul=popul, metagroup_names = ['UG'], metagroup_idx=[0],
+                  legend = False, oncampus = True)
+    window += 1
+
+    plt.subplot(window)
+    plot_isolated(trajectories, params, popul=popul, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
+                  legend = False, oncampus = False)
     window += 1
 
     metagroups = popul.metagroup_names()
@@ -145,16 +210,18 @@ def plot_comprehensive_summary(outfile: str,
             window += 1
             plot_infected_discovered(trajectories, params, popul, [metagroups[i]], legend = False)
 
-    plt.subplot(window)
-    plt.axis('off')
-    window += 1
 
-    #plt.rcParams.update({'font.size': 8})
-    if simple_param_summary is None:
-        plt.text(0,-0.5,param2txt(params))
-    else:
-        now = datetime.now()
-        plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
+    def print_params():
+        if simple_param_summary is None:
+            plt.text(0,-0.5,param2txt(params))
+        else:
+            now = datetime.now()
+            plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
+
+    #plt.subplot(window)
+    #plt.axis('off')
+    #window += 1
+    # print_params()
 
     plt.tight_layout(pad=1)
 
@@ -220,9 +287,9 @@ def summary_statistics(outfile: str,
     def get_peak_hotel_rooms(trajectory):
         s = trajectory.sim
         strat = trajectory.strategy
-        isolated = s.get_isolated(arrival_discovered=sum(strat.get_active_discovered(params)),
-                                  iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"])
+        isolated = _get_isolated(s, params,
+                                 popul = popul, metagroup_names = ['UG'], metagroup_idx = [0],
+                                 active_discovered = strat.get_active_discovered(params))  # Get UG isolation only
         on_campus_isolated = params["on_campus_frac"] * isolated
         return int(np.ceil(np.max(on_campus_isolated)))
 
@@ -232,22 +299,37 @@ def summary_statistics(outfile: str,
     def get_total_hotel_rooms(trajectory):
         s = trajectory.sim
         strat = trajectory.strategy
-        isolated = s.get_isolated(arrival_discovered=sum(strat.get_active_discovered(params)),
-                                  iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"])
+        isolated = _get_isolated(s, params,
+                                 popul = popul, metagroup_names = ['UG'], metagroup_idx = [0],
+                                 active_discovered = strat.get_active_discovered(params))  # Get UG isolation only
         on_campus_isolated = params["on_campus_frac"] * isolated
-        return int(np.ceil(np.sum(on_campus_isolated)))
+        print(on_campus_isolated)
+        return int(np.ceil(np.sum(on_campus_isolated) * params["generation_time"]))
 
     df["Total Hotel Rooms"] = \
         {t.strategy.name : get_total_hotel_rooms(t) for t in trajectories}
 
+
     def get_ug_prof_days_in_isolation_in_person(trajectory):
-        # TODO (hwr26): Waiting on unresolved TODO in get_isolated
-        raise Exception("Unfinished")
+        s = trajectory.sim
+        strat = trajectory.strategy
+        isolated = _get_isolated(s, params, popul = popul, metagroup_names = ['UG', 'PR'], metagroup_idx = [0,2],
+                                 active_discovered = strat.get_active_discovered(params))
+        START_OF_IN_PERSON = 5 # generation when we start in-person instruction
+        return int(np.sum(isolated[START_OF_IN_PERSON:])*params["generation_time"])
 
     def get_ug_prof_days_in_isolation(trajectory):
-        # TODO (hwr26): Waiting on unresolved TODO in get_isolated
-        raise Exception("Unfinished")
+        s = trajectory.sim
+        strat = trajectory.strategy
+        isolated = _get_isolated(s, params, popul = popul, metagroup_names = ['UG', 'PR'], metagroup_idx = [0,2],
+                                 active_discovered = strat.get_active_discovered(params))
+        return int(np.sum(isolated)*params["generation_time"])
+
+    df["UG+PR Days In Isolation In Person"] = \
+        {t.strategy.name: get_ug_prof_days_in_isolation_in_person(t) for t in trajectories}
+
+    df["UG+PR Days In Isolation (All Time)"] = \
+        {t.strategy.name: get_ug_prof_days_in_isolation(t) for t in trajectories}
 
     def get_total_hospitalizations(trajectory):
         s = trajectory.sim

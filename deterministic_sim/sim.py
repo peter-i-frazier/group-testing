@@ -298,6 +298,9 @@ class sim:
         return self.get_metric_for_group('I', group, normalize, cumulative)
 
     def get_total_infected_for_different_groups(self, group, normalize = False, cumulative = False):
+        """
+        This one also aggregates across groups
+        """
         return self.get_metric_for_different_groups('I', group, normalize, cumulative).sum(axis=1)
 
     def get_discovered(self, aggregate=True, normalize=False, cumulative=False):
@@ -307,6 +310,9 @@ class sim:
         return self.get_metric_for_group('D', group, normalize, cumulative)
 
     def get_total_discovered_for_different_groups(self, group, normalize = False, cumulative = False):
+        """
+        This one aggregates across groups
+        """
         return self.get_metric_for_different_groups('D', group, normalize, cumulative).sum(axis=1)
 
 
@@ -315,6 +321,7 @@ class sim:
         Returns the number of people in isolation during the generation.
         iso_lengths is the number days isolations lasts for each group (in ascending order)
         group is the group to look at.  If group is false, then aggregate across everyone.
+        If group is specified as a list of group indices, then it aggregates across these group indices.
 
         arrival_discovered is a 4-dim vector which stands for number of positives upon arrival for meta groups.
         arrival_duration is durations for all arrivals measured in generations.
@@ -346,21 +353,14 @@ class sim:
         '''
         if group == False:
             discovered = self.get_discovered()
-            if arrival_discovered is not None:
-                for i in range(arrival_duration):
-                    discovered[i] += arrival_discovered / arrival_duration
         else:
-            discovered = self.get_discovered_for_group(group)
-            # TODO: Xiangyu
-            # Should we call get_discovered_for_group or get_total_discovered_for_different_groups
-            # how to deduce which meta-group are these groups corresponded to.
-            # TODO: Peter. get_discovered_for_group is correct.  Getting the appropriate number of arrival_discovered
-            # for the groups is hard. In principle, we'd have to call the group code to figure out the meta-groups
-            # associated with all of the groups being asked about.  Then we'd need to figure out what population of
-            # each meta-group is reflected in the groups being passed (in most cases it will be all of the population).
-            # Then we'll need to multiply that fraction by the arrival_discovered for each meta-group.
-            # e.g., we could add a function in population called population.fraction_by_metagroup
-            raise Exception("Xiangyu unfinished")
+            # Aggregates across all of the passed group indices, but not across time
+            discovered = self.get_total_discovered_for_different_groups(group)
+
+        # Allocate the scalar arrival_discovered across generations.
+        if arrival_discovered is not None:
+            for i in range(arrival_duration):
+                discovered[i] += arrival_discovered / arrival_duration
 
 
         iso_len = int(np.ceil(iso_lengths[-1]/self.generation_time))
@@ -377,6 +377,10 @@ class sim:
             isolation_frac[i] = 0
             for j in range(len(iso_lengths)):
                 isolation_frac[i] += iso_props[j]*cut01((iso_lengths[j]-self.generation_time*i)/self.generation_time)
+
+        # print('isolation_frac:{}'.format(str(isolation_frac)))
+        # print('isolation_lengths:{}'.format(str(iso_lengths)))
+        # print('isolation_props:{}'.format(str(iso_props)))
 
         isolated = np.zeros(self.max_T)
         for t in range(self.max_T):

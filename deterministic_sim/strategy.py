@@ -42,6 +42,10 @@ class Strategy:
     def get_initial_infections(self, params):
         """Return the initial infections when this strategy is used."""
         active_infections = np.array(params["active_infections"])
+        print('active_infections')
+        print(active_infections)
+        print(self.pct_discovered_in_pre_departure)
+        print(self.pct_discovered_in_arrival_test)
         pct_discovered = self.pct_discovered_in_pre_departure + \
                          self.pct_discovered_in_arrival_test
         return (1 - pct_discovered) * active_infections
@@ -60,6 +64,9 @@ class Strategy:
                           winter_break_infections + \
                           (pct_discovered * active_infections)
         return past_infections
+
+    # TODO pf98 hwr26 Would be good to be able to initialize the simulator where people are discovered
+    #  and recovered. This corresponds to someone who arrives as positive, is tested and found immediately.
 
     def get_active_discovered(self, params):
         """Return the active discovered when this strategy is used.
