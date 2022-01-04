@@ -88,7 +88,13 @@ infections_per_day_per_contact_unit:
 
 T: 28                           # num generations (16 weeks with 4-day generations)
 
-symptomatic_rate: .35           # used to compute discovered without surveillance
+symptomatic_rate: .525          # used to compute discovered without surveillance
+                                # We model 35% as reporting symptoms, and then
+                                # multiply this by 1.5 to represent contact tracing.
+                                # In past semesters, contact tracing seemed to find one
+                                # extra positive for every positive found via surveillance,
+                                # so even if it's done poorly it should still find a lot af cases
+
 no_surveillance_test_rate: 0.01 # percent of the population tested in a generation
                                 # (under no surveillance)
 booster_effectiveness: 0.5      # reduction in transmission from boosters
@@ -96,7 +102,7 @@ booster_effectiveness: 0.5      # reduction in transmission from boosters
 generation_time: 4              # generation time (days)
 
 # Define the isolation policy in use.
-on_campus_frac: 0.5             # fraction of students on campus
+on_campus_frac: 0.41875         # fraction of students on campus, 6700/16000
 isolation_durations:            # durations of isolation (days)
   - 5
   - 10
