@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import json
 import yaml
+from strategy import Strategy
 import micro
 from sim import sim
 from groups import meta_group, population
@@ -24,14 +25,10 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
     T = params['T']
     GENERATION_TIME = params['generation_time']
-    SYMPTOMATIC_RATE = params['symptomatic_rate']
-    NO_SURVEILLANCE_TEST_RATE = params["no_surveillance_test_rate"]
     CLASSWORK_TRANSMISSION_MULTIPLIER = params['classwork_transmission_multiplier']
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
         np.array(params['infections_per_day_per_contact_unit'])
-    MAX_INFECTIOUS_DAYS = params['max_infectious_days']
-    PCR_SENSITIVITY = params['pcr_sensitivity']
 
     # If set, this replaces the detailed description of parameters in the plot with a simple summary
     if 'simple_param_summary' in params:
@@ -40,14 +37,11 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         SIMPLE_PARAM_SUMMARY = None
 
     # =====================================================================
-    # [Initialize] Assume a group's previous and new infections are divided
-    # proportionally to the amount of contact it has as a group.
+    # [Initialize Population]
     # =====================================================================
 
     population_count = params["population_count"]
     population_names = params["population_names"]
-    initial_infections = params['initial_infections']
-    past_infections = params['past_infections']
     meta_groups = []
     for i in range(len(population_count)):
         name = population_names[i]
@@ -55,116 +49,125 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
         contact_units = np.arange(1, len(pop) + 1)
         meta_groups.append(meta_group(name, pop, contact_units))
 
-
     popul = population(meta_groups, np.array(params['meta_matrix']))
-    S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
-                                        weight="population x contacts")
-    outside_rates = params['outside_rates']
-    outside_rate = popul.get_outside_rate(outside_rates)
+
+    # =====================================================================
+    # [Initialize Strategies]
+    # =====================================================================
+
+    # TODO (hwr26): Is this the correct way to initialize this?
+    no_testing_testing_regime=TestingRegime(popul=popul, tests_per_week=0,
+                                            test_delay=1, params=params)
+    ug_prof_2x_week_testing_regime= \
+        TestingRegime(popul=popul, tests_per_week={ 'UG':2, 'GR':0, 'PR':2, 'FS':0},
+                      test_delay=1, params=params)
+
+    no_testing_strategy = \
+        Strategy(name="No Testing",
+             pct_discovered_in_pre_departure=0,
+             pct_discovered_in_arrival_test=0,
+             testing_regimes=[no_testing_testing_regime, no_testing_testing_regime],
+             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
+             period_lengths=[3,T-3-1])
+
+    # SCENARIO 1:
+    # all students do a pre-departure antigen test with sensitivity 50%
+    # all students again an arrival PCR test with sensitivity 67% and no isolation delay
+    #     0.5 caught in pre-departure
+    #     (1 - 0.5) * 0.67 = 0.335 caught in arrival testing
+    #     1 - 0.5 - 0.335 = 0.165 not caught
+
+    # SCENARIO 2:
+    # half of students do a pre-departure test with sensitivity 50%
+    # 75% of students (independently chosen) do an arrival PCR 67% sensitivity and no test delay
+    #     0.5 * 0.5 = 0.25 caught in pre-departure
+    #     (1 - 0.25) * (0.75 * 0.67) = 0.38 caught in arrival testing
+    #     1 - 0.25 - 0.38 = 0.37 not caught
+
+    arrival_testing_strategy = \
+        Strategy(name="Only Pre-Departure + Arrival Testing",
+             pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
+             pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
+             testing_regimes=[no_testing_testing_regime, no_testing_testing_regime],
+             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
+             period_lengths=[3,T-3-1])
 
 
-    # ==================================================
-    # [Run] Reduce transmission once the semester begins
-    # ==================================================
+    surge_testing_strategy = \
+        Strategy(name="UG+Prof. 2x/wk in Virtual Instr. Only",
+             pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
+             pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
+             testing_regimes=[ug_prof_2x_week_testing_regime,
+                              ug_prof_2x_week_testing_regime,
+                              no_testing_testing_regime],
+             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER,
+                                       CLASSWORK_TRANSMISSION_MULTIPLIER],
+             period_lengths=[3,3,T-6-1])
+
+    # ==================================
+    # [Run] Compare a list of strategies
+    # ==================================
 
     test_regime_names = []
     test_regime_sims = []
     test_regime_colors = []
 
-    def sim_test_regime(tests_per_week, delay, color, label = None):
+    def sim_test_regime(tests_per_week, delay, color):
 
         regime = TestingRegime(popul,tests_per_week,delay,params)
 
-        if label is None:
-            label = regime.get_name()
+        strategy = \
+            Strategy(name=regime.name,
+                pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
+                pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
+                testing_regimes=[regime, regime],
+                transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
+                period_lengths=[3,T-3-1])
 
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
-                                      np.multiply(INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
-                                                  regime.get_days_infectious())
+        sim_test_strategy(strategy, color)
 
-        # This infection rate is before we have applied testing, boosters,
-        # and any period-specific changes to transmission rates. It is a matrix where entry [i,j]
-        # is the number of
-        infection_rate = popul.infection_matrix(infections_per_contact_unit)
 
-        s = sim(T, S0, I0, R0, infection_rate=infection_rate,
-                infection_discovery_frac=popul.metagroup2group(regime.get_infection_discovery_frac()),
-                recovered_discovery_frac=popul.metagroup2group(regime.get_recovered_discovery_frac()),
-                generation_time=GENERATION_TIME,
-                outside_rate=outside_rate)
-        # 3 generations = 12 days, modeling 7 days of no instruction, followed by roughly a week of not much HW in
-        # the first week of virtual classes
-        s.step(3)
-        infections_per_contact_unit = CLASSWORK_TRANSMISSION_MULTIPLIER * infections_per_contact_unit
-        infection_rate = popul.infection_matrix(infections_per_contact_unit)
-        s.step(T-1-3, infection_rate=infection_rate)
-
-        test_regime_names.append(label)
-        test_regime_sims.append(s)
-        test_regime_colors.append(color)
-
-    def sim_test_complex_regime(tests_per_week, delay, transmission_multipliers, \
-                                period_lengths, color, label):
-        '''
-        tests_per_week, delay, transmission_multipliers, and period_lengths should all be lists of the same length.
-        These correspond to different periods of time that we wish to simulate.
-        Period i is described by the i-th element in each of these lists.
-
-        tests_per_week[i] should be either a scalar giving a value to apply across the whole population,
-        or should be a dictionary whose keys are the meta-group names (as specified in the population)
-        and whose value is the number of tests to do for that meta-group in the period.
-
-        delay[i] should be structured similarly and gives the test delay associated with this meta-group
-        in this period.
-
-        transmission_multipliers[i] is either a float or a list of floats (one for each meta-group).
-        It multplies transmission by for each meta-group in this period.
-
-        period_lengths[i] is the number of generations that this period lasts
-
-        color is the name of a color to use in plotting for this testing regime
-
-        label is a string to use in legends when referring to this testing regime
-        '''
-        for i in range(len(period_lengths)):
-            regime = TestingRegime(popul, tests_per_week[i], delay[i], params)
+    def sim_test_strategy(strategy:Strategy, color:str):
+        for i in range(strategy.periods):
+            regime = strategy.testing_regimes[i]
             # infections_per_contact_unit =
             #   BOOSTER_EFFECTIVENESS * transmission_multipliers[i] * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
             #   regime.get_days_infectious()
             infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
-                                          np.multiply(transmission_multipliers[i], \
+                                          np.multiply(strategy.transmission_multipliers[i], \
                                                       np.multiply(
                                                           INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
                                                           regime.get_days_infectious()))
             infection_rate = popul.infection_matrix(infections_per_contact_unit)
             infection_discovery_frac = popul.metagroup2group(regime.get_infection_discovery_frac())
             recovered_discovery_frac = popul.metagroup2group(regime.get_recovered_discovery_frac())
+
+            past_infections, initial_infections = strategy.get_initial_and_past_infections(params)
+            S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
+                                                weight="population x contacts")
+            outside_rates = params['outside_rates']
+            outside_rate = popul.get_outside_rate(outside_rates)
+
             if i == 0: # instantiate simulation object
                 s = sim(T, S0, I0, R0, infection_rate,
                         infection_discovery_frac=infection_discovery_frac ,
                         recovered_discovery_frac=recovered_discovery_frac,
                         generation_time=GENERATION_TIME, outside_rate=outside_rate)
-            s.step(period_lengths[i], infection_rate=infection_rate,
+            s.step(strategy.period_lengths[i], infection_rate=infection_rate,
                infection_discovery_frac = infection_discovery_frac,
                recovered_discovery_frac = recovered_discovery_frac)
 
-        test_regime_names.append(label)
+        test_regime_names.append(strategy.name)
         test_regime_sims.append(s)
         test_regime_colors.append(color)
+
 
     # This tests UG and Professional students 2x week during virtual instruction (first 6 generations),
     # and then stops surveilling them. It does not surveil GR or FS.
     # TODO pf98 rather than hard-coding the test regimes we want to plot, let's put them into a separate yaml file
     plot = 1
     if plot == 1:
-        sim_test_complex_regime(
-            [ { 'UG':2, 'GR':0, 'PR':2, 'FS':0},
-              {'UG': 2, 'GR': 0, 'PR': 2, 'FS': 0},
-              0 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
-            [ 1, 1, 1], #test delay
-            [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
-            [ 3, 3, T-6-1 ], # period lengths
-            'purple', 'UG+Prof. 2x/wk in virtual instr., no other surveillance ')
+        sim_test_strategy(surge_testing_strategy, 'purple')
 
     """
     TODO pf98
@@ -210,6 +213,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
             test_regime_sims, test_regime_colors, params, popul, SIMPLE_PARAM_SUMMARY)
 
     plotting.plot_hospitalization('sp22_sim_hosp.png', test_regime_names, test_regime_sims, test_regime_colors, params, popul)
+
+
 def usage():
     ''' Print usage message '''
     print('Usage:')
@@ -220,6 +225,7 @@ def usage():
     print('--help and -h print this message and exit')
     print('yaml-overrides replace parameters in the yaml file and are of the form parameter_name=value')
     print('Example: python sp22_sim.py --yaml=nominal_ug.yaml --out=nominal_ug.png T=10')
+
 
 if __name__ == "__main__":
 
