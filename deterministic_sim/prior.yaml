@@ -1,20 +1,19 @@
-symptomatic_rate_scale:
-  dist:
-    a: 0    # TODO [Peter]
-    b: 0    # TODO [Peter]
-    std: 0  # TODO [Peter]
-  scales:
-     - "symptomatic_rate"
+symptomatic_rate:
+  a: 0      # TODO [Peter]
+  b: 1      # TODO [Peter]
+  mu: 0.53  # TODO [Peter]
+  std: 0.2  # TODO [Peter]
 
-winter_break_infections_global_scale:
-  dist:
-    a: 0    # TODO [Peter]
-    b: 0    # TODO [Peter]
-    std: 0  # TODO [Peter]
-  scales:
-    - "winter_break_infections/UG"
-    - "winter_break_infections/GR"
-    - "winter_break_infections/PR"
-    - "winter_break_infections/FS"
+winter_break_infections_global:
+  a: 0      # TODO [Peter]
+  b: 1      # TODO [Peter]
+  mu: 1     # TODO [Peter]
+  std: 0.2  # TODO [Peter]
 
-# many more to add ..
+template:
+  a: 0
+  b: 1
+  mu: 0.5
+  std: 0.1
+
+# TODO: [Peter] to add more ..
