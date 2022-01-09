@@ -8,7 +8,7 @@ from typing import Dict
 
 
 # TODO (hwr26): popul is a redundant parameter. Try to reorganize to prevent.
-def sim_test_strategy(scenario: Dict, popul: population, strategy: Strategy,
+def sim_test_strategy(scenario: Dict, strategy: Strategy,
     color: str) -> Trajectory:
     """Return a trajectory in [color] representing a [strategy] on [scenario]
     with a given [popul].
@@ -24,6 +24,8 @@ def sim_test_strategy(scenario: Dict, popul: population, strategy: Strategy,
     BOOSTER_EFFECTIVENESS = scenario['booster_effectiveness']
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
         np.array(list(scenario['infections_per_day_per_contact_unit'].values()))
+
+    popul = population.from_scenario(scenario)
 
     for i in range(strategy.periods):
         regime = strategy.testing_regimes[i]
@@ -55,13 +57,12 @@ def sim_test_strategy(scenario: Dict, popul: population, strategy: Strategy,
     return Trajectory(strategy, s, color)
 
 
-def sim_test_regime(scenario: Dict, popul: population, tests_per_week: int,
-    delay: float, color: str):
+def sim_test_regime(scenario: Dict, tests_per_week: int, delay: float, color: str):
     """Simulate a testing regime with no pre-departure or arrival testing."""
 
     CLASSWORK_TRANSMISSION_MULTIPLIER = \
         list(scenario['classwork_transmission_multiplier'].values())
-    regime = TestingRegime(popul,tests_per_week,delay,scenario)
+    regime = TestingRegime(scenario,tests_per_week,delay)
 
     strategy = \
         Strategy(name=regime.name,
@@ -73,4 +74,4 @@ def sim_test_regime(scenario: Dict, popul: population, tests_per_week: int,
             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
             period_lengths=[3,scenario["T"]-3-1])
 
-    return sim_test_strategy(scenario, popul, strategy, color)
+    return sim_test_strategy(scenario, strategy, color)

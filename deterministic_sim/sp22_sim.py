@@ -2,16 +2,11 @@ import sys
 import numpy as np
 import json
 import yaml
-from strategy import Strategy
-from sim_helper import sim_test_regime, sim_test_strategy
 from groups import population
-from testing_regime import TestingRegime
-import matplotlib
-import matplotlib.pyplot as plt
-import warnings
+from sim_helper import sim_test_regime, sim_test_strategy
+from sp22_strategies import (no_testing_strategy, arrival_testing_strategy,
+                             surge_testing_strategy)
 import plotting
-warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
-np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 
 def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', **kwargs):
@@ -31,80 +26,11 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     params["meta_matrix"] = \
         np.array([list(row.values()) for row in params["meta_matrix"].values()])
 
-    T = params['T']
-    CLASSWORK_TRANSMISSION_MULTIPLIER = \
-        list(params['classwork_transmission_multiplier'].values())
-
     # If set, this replaces the detailed description of parameters in the plot with a simple summary
     if 'simple_param_summary' in params:
         SIMPLE_PARAM_SUMMARY = params['simple_param_summary']
     else:
         SIMPLE_PARAM_SUMMARY = None
-
-    # ========================================================================
-    # [Initialize Strategies]
-    # TODO (hwr26): At a future point, would be nice to store this information
-    # in multiple YAML files.
-    # ========================================================================
-
-    popul = population.from_scenario(params)
-
-    # some common testing regimes used in these strategies
-    no_testing_testing_regime=TestingRegime(popul=popul, tests_per_week=0,
-                                            test_delay=1, params=params)
-    ug_prof_2x_week_testing_regime= \
-        TestingRegime(popul=popul, tests_per_week={ 'UG':2, 'GR':0, 'PR':2, 'FS':0},
-                      test_delay=1, params=params)
-
-    # No extra testing (note all strategies assume testing for cause)
-    no_testing_strategy = \
-        Strategy(name="No Testing",
-             pct_discovered_in_pre_departure=0,
-             pct_discovered_in_arrival_test=0,
-             testing_regimes=[no_testing_testing_regime, no_testing_testing_regime],
-             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
-             period_lengths=[3,T-3-1])
-
-    # SCENARIO 1:
-    # all students do a pre-departure antigen test with sensitivity 50%
-    # all students again an arrival PCR test with sensitivity 67% and no isolation delay
-    #     0.5 caught in pre-departure
-    #     (1 - 0.5) * 0.67 = 0.335 caught in arrival testing
-    #     1 - 0.5 - 0.335 = 0.165 not caught
-
-    # SCENARIO 2:
-    # half of students do a pre-departure test with sensitivity 50%
-    # 75% of students (independently chosen) do an arrival PCR 67% sensitivity and no test delay
-    #     0.5 * 0.5 = 0.25 caught in pre-departure
-    #     (1 - 0.25) * (0.75 * 0.67) = 0.38 caught in arrival testing
-    #     1 - 0.25 - 0.38 = 0.37 not caught
-
-    # Pre-departure + arrival testing. No surveillance at any point
-    arrival_testing_strategy = \
-        Strategy(name="Only Pre-Departure + Arrival Testing",
-             # pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
-             # pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
-             pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
-             pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
-             testing_regimes=[no_testing_testing_regime, no_testing_testing_regime],
-             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
-             period_lengths=[3,T-3-1])
-
-    # Pre-departure + arrival testing. Surveillance of UG and professional
-    # students before classes and during virtual instruction at 2x/wk.
-    # It does not surveil GR or FS.
-    surge_testing_strategy = \
-        Strategy(name="UG+Prof. 2x/wk in Virtual Instr. Only",
-             # pct_discovered_in_pre_departure=0.5,   # Using Scenario 1
-             # pct_discovered_in_arrival_test=0.335,  # Using Scenario 1
-             pct_discovered_in_pre_departure=0.25,  # Using Scenario 2
-             pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
-             testing_regimes=[ug_prof_2x_week_testing_regime,
-                              ug_prof_2x_week_testing_regime,
-                              no_testing_testing_regime],
-             transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER,
-                                       CLASSWORK_TRANSMISSION_MULTIPLIER],
-             period_lengths=[3,3,T-6-1])
 
     # ==================================
     # [Run] Compare a list of strategies
@@ -114,27 +40,30 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
     if plot == 1:
         trajectories = [
-            sim_test_strategy(params, popul, surge_testing_strategy, 'purple'),
-            sim_test_strategy(params, popul, arrival_testing_strategy, 'black'),
+            sim_test_strategy(params, surge_testing_strategy(params), 'purple'),
+            sim_test_strategy(params, arrival_testing_strategy(params), 'black'),
         ]
     if plot == 2:
         trajectories = [
-            sim_test_regime(params,popul,1,2,"crimson"),
-            sim_test_regime(params,popul,1,1,"orangered"), # used to be coral in the plots with 1.5 day delay
-            sim_test_regime(params,popul,2,2,"navy"),
-            sim_test_regime(params,popul,2,1,"royalblue"), # used to be powderblue in the plots with 1.5 day delay
-            sim_test_regime(params,popul,0,1,"black") # No surveillance
+            sim_test_regime(params,1,2,"crimson"),
+            sim_test_regime(params,1,1,"orangered"), # used to be coral in the plots with 1.5 day delay
+            sim_test_regime(params,2,2,"navy"),
+            sim_test_regime(params,2,1,"royalblue"), # used to be powderblue in the plots with 1.5 day delay
+            sim_test_regime(params,0,1,"black") # No surveillance
         ]
     if plot == 3:
         trajectories = [
-            sim_test_strategy(params, popul, no_testing_strategy, 'royalblue'),
-            sim_test_strategy(params, popul, arrival_testing_strategy, 'black'),
-            sim_test_strategy(params, popul, surge_testing_strategy, 'purple')
+            sim_test_strategy(params, no_testing_strategy(params), 'royalblue'),
+            sim_test_strategy(params, arrival_testing_strategy(params), 'black'),
+            sim_test_strategy(params, surge_testing_strategy(params), 'purple')
         ]
 
     # =================
     # [Plot] Make plots
     # ==================
+
+    # TODO (hwr26): Change plotting code to eliminate this call
+    popul = population.from_scenario(params)
 
     if simple_plot:
         plotting.plot_sm_test_regime_comparison(out_file, trajectories, params)
