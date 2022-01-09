@@ -20,11 +20,11 @@ def initialize_population(params):
     """Initialize the population from the simulation params."""
 
     population_count = params["population_count"]
-    population_names = list(params["population_names"].keys())
     meta_groups = []
-    for i in range(len(population_count)):
-        name = population_names[i]
-        pop = population_count[i] * np.array(params['pop_fracs'][i])
+    for i in range(len(params["metagroups"])):
+        group = params["metagroups"][i]
+        name = group
+        pop = population_count[group] * np.array(params['pop_fracs'][i])
         contact_units = np.arange(1, len(pop) + 1)
         meta_groups.append(meta_group(name, pop, contact_units))
     return population(meta_groups, np.array(params['meta_matrix']))
@@ -45,10 +45,10 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
 
     T = params['T']
     GENERATION_TIME = params['generation_time']
-    CLASSWORK_TRANSMISSION_MULTIPLIER = params['classwork_transmission_multiplier']
+    CLASSWORK_TRANSMISSION_MULTIPLIER = list(params['classwork_transmission_multiplier'].values())
     BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
-        np.array(params['infections_per_day_per_contact_unit'])
+        np.array(list(params['infections_per_day_per_contact_unit'].values()))
 
     # If set, this replaces the detailed description of parameters in the plot with a simple summary
     if 'simple_param_summary' in params:
@@ -162,7 +162,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
             past_infections = strategy.get_past_infections(params)
             S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
                                                 weight="population x contacts")
-            outside_rates = params['outside_rates']
+            outside_rates = list(params['outside_rates'].values())
             outside_rate = popul.get_outside_rate(outside_rates)
 
             if i == 0: # instantiate simulation object

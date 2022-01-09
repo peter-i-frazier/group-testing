@@ -85,7 +85,7 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     if metagroup_names == None:
         plt.title("Spring Semester Infections, Students+Employees")
     else:
-        plt.title("Infections " + reduce(add, [params["population_names"][x] for x in metagroup_names]))
+        plt.title("Infections " + reduce(add, [params["metagroup_names"][x] for x in metagroup_names]))
 
     if legend:
         ax = plt.gca()
@@ -248,7 +248,7 @@ def plot_hospitalization(outfile,
         for i in range(4):
             hospitalized += \
                 s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
-                params["hospitalization_rates"][i]
+                list(params["hospitalization_rates"].values())[i]
 
         plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
         plt.title("Spring Semester Hospitalizations, Students+Employees")
@@ -303,7 +303,6 @@ def summary_statistics(outfile: str,
                                  popul = popul, metagroup_names = ['UG'], metagroup_idx = [0],
                                  active_discovered = strat.get_active_discovered(params))  # Get UG isolation only
         on_campus_isolated = params["on_campus_frac"] * isolated
-        print(on_campus_isolated)
         return int(np.ceil(np.sum(on_campus_isolated) * params["generation_time"]))
 
     df["Total Hotel Rooms"] = \
@@ -338,7 +337,7 @@ def summary_statistics(outfile: str,
         for i in range(4):
             hospitalized += \
                 s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
-                params["hospitalization_rates"][i]
+                list(params["hospitalization_rates"].values())[i]
         return int(np.ceil(hospitalized[-1]))
 
     df["Hospitalizations"] = \

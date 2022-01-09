@@ -41,20 +41,16 @@ class Strategy:
 
     def get_initial_infections(self, params):
         """Return the initial infections when this strategy is used."""
-        active_infections = np.array(params["active_infections"])
-        print('active_infections')
-        print(active_infections)
-        print(self.pct_discovered_in_pre_departure)
-        print(self.pct_discovered_in_arrival_test)
+        active_infections = np.array(list(params["active_infections"].values()))
         pct_discovered = self.pct_discovered_in_pre_departure + \
                          self.pct_discovered_in_arrival_test
         return (1 - pct_discovered) * active_infections
 
     def get_past_infections(self, params):
         """Return the past infections (recovered) when this strategy is used."""
-        dec_surge_infections = np.array(params["dec_surge_infections"])
-        winter_break_infections = np.array(params["winter_break_infections"])
-        active_infections = np.array(params["active_infections"])
+        dec_surge_infections = np.array(list(params["dec_surge_infections"].values()))
+        winter_break_infections = np.array(list(params["winter_break_infections"].values()))
+        active_infections = np.array(list(params["active_infections"].values()))
         pct_discovered = self.pct_discovered_in_pre_departure + \
                          self.pct_discovered_in_arrival_test
         # all of these past infections begin as recovered in the simulation
@@ -74,5 +70,5 @@ class Strategy:
         Currently, active discovered refers only to those active cases found
         through arrival testing (NOT pre-departure testing).
         """
-        active_infections = np.array(params["active_infections"])
+        active_infections = np.array(list(params["active_infections"].values()))
         return active_infections * self.pct_discovered_in_arrival_test

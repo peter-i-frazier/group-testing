@@ -1,13 +1,20 @@
-population_count:               # population count (by meta group)
-  - 16000  # UG
-  - 8000   # GR
-  - 3000   # VM/GM/LA
-  - 10000  # fac/staff
-population_names:               # names of populations (by meta group)
+metagroups:                     # list of the metagroups
+  - "UG"
+  - "GR"
+  - "PR"
+  - "FS"
+
+metagroup_names:                # names of metagroups
   UG: "UG"
   GR: "Grad-Research"
   PR: "Professional"
   FS: "Employees"
+
+population_count:               # population count (by meta group)
+  UG: 16000
+  GR: 8000
+  PR: 3000
+  FS: 10000
 
 # The google sheet below works out these numbers, and also the number of people
 # who will need to be isolated from the people infected over break with immunity
@@ -16,37 +23,37 @@ population_names:               # names of populations (by meta group)
 # https://docs.google.com/spreadsheets/d/1bWOtKMsK4dBm47GPHWb3LhiPNuYlXFHvDr-f0BIv7IY/edit?usp=sharing
 
 dec_surge_infections:
-  - 1900  # UG
-  - 0     # GR
-  - 0     # VM/GM/LA
-  - 0     # fac/staff
+  UG: 1900
+  GR: 0
+  PR: 0
+  FS: 0
 
 # @Brian Liu's analysis:
 # 2506 UG students are infected and recover from 12/22/2021 - 1/25/2022
 # Divide by 2 and scale by population size to get GR and VM/GM/LA.
 # Take 15 per day for 40 days to get fac/staff
 winter_break_infections:
-  - 2506  # UG
-  - 627   # GR          [(2506/2) * (8000/16000)]
-  - 235   # GVM/GM/LAR  [(2506/2) * (3000/16000)]
-  - 600   # fac/staff   [15 * 40]
+  UG: 2506
+  GR: 627   # [(2506/2) * (8000/16000)]
+  PR: 235   # [(2506/2) * (3000/16000)]
+  FS: 600   # [15 * 40]
 
 # @Brian Liu's analysis:
 # 965 UG positives in the period 1/26/2022 - 2/7/2022
 # Divide by 2 and scale by population size to get GR and VM/GM/LA.
 # Take 15 per day for 3 days to get fac/staff
 active_infections:
-  - 965   # UG
-  - 241   # GR          [(965/2) * (8000/16000)]
-  - 90    # GVM/GM/LAR  [(965/2) * (3000/16000)]
-  - 45    # fac/staff   [15 * 3]
+  UG: 965
+  GR: 241   # [(965/2) * (8000/16000)]
+  PR: 90    # [(965/2) * (3000/16000)]
+  FS: 45    # [15 * 3]
 
 # @Yujia's analyis
 hospitalization_rates:
-  - 0.00025  # UG         [1/4000]
-  - 0.00025  # GR         [1/4000]
-  - 0.00025  # VM/GM/LA   [1/4000]
-  - 0.005    # fac/staff  [1/200]
+  UG: 0.00025  # [1/4000]
+  GR: 0.00025  # [1/4000]
+  PR: 0.00025  # [1/4000]
+  FS: 0.005    # [1/200]
 
 # In the modeling team's spring 2021 projections, based on fall 2020 data, we estimated per-person
 # outside infection rates of 1.42E-5 for the greek/athlete population, 7.11E-6 for other UG, and
@@ -58,10 +65,10 @@ hospitalization_rates:
 # - a GR number of 5*(8K/10K)/10 = 0.4
 # - a PR number of 5*(3K/10K)/10 = 0.15
 outside_rates: #number of infections for each meta-group per day across the whole meta-group
-  - 0.8
-  - 0.4
-  - 0.15
-  - 5           # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
+  UG: 0.8
+  GR: 0.4
+  PR: 0.15
+  FS: 5         # @sst76 from observed 175 over 77 days in employees from 9/15 to 12/01, to give 2.27
                 # pf98 more recently we've see roughly 15 per day across the entire employee population
                 # Cutting this to 5 because by the time the semester starts new cases should be less frequent
 
@@ -69,20 +76,20 @@ outside_rates: #number of infections for each meta-group per day across the whol
 # (after 3 generations / 12 days pass from the start of the simulation --- this is 7 pre-semester days and 5 days
 # during virtual instruction )
 classwork_transmission_multiplier:
-  - 0.85  # UG
-  - 1     # GR, we model them as not being affected by classwork
-  - 0.85  # VM/GM/LA
-  - 1     # fac/staff
+  UG: 0.85
+  GR: 1     # we model them as not being affected by classwork
+  PR: 0.85
+  FS: 1     # we model them as not being affected by classwork
 
 # Number of infections per day per (meta-group-specific contact unit).
 # This is based on the following analysis:
 #   @hwr26: calibration-student.py
 #   @sst76: calibration-employee.py
 infections_per_day_per_contact_unit:
-  - 0.28
-  - 0.10
-  - 0.10
-  - 0.015 # @sst calibration during the Dec 31 meeting gives 0.005.  Increasing this 3x for Omicron.
+  UG: 0.28
+  GR: 0.10
+  PR: 0.10
+  FS: 0.015 # @sst calibration during the Dec 31 meeting gives 0.005.  Increasing this 3x for Omicron.
 
 
 
