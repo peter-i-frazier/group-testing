@@ -7,7 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
-from typing import List
+from typing import List, Dict
 from functools import reduce
 from operator import iconcat, add
 from datetime import datetime
@@ -16,22 +16,26 @@ from textwrap import fill
 
 class Trajectory:
 
-    def __init__(self, strategy: Strategy, sim: sim, color: str):
+    def __init__(self, scenario: Dict, strategy: Strategy, sim: sim,
+        color: str, name: str=None):
         """Manage all of the objects associated with a trajectory on a graph.
 
         Args:
+            scenario (Dict): Scenario that the simulation was run under.
             strategy (Strategy): Strategy that was used to run the simulation.
             sim (sim): Simulation which used the provided strategy.
             color (str): Color of the trajectory when plotting.
+            name (str): Name of the trajectory.
         """
+        self.scenario = scenario
         self.strategy = strategy
         self.sim = sim
         self.color = color
+        self.name = strategy.name if name is None else name
 
 
 def plot_small_summary(outfile : str,
-                       trajectories: List[Trajectory],
-                       params):
+                       trajectories: List[Trajectory]):
     """Plot a small summary of the simulation run."""
     plt.rcParams["figure.figsize"] = (18,16)
     plt.rcParams['font.size'] = 30
@@ -39,28 +43,27 @@ def plot_small_summary(outfile : str,
     plt.rcParams['legend.fontsize'] = 22
     plt.subplots_adjust(hspace = 0.8)
     plt.subplot(211)
-    plot_infected_discovered(trajectories, params)
+    plot_infected_discovered(trajectories)
     plt.subplot(212)
-    plot_isolated(trajectories, params, oncampus=True)
+    plot_isolated(trajectories, oncampus=True)
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
 
 def plot_infected_discovered(trajectories: List[Trajectory],
-                             params,
                              popul = None,
                              metagroup_names : List[str] = None,
                              legend = True):
     """Plot infected and discovered for several trajectories.
 
     Args:
-        params: Parameters used to run the simulation.
         metagroup_names: list of names of meta-group(s) to plot, \
             None to plot the sum across groups.
     """
     # plot each trajectory
     for trajectory in trajectories:
-        label = trajectory.strategy.name
+        scenario = trajectory.scenario
+        label = trajectory.name
         s = trajectory.sim
         color = trajectory.color
 
@@ -85,7 +88,7 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     if metagroup_names == None:
         plt.title("Spring Semester Infections, Students+Employees")
     else:
-        plt.title("Infections " + reduce(add, [params["metagroup_names"][x] for x in metagroup_names]))
+        plt.title("Infections " + reduce(add, [scenario["metagroup_names"][x] for x in metagroup_names]))
 
     if legend:
         ax = plt.gca()
@@ -137,7 +140,6 @@ def _get_isolated(s : sim, params,
 # TODO pf98: Instead of defaulting metagroup_names and metagroup_idx to the explicit list of metagroups,
 # set them to None and have the code do the aggregation
 def plot_isolated(trajectories: List[Trajectory],
-                            params,
                             legend = True,
                             popul = None, metagroup_names = None, metagroup_idx = None,
                             oncampus = False):
@@ -148,19 +150,20 @@ def plot_isolated(trajectories: List[Trajectory],
     Turn on the oncampus flag to apply the oncampus_frac
     """
     for trajectory in trajectories:
-        label = trajectory.strategy.name
+        scenario = trajectory.scenario
+        label = trajectory.name
         s = trajectory.sim
         color = trajectory.color
 
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
 
-        isolated = _get_isolated(s,params,popul=popul,
+        isolated = _get_isolated(s,scenario,popul=popul,
                                  metagroup_names=metagroup_names,
                                  metagroup_idx=metagroup_idx,
-                                 active_discovered=trajectory.strategy.get_active_discovered(params))
+                                 active_discovered=trajectory.strategy.get_active_discovered(scenario))
 
         if oncampus:
-            on_campus_isolated = params["on_campus_frac"] * isolated
+            on_campus_isolated = scenario["on_campus_frac"] * isolated
             plt.plot(X, on_campus_isolated, label=label, color=color)
             if metagroup_names is None:
                 plt.title("On-campus Isolation (Students+Employees)")
@@ -181,23 +184,23 @@ def plot_isolated(trajectories: List[Trajectory],
 
 def plot_comprehensive_summary(outfile: str,
                                trajectories: List[Trajectory],
-                               params, popul, simple_param_summary = None):
+                               popul, simple_param_summary = None):
     """Plot a comprehensive summary of the simulation run."""
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
     plt.rcParams.update({'font.size': 8})
 
     plt.subplot(411) # Take up the whole top row
-    plot_infected_discovered(trajectories, params, legend = True)
+    plot_infected_discovered(trajectories, legend = True)
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_isolated(trajectories, params, popul=popul, metagroup_names = ['UG'], metagroup_idx=[0],
+    plot_isolated(trajectories, popul=popul, metagroup_names = ['UG'], metagroup_idx=[0],
                   legend = False, oncampus = True)
     window += 1
 
     plt.subplot(window)
-    plot_isolated(trajectories, params, popul=popul, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
+    plot_isolated(trajectories, popul=popul, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
                   legend = False, oncampus = False)
     window += 1
 
@@ -208,15 +211,15 @@ def plot_comprehensive_summary(outfile: str,
         for i in range(len(metagroups)):
             plt.subplot(window)
             window += 1
-            plot_infected_discovered(trajectories, params, popul, [metagroups[i]], legend = False)
+            plot_infected_discovered(trajectories, popul, [metagroups[i]], legend = False)
 
 
-    def print_params():
-        if simple_param_summary is None:
-            plt.text(0,-0.5,param2txt(params))
-        else:
-            now = datetime.now()
-            plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
+    # def print_params():
+    #     if simple_param_summary is None:
+    #         plt.text(0,-0.5,param2txt(params))
+    #     else:
+    #         now = datetime.now()
+    #         plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
 
     #plt.subplot(window)
     #plt.axis('off')
@@ -231,14 +234,15 @@ def plot_comprehensive_summary(outfile: str,
 
 def plot_hospitalization(outfile,
                          trajectories: List[Trajectory],
-                         params, popul, legend = True):
+                         popul, legend = True):
     """Plot total hospitalizations for multiple trajectories."""
     plt.rcParams["figure.figsize"] = (8,6)
     plt.rcParams['font.size'] = 15
     plt.rcParams['lines.linewidth'] = 6
     plt.rcParams['legend.fontsize'] = 12
     for trajectory in trajectories:
-        label = trajectory.strategy.name
+        scenario = trajectory.scenario
+        label = trajectory.name
         s = trajectory.sim
         color = trajectory.color
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
@@ -248,7 +252,7 @@ def plot_hospitalization(outfile,
         for i in range(4):
             hospitalized += \
                 s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
-                list(params["hospitalization_rates"].values())[i]
+                list(scenario["hospitalization_rates"].values())[i]
 
         plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
         plt.title("Spring Semester Hospitalizations, Students+Employees")

@@ -66,11 +66,11 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     popul = population.from_scenario(params)
 
     if simple_plot:
-        plotting.plot_sm_test_regime_comparison(out_file, trajectories, params)
+        plotting.plot_small_summary(out_file, trajectories)
     else:
-        plotting.plot_comprehensive_summary(out_file, trajectories, params, popul, SIMPLE_PARAM_SUMMARY)
+        plotting.plot_comprehensive_summary(out_file, trajectories, popul, SIMPLE_PARAM_SUMMARY)
 
-    plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, params, popul)
+    plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, popul)
     plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories, params, popul)
 
 def usage():

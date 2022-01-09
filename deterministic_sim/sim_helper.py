@@ -9,7 +9,7 @@ from typing import Dict
 
 # TODO (hwr26): popul is a redundant parameter. Try to reorganize to prevent.
 def sim_test_strategy(scenario: Dict, strategy: Strategy,
-    color: str) -> Trajectory:
+    color: str, name: str=None) -> Trajectory:
     """Return a trajectory in [color] representing a [strategy] on [scenario]
     with a given [popul].
 
@@ -18,6 +18,7 @@ def sim_test_strategy(scenario: Dict, strategy: Strategy,
         popul (population): The population of the simulation.
         strategy (Strategy): The strategy to be used with the simulation.
         color (str): The color of the trajectory.
+        name (str): Name of the trajectory. Defaults to the strategy name.
     """
     T = scenario['T']
     GENERATION_TIME = scenario['generation_time']
@@ -54,7 +55,7 @@ def sim_test_strategy(scenario: Dict, strategy: Strategy,
             infection_discovery_frac = infection_discovery_frac,
             recovered_discovery_frac = recovered_discovery_frac)
 
-    return Trajectory(strategy, s, color)
+    return Trajectory(scenario, strategy, s, color, name)
 
 
 def sim_test_regime(scenario: Dict, tests_per_week: int, delay: float, color: str):
