@@ -2,11 +2,9 @@ import sys
 import numpy as np
 import json
 import yaml
-from plotting import Trajectory
 from strategy import Strategy
-import micro
-from sim import sim
-from groups import meta_group, population
+from sim_helper import sim_test_regime, sim_test_strategy
+from groups import population
 from testing_regime import TestingRegime
 import matplotlib
 import matplotlib.pyplot as plt
@@ -30,11 +28,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     params.update(json_params)
 
     T = params['T']
-    GENERATION_TIME = params['generation_time']
-    CLASSWORK_TRANSMISSION_MULTIPLIER = list(params['classwork_transmission_multiplier'].values())
-    BOOSTER_EFFECTIVENESS = params['booster_effectiveness']
-    INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
-        np.array(list(params['infections_per_day_per_contact_unit'].values()))
+    CLASSWORK_TRANSMISSION_MULTIPLIER = \
+        list(params['classwork_transmission_multiplier'].values())
 
     # If set, this replaces the detailed description of parameters in the plot with a simple summary
     if 'simple_param_summary' in params:
@@ -111,99 +106,26 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # [Run] Compare a list of strategies
     # ==================================
 
-
-    def sim_test_regime(tests_per_week, delay, color):
-
-        regime = TestingRegime(popul,tests_per_week,delay,params)
-
-        strategy = \
-            Strategy(name=regime.name,
-                # TODO (hwr26): This matches what we had before but we should
-                # choose a scenario to run with
-                pct_discovered_in_pre_departure=0.25,   # Using Scenario 2
-                pct_discovered_in_arrival_test=0.38,  # Using Scenario 2
-                testing_regimes=[regime, regime],
-                transmission_multipliers=[1, CLASSWORK_TRANSMISSION_MULTIPLIER],
-                period_lengths=[3,T-3-1])
-
-        sim_test_strategy(strategy, color)
-
-
-    def sim_test_strategy(strategy:Strategy, color:str):
-        for i in range(strategy.periods):
-            regime = strategy.testing_regimes[i]
-            # infections_per_contact_unit =
-            #   BOOSTER_EFFECTIVENESS * transmission_multipliers[i] * INFECTIONS_PER_DAY_PER_CONTACT_UNIT * \
-            #   regime.get_days_infectious()
-            infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
-                                          np.multiply(strategy.transmission_multipliers[i], \
-                                                      np.multiply(
-                                                          INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
-                                                          regime.get_days_infectious()))
-            infection_rate = popul.infection_matrix(infections_per_contact_unit)
-            infection_discovery_frac = popul.metagroup2group(regime.get_infection_discovery_frac())
-            recovered_discovery_frac = popul.metagroup2group(regime.get_recovered_discovery_frac())
-
-            initial_infections = strategy.get_initial_infections(params)
-            past_infections = strategy.get_past_infections(params)
-            S0, I0, R0 = popul.get_init_SIR_vec(initial_infections, past_infections,
-                                                weight="population x contacts")
-            outside_rates = list(params['outside_rates'].values())
-            outside_rate = popul.get_outside_rate(outside_rates)
-
-            if i == 0: # instantiate simulation object
-                s = sim(T, S0, I0, R0, infection_rate,
-                        infection_discovery_frac=infection_discovery_frac ,
-                        recovered_discovery_frac=recovered_discovery_frac,
-                        generation_time=GENERATION_TIME, outside_rate=outside_rate)
-            s.step(strategy.period_lengths[i], infection_rate=infection_rate,
-               infection_discovery_frac = infection_discovery_frac,
-               recovered_discovery_frac = recovered_discovery_frac)
-
-        return Trajectory(strategy, s, color)
-
-    """
-    TODO (hwr26): I don't think this is necessary anymore..
-
-    I ran these three different simulations and confirmed via inspection of the plots that they
-    gave the same output is the same. It would be good to move this into a test case.
-
-    sim_test_regime(2,1,"powderblue")
-
-    sim_test_complex_regime(
-        [ { 'UG':2, 'GR':2, 'PR':2, 'FS':2}, 2 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
-        [ 1, 1], #test delay
-        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
-        [ 3, T-3-1 ], # period lengths
-        'powderblue', '2x/wk test')
-
-    sim_test_complex_regime(
-        [ 2, 2 ], # testing frequencies.  UG and PR are tested 2x / wk in period 1
-        [ 1, 1], #test delay
-        [ 1, CLASSWORK_TRANSMISSION_MULTIPLIER], # transmission multipliers
-        [ 3, T-3-1 ], # period lengths
-        'powderblue', '2x/wk test')
-    """
-    plot = 1
+    plot = 3
 
     if plot == 1:
         trajectories = [
-            sim_test_strategy(surge_testing_strategy, 'purple'),
-            sim_test_strategy(arrival_testing_strategy, 'black'),
+            sim_test_strategy(params, popul, surge_testing_strategy, 'purple'),
+            sim_test_strategy(params, popul, arrival_testing_strategy, 'black'),
         ]
     if plot == 2:
         trajectories = [
-            sim_test_regime(1,2,"crimson"),
-            sim_test_regime(1,1,"orangered"), # used to be coral in the plots with 1.5 day delay
-            sim_test_regime(2,2,"navy"),
-            sim_test_regime(2,1,"royalblue"), # used to be powderblue in the plots with 1.5 day delay
-            sim_test_regime(0,1,"black") # No surveillance
+            sim_test_regime(params,popul,1,2,"crimson"),
+            sim_test_regime(params,popul,1,1,"orangered"), # used to be coral in the plots with 1.5 day delay
+            sim_test_regime(params,popul,2,2,"navy"),
+            sim_test_regime(params,popul,2,1,"royalblue"), # used to be powderblue in the plots with 1.5 day delay
+            sim_test_regime(params,popul,0,1,"black") # No surveillance
         ]
     if plot == 3:
         trajectories = [
-            sim_test_strategy(no_testing_strategy, 'royalblue'),
-            sim_test_strategy(arrival_testing_strategy, 'black'),
-            sim_test_strategy(surge_testing_strategy, 'purple')
+            sim_test_strategy(params, popul, no_testing_strategy, 'royalblue'),
+            sim_test_strategy(params, popul, arrival_testing_strategy, 'black'),
+            sim_test_strategy(params, popul, surge_testing_strategy, 'purple')
         ]
 
     # =================
