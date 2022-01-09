@@ -27,6 +27,10 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     json_params = json.load(open(params["json_path"]))
     params.update(json_params)
 
+    # convert to numpy matrix
+    params["meta_matrix"] = \
+        np.array([list(row.values()) for row in params["meta_matrix"].values()])
+
     T = params['T']
     CLASSWORK_TRANSMISSION_MULTIPLIER = \
         list(params['classwork_transmission_multiplier'].values())
@@ -106,7 +110,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # [Run] Compare a list of strategies
     # ==================================
 
-    plot = 3
+    plot = 1
 
     if plot == 1:
         trajectories = [

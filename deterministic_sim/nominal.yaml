@@ -131,3 +131,25 @@ pcr_sensitivity: 0.9
 # that they have, starting from low contact to high contact.
 # Assumes that group i has i+1 contacts per day.
 json_path: "nominal.json"       # path to JSON with additional params
+
+meta_matrix:
+  UG:
+    UG: 0.8351648352
+    GR: 0.03296703297
+    PR: 0.05054945055
+    FS: 0.08131868132
+  GR:
+    UG: 0.02033898305
+    GR: 0.9593220339
+    PR: 0.02033898305
+    FS: 0.0
+  PR:
+    UG: 0.1634615385
+    GR: 0.1057692308
+    PR: 0.6923076923
+    FS: 0.03846153846
+  FS:
+    UG: 0.06875
+    GR: 0.0125
+    PR: 0.05
+    FS: 0.86875
