@@ -116,6 +116,19 @@ class population:
 
         self.groupname2idx = {name: i for i, name in enumerate(self.idx2groupname)}
 
+    @staticmethod
+    def from_scenario(scenario):
+        """Initialize a population from the parameters in a scenario."""
+        population_count = scenario["population_count"]
+        meta_groups = []
+        for i in range(len(scenario["metagroups"])):
+            group = scenario["metagroups"][i]
+            name = group
+            pop = population_count[group] * np.array(scenario['pop_fracs'][i])
+            contact_units = np.arange(1, len(pop) + 1)
+            meta_groups.append(meta_group(name, pop, contact_units))
+        return population(meta_groups, np.array(scenario['meta_matrix']))
+
 
     def infection_matrix(self, infections_per_contact_unit):
         '''

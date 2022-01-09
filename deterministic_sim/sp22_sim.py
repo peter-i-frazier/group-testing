@@ -16,20 +16,6 @@ warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 
-def initialize_population(params):
-    """Initialize the population from the simulation params."""
-
-    population_count = params["population_count"]
-    meta_groups = []
-    for i in range(len(params["metagroups"])):
-        group = params["metagroups"][i]
-        name = group
-        pop = population_count[group] * np.array(params['pop_fracs'][i])
-        contact_units = np.arange(1, len(pop) + 1)
-        meta_groups.append(meta_group(name, pop, contact_units))
-    return population(meta_groups, np.array(params['meta_matrix']))
-
-
 def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', **kwargs):
 
     # =======================
@@ -62,7 +48,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # in multiple YAML files.
     # ========================================================================
 
-    popul = initialize_population(params)
+    popul = population.from_scenario(params)
 
     # some common testing regimes used in these strategies
     no_testing_testing_regime=TestingRegime(popul=popul, tests_per_week=0,
