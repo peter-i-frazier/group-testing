@@ -1,5 +1,6 @@
 from typing import List
 import numpy as np
+from scipy.stats import pareto
 '''
 This module contains code for working with groups and meta-groups
 '''
@@ -124,7 +125,12 @@ class population:
         for i in range(len(scenario["metagroups"])):
             group = scenario["metagroups"][i]
             name = group
-            pop = population_count[group] * np.array(scenario['pop_fracs'][i])
+            b = scenario['pop_fracs_pareto'][group]
+            n = scenario['pop_fracs_max'][group]
+            pop_frac = np.array([pareto.pdf(k,b) for k in range(1,n+1)])
+            pop_frac = pop_frac/np.sum(pop_frac)
+            pop = population_count[group] * pop_frac
+            # pop = population_count[group] * np.array(scenario['pop_fracs'][i])
             contact_units = np.arange(1, len(pop) + 1)
             meta_groups.append(meta_group(name, pop, contact_units))
         return population(meta_groups, np.array(scenario['meta_matrix']))
