@@ -1,37 +1,14 @@
 import numpy as np
 import pandas as pd
-from strategy import Strategy
-from groups import population
-from sim import sim
 import matplotlib
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
-from typing import List, Dict
+from typing import List
 from functools import reduce
 from operator import iconcat, add
-from datetime import datetime
-from textwrap import fill
-
-
-class Trajectory:
-
-    def __init__(self, scenario: Dict, strategy: Strategy, sim: sim,
-        color: str, name: str=None):
-        """Manage all of the objects associated with a trajectory on a graph.
-
-        Args:
-            scenario (Dict): Scenario that the simulation was run under.
-            strategy (Strategy): Strategy that was used to run the simulation.
-            sim (sim): Simulation which used the provided strategy.
-            color (str): Color of the trajectory when plotting.
-            name (str): Name of the trajectory.
-        """
-        self.scenario = scenario
-        self.strategy = strategy
-        self.sim = sim
-        self.color = color
-        self.name = strategy.name if name is None else name
+from trajectory import Trajectory
+import metrics
 
 
 def plot_small_summary(outfile : str,
@@ -98,51 +75,12 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     plt.ylabel('Cumulative Infected')
 
 
-def _get_isolated(s : sim, params,
-                  popul = None,
-                  metagroup_names = None,
-                  metagroup_idx = None,
-                  active_discovered = None):
-    """
-    Helper function that gets the number isolated from a simulation object (which does not include the additional
-    arrival positives) for some or all metagroups.  If you are getting all metagroups, popul, metagroup_names,
-    and metagroup_idx should be None.
-    active_discovered is either None or a numpy array (one for each metagroup)
-    """
-
-    if metagroup_names is None:
-        if active_discovered is not None:
-            active_discovered = sum(active_discovered) # Need to aggregate over all the metagroups
-        isolated = s.get_isolated(arrival_discovered=active_discovered,
-                                  iso_lengths=params["isolation_durations"],
-                                  iso_props=params["isolation_fracs"])
-        return isolated
-
-    # Here, metagroup_names is not none
-    # TODO: assert that metagroup_idx has the right length, population is not none
-
-    # Get the list of group indices
-    group_idx = popul.metagroup_indices(metagroup_names)  # these indices are at the group level, but in a list of lists
-    idx = reduce(iconcat, group_idx, [])  # flatten to just a list
-
-    # Get the active discovered for the desired metagroup indices
-    if active_discovered is not None:
-        metagroup_active_discovered = sum(active_discovered[metagroup_idx])
-    else:
-        metagroup_active_discovered = None
-
-    isolated = s.get_isolated(group=idx, arrival_discovered=metagroup_active_discovered,
-                              iso_lengths=params["isolation_durations"],
-                              iso_props=params["isolation_fracs"])
-
-    return isolated
-
 # TODO pf98: Instead of defaulting metagroup_names and metagroup_idx to the explicit list of metagroups,
 # set them to None and have the code do the aggregation
 def plot_isolated(trajectories: List[Trajectory],
-                            legend = True,
-                            popul = None, metagroup_names = None, metagroup_idx = None,
-                            oncampus = False):
+                  legend = True,
+                  metagroup_names = None, metagroup_idx = None,
+                  oncampus = False):
     """Plot the number of rooms of isolation required to isolate on-campus
     students under the passed set of test regimes.
     popul, metagroups_names and metagroup_idx are only needed if we getting specific metagroups.
@@ -157,10 +95,9 @@ def plot_isolated(trajectories: List[Trajectory],
 
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
 
-        isolated = _get_isolated(s,scenario,popul=popul,
-                                 metagroup_names=metagroup_names,
-                                 metagroup_idx=metagroup_idx,
-                                 active_discovered=trajectory.strategy.get_active_discovered(scenario))
+        isolated = metrics.get_isolated(trajectory=trajectory,
+                                        metagroup_names=metagroup_names,
+                                        metagroup_idx=metagroup_idx)
 
         if oncampus:
             on_campus_isolated = scenario["on_campus_frac"] * isolated
@@ -184,7 +121,7 @@ def plot_isolated(trajectories: List[Trajectory],
 
 def plot_comprehensive_summary(outfile: str,
                                trajectories: List[Trajectory],
-                               popul, simple_param_summary = None):
+                               simple_param_summary = None):
     """Plot a comprehensive summary of the simulation run."""
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(8.5, 11)
@@ -195,15 +132,17 @@ def plot_comprehensive_summary(outfile: str,
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_isolated(trajectories, popul=popul, metagroup_names = ['UG'], metagroup_idx=[0],
+    plot_isolated(trajectories, metagroup_names = ['UG'], metagroup_idx=[0],
                   legend = False, oncampus = True)
     window += 1
 
     plt.subplot(window)
-    plot_isolated(trajectories, popul=popul, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
+    plot_isolated(trajectories, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
                   legend = False, oncampus = False)
     window += 1
 
+    # Assumes that every trajectory in [trajectories] has the same population
+    popul = trajectories[0].pop
     metagroups = popul.metagroup_names()
 
     # Plot infected and discovered for each meta-group
@@ -213,7 +152,6 @@ def plot_comprehensive_summary(outfile: str,
             window += 1
             plot_infected_discovered(trajectories, popul, [metagroups[i]], legend = False)
 
-
     # def print_params():
     #     if simple_param_summary is None:
     #         plt.text(0,-0.5,param2txt(params))
@@ -221,9 +159,9 @@ def plot_comprehensive_summary(outfile: str,
     #         now = datetime.now()
     #         plt.text(0,0.5,'{}\nSimulation run {}'.format(fill(simple_param_summary, 60),now.strftime('%Y/%m/%d %H:%M')))
 
-    #plt.subplot(window)
-    #plt.axis('off')
-    #window += 1
+    # plt.subplot(window)
+    # plt.axis('off')
+    # window += 1
     # print_params()
 
     plt.tight_layout(pad=1)
@@ -232,28 +170,18 @@ def plot_comprehensive_summary(outfile: str,
     plt.close()
 
 
-def plot_hospitalization(outfile,
-                         trajectories: List[Trajectory],
-                         popul, legend = True):
+def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True):
     """Plot total hospitalizations for multiple trajectories."""
     plt.rcParams["figure.figsize"] = (8,6)
     plt.rcParams['font.size'] = 15
     plt.rcParams['lines.linewidth'] = 6
     plt.rcParams['legend.fontsize'] = 12
     for trajectory in trajectories:
-        scenario = trajectory.scenario
         label = trajectory.name
         s = trajectory.sim
         color = trajectory.color
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
-
-        hospitalized = np.zeros(s.max_T)
-        group_idxs = popul.metagroup_indices(['UG', 'GR', 'PR', 'FS'])
-        for i in range(4):
-            hospitalized += \
-                s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
-                list(scenario["hospitalization_rates"].values())[i]
-
+        hospitalized = metrics.get_cumulative_hospitalizations(trajectory)
         plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
         plt.title("Spring Semester Hospitalizations, Students+Employees")
 
@@ -263,6 +191,7 @@ def plot_hospitalization(outfile,
     plt.ylabel('Cumulative Hospitalized')
     plt.savefig(outfile, facecolor='w')
     plt.close()
+
 
 def param2txt(params):
     param_txt = ''
@@ -282,76 +211,19 @@ def param2txt(params):
 
 
 def summary_statistics(outfile: str,
-                       trajectories: List[Trajectory],
-                       params, popul):
+                       trajectories: List[Trajectory]):
     """Output a CSV file with summary statistics"""
-
     df = {}
-
-    def get_peak_hotel_rooms(trajectory):
-        s = trajectory.sim
-        strat = trajectory.strategy
-        isolated = _get_isolated(s, params,
-                                 popul = popul, metagroup_names = ['UG'], metagroup_idx = [0],
-                                 active_discovered = strat.get_active_discovered(params))  # Get UG isolation only
-        on_campus_isolated = params["on_campus_frac"] * isolated
-        return int(np.ceil(np.max(on_campus_isolated)))
-
     df["Hotel Room Peaks"] = \
-        {t.strategy.name : get_peak_hotel_rooms(t) for t in trajectories}
-
-    def get_total_hotel_rooms(trajectory):
-        s = trajectory.sim
-        strat = trajectory.strategy
-        isolated = _get_isolated(s, params,
-                                 popul = popul, metagroup_names = ['UG'], metagroup_idx = [0],
-                                 active_discovered = strat.get_active_discovered(params))  # Get UG isolation only
-        on_campus_isolated = params["on_campus_frac"] * isolated
-        return int(np.ceil(np.sum(on_campus_isolated) * params["generation_time"]))
-
+        {t.strategy.name : metrics.get_peak_hotel_rooms(t) for t in trajectories}
     df["Total Hotel Rooms"] = \
-        {t.strategy.name : get_total_hotel_rooms(t) for t in trajectories}
-
-
-    def get_ug_prof_days_in_isolation_in_person(trajectory):
-        s = trajectory.sim
-        strat = trajectory.strategy
-        isolated = _get_isolated(s, params, popul = popul, metagroup_names = ['UG', 'PR'], metagroup_idx = [0,2],
-                                 active_discovered = strat.get_active_discovered(params))
-        START_OF_IN_PERSON = 5 # generation when we start in-person instruction
-        return int(np.sum(isolated[START_OF_IN_PERSON:])*params["generation_time"])
-
-    def get_ug_prof_days_in_isolation(trajectory):
-        s = trajectory.sim
-        strat = trajectory.strategy
-        isolated = _get_isolated(s, params, popul = popul, metagroup_names = ['UG', 'PR'], metagroup_idx = [0,2],
-                                 active_discovered = strat.get_active_discovered(params))
-        return int(np.sum(isolated)*params["generation_time"])
-
+        {t.strategy.name : metrics.get_total_hotel_rooms(t) for t in trajectories}
     df["UG+PR Days In Isolation In Person"] = \
-        {t.strategy.name: get_ug_prof_days_in_isolation_in_person(t) for t in trajectories}
-
+        {t.strategy.name: metrics.get_ug_prof_days_in_isolation_in_person(t) for t in trajectories}
     df["UG+PR Days In Isolation (All Time)"] = \
-        {t.strategy.name: get_ug_prof_days_in_isolation(t) for t in trajectories}
-
-    def get_total_hospitalizations(trajectory):
-        s = trajectory.sim
-        hospitalized = np.zeros(s.max_T)
-        group_idxs = popul.metagroup_indices(['UG', 'GR', 'PR', 'FS'])
-        for i in range(4):
-            hospitalized += \
-                s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
-                list(params["hospitalization_rates"].values())[i]
-        return int(np.ceil(hospitalized[-1]))
-
+        {t.strategy.name: metrics.get_ug_prof_days_in_isolation(t) for t in trajectories}
     df["Hospitalizations"] = \
-        {t.strategy.name : get_total_hospitalizations(t) for t in trajectories}
-
-    def get_cumulative_infections(trajectory):
-        infected = trajectory.sim.get_infected(aggregate=True, cumulative=True)
-        return int(np.ceil(infected[-1]))
-
+        {t.strategy.name : metrics.get_total_hospitalizations(t) for t in trajectories}
     df["Cumulative Infections"] = \
-        {t.strategy.name : get_cumulative_infections(t) for t in trajectories}
-
+        {t.strategy.name : metrics.get_cumulative_infections(t) for t in trajectories}
     pd.DataFrame(df).T.to_csv(outfile)

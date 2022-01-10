@@ -22,7 +22,8 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     params["meta_matrix"] = \
         np.array([list(row.values()) for row in params["meta_matrix"].values()])
 
-    # If set, this replaces the detailed description of parameters in the plot with a simple summary
+    # If set, this replaces the detailed description of parameters in the plot
+    # with a simple summary
     if 'simple_param_summary' in params:
         SIMPLE_PARAM_SUMMARY = params['simple_param_summary']
     else:
@@ -58,16 +59,12 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # [Plot] Make plots
     # ==================
 
-    # TODO (hwr26): Change plotting code to eliminate this call
-    popul = population.from_scenario(params)
-
     if simple_plot:
         plotting.plot_small_summary(out_file, trajectories)
     else:
-        plotting.plot_comprehensive_summary(out_file, trajectories, popul, SIMPLE_PARAM_SUMMARY)
-
-    # plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, popul)
-    # plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories, params, popul)
+        plotting.plot_comprehensive_summary(out_file, trajectories, SIMPLE_PARAM_SUMMARY)
+        plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories)
+        plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories)
 
 def usage():
     ''' Print usage message '''
