@@ -153,3 +153,15 @@ meta_matrix:
     GR: 0.0125
     PR: 0.05
     FS: 0.86875
+
+pop_fracs_pareto:
+  UG: 0.089
+  GR: 0.765
+  PR: 0.401
+  FS: 0.693
+
+pop_fracs_max:
+  UG: 9
+  GR: 10
+  PR: 10
+  FS: 11
