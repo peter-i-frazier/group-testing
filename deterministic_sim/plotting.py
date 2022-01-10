@@ -75,11 +75,9 @@ def plot_infected_discovered(trajectories: List[Trajectory],
     plt.ylabel('Cumulative Infected')
 
 
-# TODO pf98: Instead of defaulting metagroup_names and metagroup_idx to the explicit list of metagroups,
-# set them to None and have the code do the aggregation
 def plot_isolated(trajectories: List[Trajectory],
                   legend = True,
-                  metagroup_names = None, metagroup_idx = None,
+                  metagroup_names = None,
                   oncampus = False):
     """Plot the number of rooms of isolation required to isolate on-campus
     students under the passed set of test regimes.
@@ -96,8 +94,7 @@ def plot_isolated(trajectories: List[Trajectory],
         X = np.arange(s.max_T) * s.generation_time  # days in the semester
 
         isolated = metrics.get_isolated(trajectory=trajectory,
-                                        metagroup_names=metagroup_names,
-                                        metagroup_idx=metagroup_idx)
+                                        metagroup_names=metagroup_names)
 
         if oncampus:
             on_campus_isolated = scenario["on_campus_frac"] * isolated
@@ -132,12 +129,12 @@ def plot_comprehensive_summary(outfile: str,
     window = 423 # Start in the second row
 
     plt.subplot(window)
-    plot_isolated(trajectories, metagroup_names = ['UG'], metagroup_idx=[0],
+    plot_isolated(trajectories, metagroup_names = ['UG'],
                   legend = False, oncampus = True)
     window += 1
 
     plt.subplot(window)
-    plot_isolated(trajectories, metagroup_names = ['UG', 'PR'], metagroup_idx=[0],
+    plot_isolated(trajectories, metagroup_names = ['UG', 'PR'],
                   legend = False, oncampus = False)
     window += 1
 

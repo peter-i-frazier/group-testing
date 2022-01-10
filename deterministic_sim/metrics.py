@@ -5,14 +5,12 @@ from trajectory import Trajectory
 from typing import List
 
 
-def get_isolated(trajectory: Trajectory, metagroup_names: List[str] = None,
-    metagroup_idx: List[int] = None) -> np.ndarray:
+def get_isolated(trajectory: Trajectory, metagroup_names: List[str] = None):
     """Return the number of isolated individuals at each generation.
 
     Args:
         trajectory (Trajectory): Trajectory object.
         metagroup_names (List[str]): Limit to isolated in these metagroups.
-        metagroup_idx (List[int]): Indices of the metagroups in [metagroup_names].
 
     Returns:
         np.ndarray: Number of isolated individuals at each generation.
@@ -30,6 +28,8 @@ def get_isolated(trajectory: Trajectory, metagroup_names: List[str] = None,
     else:
         group_idx = trajectory.pop.metagroup_indices(metagroup_names)
         idx = reduce(iconcat, group_idx, [])
+        all_metagroup_names = trajectory.pop.metagroup_names()
+        metagroup_idx = [all_metagroup_names.index(i) for i in metagroup_names]
         active_discovered = \
             sum(trajectory.strategy.get_active_discovered(scenario)[metagroup_idx])
         isolated = sim.get_isolated(group=idx, arrival_discovered=active_discovered,
@@ -42,8 +42,7 @@ def get_isolated(trajectory: Trajectory, metagroup_names: List[str] = None,
 def get_peak_hotel_rooms(trajectory: Trajectory):
     """Return the peak number of hotel room used over the semester."""
     isolated = get_isolated(trajectory=trajectory,
-                            metagroup_names = ['UG'],
-                            metagroup_idx = [0])  # Get UG isolation only
+                            metagroup_names = ['UG'])
     on_campus_isolated = trajectory.scenario["on_campus_frac"] * isolated
     return int(np.ceil(np.max(on_campus_isolated)))
 
@@ -51,8 +50,7 @@ def get_peak_hotel_rooms(trajectory: Trajectory):
 def get_total_hotel_rooms(trajectory: Trajectory):
     """Return the total number of hotel rooms used over the semester."""
     isolated = get_isolated(trajectory=trajectory,
-                            metagroup_names = ['UG'],
-                            metagroup_idx = [0])  # Get UG isolation only
+                            metagroup_names = ['UG'])
     scenario = trajectory.scenario
     on_campus_isolated = scenario["on_campus_frac"] * isolated
     return int(np.ceil(np.sum(on_campus_isolated) * scenario["generation_time"]))
@@ -62,8 +60,7 @@ def get_ug_prof_days_in_isolation_in_person(trajectory: Trajectory):
     """Return the number of undergrad and professional days in isolation
     during the portion of the semester that is in-person."""
     isolated = get_isolated(trajectory=trajectory,
-                            metagroup_names = ['UG', 'PR'],
-                            metagroup_idx = [0,2])
+                            metagroup_names = ['UG', 'PR'])
     # TODO (hwr26): Is there some way to compute this from trajectory.strategy?
     START_OF_IN_PERSON = 5 # generation when we start in-person instruction
     scenario = trajectory.scenario
@@ -73,8 +70,7 @@ def get_ug_prof_days_in_isolation_in_person(trajectory: Trajectory):
 def get_ug_prof_days_in_isolation(trajectory: Trajectory):
     """Return the number of undergrad and professional days in isolation."""
     isolated = get_isolated(trajectory=trajectory,
-                            metagroup_names = ['UG', 'PR'],
-                            metagroup_idx = [0,2])
+                            metagroup_names = ['UG', 'PR'])
     return int(np.sum(isolated) * trajectory.scenario["generation_time"])
 
 
