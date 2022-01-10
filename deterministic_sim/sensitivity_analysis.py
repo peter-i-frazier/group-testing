@@ -27,7 +27,8 @@ nominal_scenario["meta_matrix"] = \
 trajectories = []
 scalers = np.linspace(0.5,1.5,6)
 for i in range(len(scalers)):
-    scenario = transform(nominal_scenario, {"winter_break_infections_global": scalers[i]})
+    scenario = transform(nominal_scenario,
+                         {"symptomatic_rate_multiply_linear_scale": scalers[i]})
     traj = sim_test_strategy(scenario=scenario,
                              strategy=surge_testing_strategy(scenario),
                              color=COLORS[i],

@@ -1,9 +1,35 @@
 import yaml
+import numpy as np
 import pandas as pd
+from enum import Enum
 from typing import Dict
 
+class Op(Enum):
+    ADD = "add"
+    MULTIPLY = "multiply"
 
+
+class Scale(Enum):
+    LINEAR = "linear"
+    LOG = "log"
+
+
+def flatten_dict(my_dict: Dict) -> Dict:
+    """Flatten a dict with the / separator."""
+    return pd.json_normalize(my_dict, sep='/').iloc[0].to_dict()
+
+
+# define recognized transformations
 TRANSFORMATIONS = yaml.safe_load(open("transformations.yaml", "r"))
+parameters = flatten_dict(yaml.safe_load(open("nominal.yaml", "r"))).keys()
+for parameter in parameters:
+    for op in Op:
+        for scale in Scale:
+            name = f"{parameter}_{op.value}_{scale.value}_scale"
+            TRANSFORMATIONS[name] = {}
+            TRANSFORMATIONS[name]["op"] = op
+            TRANSFORMATIONS[name]["scale"] = scale
+            TRANSFORMATIONS[name]["affected"] = {parameter: 1}
 
 
 # https://stackoverflow.com/a/54829922
@@ -35,25 +61,12 @@ def transform(scenario: Dict, transformations: Dict) -> Dict:
     Returns:
         Dict: Scenario with transformaions applied.
     """
-    flattened_scenario = pd.json_normalize(scenario, sep='/').iloc[0].to_dict()
-
-    # TODO (hwr26): move out to only be computed once
-    # define recognized transformations
-    recognized = TRANSFORMATIONS
-    for k in flattened_scenario.keys():
-        # add operation for individual parameter
-        recognized[f"{k}_add"] = {}
-        recognized[f"{k}_add"]["op"] = "add"
-        recognized[f"{k}_add"]["affected"] = {k: 1}
-        # scale operation for individual parameter
-        recognized[f"{k}_scale"] = {}
-        recognized[f"{k}_scale"]["op"] = "scale"
-        recognized[f"{k}_scale"]["affected"] = {k: 1}
+    flattened_scenario = flatten_dict(scenario)
 
     # get list of transformations for each transformed parameter
     transformed_parameters = {}
     for k, value in transformations.items():
-        transformation = recognized[k]
+        transformation = TRANSFORMATIONS[k]
         for affected_param, weight in transformation["affected"].items():
             tmp = [transformation["op"], weight * value]
             if affected_param in transformed_parameters:
@@ -63,15 +76,20 @@ def transform(scenario: Dict, transformations: Dict) -> Dict:
 
     # apply transformations
     for k,v in transformed_parameters.items():
+        # TODO (hwr26): Rule for limiting to operations on one scale?
         first_op = v[0][0]
         for op, value in v:
             if op == first_op:
-                if op == "add":
+                if scale == Scale.LOG:
+                    flattened_scenario[k] = np.log(flattened_scenario[k])
+                if op == Op.ADD:
                     flattened_scenario[k] += value
-                elif op == "scale":
+                elif op == Op.MULTIPLY:
                     flattened_scenario[k] *= value
                 else:
                     raise ValueError(f"{op} is an unsupported operation.")
+                if scale == Scale.LOG:
+                    flattened_scenario[k] = np.exp(flattened_scenario[k])
             else:
                 raise ValueError(f"Unsupported: multiple ops provided for {k}")
 
