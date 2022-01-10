@@ -7,6 +7,7 @@ from sim_helper import sim_test_regime, sim_test_strategy
 from sp22_strategies import (no_testing_strategy, arrival_testing_strategy,
                              surge_testing_strategy)
 import plotting
+from scipy.stats import pareto
 
 
 def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', **kwargs):
@@ -65,13 +66,26 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     # TODO (hwr26): Change plotting code to eliminate this call
     popul = population.from_scenario(params)
 
+    pop_fracs_new = []
+    for group in params['metagroups']:
+        b = params['pop_fracs_pareto'][group]
+        n = params['pop_fracs_max'][group]
+        tmp = np.array([pareto.pdf(k,b) for k in range(1,n+1)])
+        tmp = tmp/np.sum(tmp)
+        pop_fracs_new.append(tmp)
+    pop_fracs_new = np.array(pop_fracs_new, dtype = object)
+
+    params.update({'pop_fracs' : pop_fracs_new})
+    trajectories.append(sim_test_strategy(params, surge_testing_strategy(params), 'blue', '1param surge-test'))
+    trajectories.append(sim_test_strategy(params, arrival_testing_strategy(params), 'green', '1param arrival-test'))
+
     if simple_plot:
         plotting.plot_small_summary(out_file, trajectories)
     else:
         plotting.plot_comprehensive_summary(out_file, trajectories, popul, SIMPLE_PARAM_SUMMARY)
 
-    plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, popul)
-    plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories, params, popul)
+    # plotting.plot_hospitalization('sp22_sim_hosp.png', trajectories, popul)
+    # plotting.summary_statistics('sp22_sim_summary_stats.csv', trajectories, params, popul)
 
 def usage():
     ''' Print usage message '''
