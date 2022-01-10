@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import nbinom, pareto
 import matplotlib.pyplot as plt
 
+# This code was used by Sam to fit Pareto distributions to the pop_fracs data
+# that was previously provided explicitly in the nominal.json file.
 
 names = ['UG', 'Grad-Research', 'Professional', 'Employees']
 
@@ -54,7 +56,7 @@ egs = np.array([
             0.005729729349,
             0.00176556195
         ]
-    ])
+    ], dtype=object)
 
 def getBestFit(s, fidelity):
     n = len(egs[s])-1
@@ -113,8 +115,6 @@ def getBestFit(s, fidelity):
     plt.xlabel('Number of contacts')
     plt.ylabel('Proportion')
     plt.legend()
-    # plt.savefig(names[s]+'.png', facecolor = 'w')
-    # plt.close()
+    plt.savefig(names[s]+'.png', facecolor = 'w')
+    plt.close()
     plt.show()
-
-

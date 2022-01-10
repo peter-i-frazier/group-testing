@@ -126,12 +126,7 @@ max_infectious_days: 6
 # sensitivity in the period between exposure and the start of the infectious period.
 pcr_sensitivity: 0.9
 
-# Based on Xiangyu's adjusted moment match code, this is the fraction of the
-# population (UG-only?  or all students) broken out by the amount of contact
-# that they have, starting from low contact to high contact.
-# Assumes that group i has i+1 contacts per day.
-json_path: "nominal.json"       # path to JSON with additional params
-
+# This matrix encodes the amount of contact between metagroups
 meta_matrix:
   UG:
     UG: 0.8351648352
@@ -154,6 +149,10 @@ meta_matrix:
     PR: 0.05
     FS: 0.86875
 
+# The distribution of social contacts are pulled from a Pareto distribution
+# with the following parameter and truncated to the given maximum value. The
+# fit distributions are based on Xiangyu's adjusted moment match code.
+# Assumes that group i has i+1 contacts per day.
 pop_fracs_pareto:
   UG: 0.089
   GR: 0.765

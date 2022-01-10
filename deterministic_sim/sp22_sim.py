@@ -18,11 +18,6 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
     params = yaml.safe_load(open(yaml_file, "r"))
     params.update(kwargs)
 
-    #(sst76) OBSOLETE, included in case we still want comparisons
-    # Include the parameters defined in the JSON file
-    # json_params = json.load(open(params["json_path"]))
-    # params.update(json_params)
-
     # convert to numpy matrix
     params["meta_matrix"] = \
         np.array([list(row.values()) for row in params["meta_matrix"].values()])

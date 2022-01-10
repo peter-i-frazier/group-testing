@@ -17,9 +17,6 @@ COLORS = ['#084594', '#2171b5', '#4292c6', '#6baed6',
 # =======================
 
 nominal_scenario = yaml.safe_load(open("nominal.yaml", "r"))
-json_params = json.load(open(nominal_scenario["json_path"]))
-nominal_scenario.update(json_params)
-
 nominal_scenario["meta_matrix"] = \
     np.array([list(row.values()) for row in nominal_scenario["meta_matrix"].values()])
 
