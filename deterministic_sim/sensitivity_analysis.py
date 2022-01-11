@@ -2,8 +2,7 @@ import yaml
 import json
 import numpy as np
 from groups import population
-from strategy import Strategy
-from testing_regime import TestingRegime
+import metrics
 from transform import transform
 from sim_helper import sim_test_strategy
 from sp22_strategies import surge_testing_strategy
@@ -25,10 +24,10 @@ nominal_scenario["meta_matrix"] = \
 # ==========================
 
 trajectories = []
-scalers = np.linspace(0.5,1.5,6)
+scalers = np.linspace(0.25,4,8)
 for i in range(len(scalers)):
     scenario = transform(nominal_scenario,
-                         {"symptomatic_rate_multiply_linear_scale": scalers[i]})
+                         {"winter_break_infections_global": scalers[i]})
     traj = sim_test_strategy(scenario=scenario,
                              strategy=surge_testing_strategy(scenario),
                              color=COLORS[i],
@@ -40,4 +39,7 @@ for i in range(len(scalers)):
 # ======
 
 popul = population.from_scenario(nominal_scenario)
-plotting.plot_comprehensive_summary("sensitivity_analysis.png", trajectories, popul, None)
+plotting.plot_metric_over_time(outfile="sensitivity_analysis.png",
+                                trajectories=trajectories,
+                                metric_name="Cumulative Hospitalizatins",
+                                metric=metrics.get_cumulative_hospitalizations)

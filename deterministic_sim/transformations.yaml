@@ -1,5 +1,6 @@
 winter_break_infections_global:
-  op: "scale"
+  op: "multiply"
+  scale: "linear"
   affected:
     winter_break_infections/UG: 1
     winter_break_infections/GR: 1
@@ -7,13 +8,15 @@ winter_break_infections_global:
     winter_break_infections/FS: 1
 
 classwork_transmission_multiplier_UG_PR:
-  op: "scale"
+  op: "multiply"
+  scale: "linear"
   affected:
     classwork_transmission_multiplier/UG: 1
     classwork_transmission_multiplier/PR: 1
 
 template:
   op:  # "scale" or "add"
+  scale: # "linear" or "log"
   affected:
     param_name1:  # weight
     param_name2:  # weight

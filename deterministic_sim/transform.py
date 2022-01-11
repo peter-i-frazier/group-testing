@@ -27,8 +27,8 @@ for parameter in parameters:
         for scale in Scale:
             name = f"{parameter}_{op.value}_{scale.value}_scale"
             TRANSFORMATIONS[name] = {}
-            TRANSFORMATIONS[name]["op"] = op
-            TRANSFORMATIONS[name]["scale"] = scale
+            TRANSFORMATIONS[name]["op"] = op.value
+            TRANSFORMATIONS[name]["scale"] = scale.value
             TRANSFORMATIONS[name]["affected"] = {parameter: 1}
 
 
@@ -82,9 +82,9 @@ def transform(scenario: Dict, transformations: Dict) -> Dict:
             if op == first_op:
                 if scale == Scale.LOG:
                     flattened_scenario[k] = np.log(flattened_scenario[k])
-                if op == Op.ADD:
+                if op == Op.ADD.value:
                     flattened_scenario[k] += value
-                elif op == Op.MULTIPLY:
+                elif op == Op.MULTIPLY.value:
                     flattened_scenario[k] *= value
                 else:
                     raise ValueError(f"{op} is an unsupported operation.")

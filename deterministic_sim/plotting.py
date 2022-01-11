@@ -168,7 +168,7 @@ def plot_comprehensive_summary(outfile: str,
 
 
 def plot_metric_over_time(outfile: str, trajectories: List[Trajectory],
-    metric_name: str, metric: Callable, title: str, legend = True) -> None:
+    metric_name: str, metric: Callable, title: str = None, legend = True) -> None:
     """Plot a comparison the [trajectories] for a given [metric] over time.
 
     Args:
