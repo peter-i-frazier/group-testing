@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore",category=matplotlib.cbook.mplDeprecation)
-from typing import List
+from typing import List, Callable
 from functools import reduce
 from operator import iconcat, add
 from trajectory import Trajectory
@@ -167,27 +167,49 @@ def plot_comprehensive_summary(outfile: str,
     plt.close()
 
 
-def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True):
-    """Plot total hospitalizations for multiple trajectories."""
+def plot_metric_over_time(outfile: str, trajectories: List[Trajectory],
+    metric_name: str, metric: Callable, title: str, legend = True) -> None:
+    """Plot a comparison the [trajectories] for a given [metric] over time.
+
+    Args:
+        outfile (str): String file path.
+        trajectories (List[Trajectory]): List of trajectories to compare.
+        metric_name (str): Name of the metric to be plotted.
+        metric (Callable): Function to compute the metric.
+        title (str, optional): Title of the plot.
+        legend (bool, optional): Show legend if True. Defaults to True.
+    """
     plt.rcParams["figure.figsize"] = (8,6)
     plt.rcParams['font.size'] = 15
     plt.rcParams['lines.linewidth'] = 6
     plt.rcParams['legend.fontsize'] = 12
-    for trajectory in trajectories:
-        label = trajectory.name
-        s = trajectory.sim
-        color = trajectory.color
-        X = np.arange(s.max_T) * s.generation_time  # days in the semester
-        hospitalized = metrics.get_cumulative_hospitalizations(trajectory)
-        plt.plot(X, hospitalized, label=label, color=color, linestyle = 'solid')
-        plt.title("Spring Semester Hospitalizations, Students+Employees")
 
-    #plt.rcParams.update({'font.size': 8})
+    for trajectory in trajectories:
+        scenario = trajectory.scenario
+        label = trajectory.name
+        color = trajectory.color
+        x = np.arange(scenario["T"]) * scenario["generation_time"]
+        y = metric(trajectory)
+        plt.plot(x, y, label=label, color=color, linestyle = 'solid')
+
+    if title is None:
+        title = f"{metric_name} over the Spring Semester"
+    plt.title(title)
+    plt.ylabel(metric_name)
     if legend:
         plt.legend()
-    plt.ylabel('Cumulative Hospitalized')
     plt.savefig(outfile, facecolor='w')
     plt.close()
+
+
+def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True):
+    """Plot total hospitalizations for multiple trajectories."""
+    plot_metric_over_time(outfile=outfile,
+                          trajectories=trajectories,
+                          metric_name="Cumulative Hospitalizatins",
+                          metric=metrics.get_cumulative_hospitalizations,
+                          title="Spring Semester Hospitalizations, Students+Employees",
+                          legend=legend)
 
 
 def param2txt(params):
