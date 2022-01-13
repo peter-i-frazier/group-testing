@@ -69,7 +69,7 @@ def main(yaml_file='nominal.yaml', simple_plot=False, out_file='sp22_sim.png', *
                                             test_delay=1, params=params)
     ug_prof_2x_week_testing_regime= \
         TestingRegime(popul=popul, tests_per_week={ 'UG':2, 'GR':0, 'PR':2, 'FS':0},
-                      test_delay=1, params=params)
+                      test_delay=1.5, params=params)
 
     # No extra testing (note all strategies assume testing for cause)
     no_testing_strategy = \

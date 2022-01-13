@@ -80,7 +80,10 @@ def plot_infected_discovered(trajectories: List[Trajectory],
             plt.plot(X, discovered, label=label, color=color, linestyle = 'solid')
         else:
             plt.plot(X, discovered, label=label + '(Discovered)', color=color, linestyle = 'solid')
-            plt.plot(X, infected, label=label + '(Infected)', color=color, linestyle = 'dashed')
+            # plt.plot(X, infected, label=label + '(Infected)', color=color, linestyle = 'dashed')
+            plt.axvline(7,linestyle='--',color='grey')
+            plt.axvline(21,linestyle='--',color='grey')
+
 
     if metagroup_names == None:
         plt.title("Spring Semester Infections, Students+Employees")
@@ -173,6 +176,9 @@ def plot_isolated(trajectories: List[Trajectory],
             else:
                 plt.title("Isolation (" + str(metagroup_names) + ")")
 
+    plt.axvline(7,linestyle='--',color='grey')
+    plt.axvline(21,linestyle='--',color='grey')
+
     if legend:
         plt.legend()
     plt.xlabel('Days')
@@ -187,9 +193,9 @@ def plot_comprehensive_summary(outfile: str,
     fig.set_size_inches(8.5, 11)
     plt.rcParams.update({'font.size': 8})
 
-    plt.subplot(411) # Take up the whole top row
+    plt.subplot(421)
     plot_infected_discovered(trajectories, params, legend = True)
-    window = 423 # Start in the second row
+    window = 422
 
     plt.subplot(window)
     plot_isolated(trajectories, params, popul=popul, metagroup_names = ['UG'], metagroup_idx=[0],
@@ -339,7 +345,7 @@ def summary_statistics(outfile: str,
             hospitalized += \
                 s.get_total_infected_for_different_groups(group_idxs[i], cumulative=True) * \
                 params["hospitalization_rates"][i]
-        return int(np.ceil(hospitalized[-1]))
+        return hospitalized[-1]
 
     df["Hospitalizations"] = \
         {t.strategy.name : get_total_hospitalizations(t) for t in trajectories}
