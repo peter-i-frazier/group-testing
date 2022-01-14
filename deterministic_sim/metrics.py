@@ -74,7 +74,7 @@ def get_ug_prof_days_in_isolation(trajectory: Trajectory):
     return int(np.sum(isolated) * trajectory.scenario["generation_time"])
 
 
-def get_cumulative_hospitalizations(trajectory: Trajectory, metagroups: List[str]):
+def _get_cumulative_hospitalizations(trajectory: Trajectory, metagroups: List[str]):
     """Return the cumulative number of hospitalizations at each generation."""
     s = trajectory.sim
     pop = trajectory.pop
@@ -87,19 +87,28 @@ def get_cumulative_hospitalizations(trajectory: Trajectory, metagroups: List[str
     return cumulative_hospitalizations
 
 
+def get_cumulative_all_hospitalizations(trajectory: Trajectory):
+    """Return the cumulative number of all hospitalizations at each generation."""
+    pop = trajectory.pop
+    metagroups = pop.metagroup_names()
+    cumulative_hospitalizations = \
+        _get_cumulative_hospitalizations(trajectory, metagroups)
+    return cumulative_hospitalizations
+
+
 def get_total_hospitalizations(trajectory: Trajectory):
     """Return the total number of hospitalizations over the semester."""
     pop = trajectory.pop
     metagroups = pop.metagroup_names()
     cumulative_hospitalizations = \
-        get_cumulative_hospitalizations(trajectory, metagroups)
+        _get_cumulative_hospitalizations(trajectory, metagroups)
     return cumulative_hospitalizations[-1]
 
 
 def get_total_employee_hospitalizations(trajectory: Trajectory):
     """Return the total number of employee hospitalizations over the semester."""
     cumulative_hospitalizations = \
-        get_cumulative_hospitalizations(trajectory, ["FS"])
+        _get_cumulative_hospitalizations(trajectory, ["FS"])
     return cumulative_hospitalizations[-1]
 
 

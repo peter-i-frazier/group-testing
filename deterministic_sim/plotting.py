@@ -244,7 +244,7 @@ def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True)
     plot_metric_over_time(outfile=outfile,
                           trajectories=trajectories,
                           metric_name="Cumulative Hospitalizatins",
-                          metric=metrics.get_cumulative_hospitalizations,
+                          metric=metrics.get_cumulative_all_hospitalizations,
                           title="Spring Semester Hospitalizations, Students+Employees",
                           legend=legend)
 
