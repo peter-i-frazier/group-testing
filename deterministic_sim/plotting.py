@@ -201,6 +201,43 @@ def plot_metric_over_time(outfile: str, trajectories: List[Trajectory],
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
+def plot_arrival(outfile, trajectories: List[Trajectory], num_days):
+    for trajectory in trajectories:
+        scenario = trajectory.scenario
+        strategy = trajectory.strategy
+        arrival_discovered = strategy.get_active_discovered(scenario)
+        arrival_infected = list(scenario['active_infections'].values())
+        num_groups = len(arrival_discovered)
+        discovered = np.zeros((num_groups, num_days))
+        infected = np.zeros((num_groups, num_days))
+        for i in range(num_groups):
+            discovered[i] = np.array([2*arrival_discovered[i]*(d+1)/(num_days * (num_days + 1)) for d in range(num_days)])
+            infected[i] = np.array([2*arrival_infected[i]*(d+1)/(num_days * (num_days + 1)) for d in range(num_days)])
+
+        fig = matplotlib.pyplot.gcf()
+        fig.set_size_inches(8.5, 11)
+        plt.rcParams.update({'font.size': 8})
+
+        plt.subplot(411) # Take up the whole top row
+        plt.plot(np.arange(num_days), np.sum(discovered, axis = 0), linestyle = 'solid')
+        plt.plot(np.arange(num_days), np.sum(infected, axis = 0), linestyle = 'dashed')
+        plt.title('Overall')
+        window = 423 # Start in the second row
+
+        # Assumes that every trajectory in [trajectories] has the same population
+        popul = trajectories[0].pop
+        metagroups = popul.metagroup_names()
+
+        # Plot infected and discovered for each meta-group
+        if len(metagroups) > 1:
+            for i in range(len(metagroups)):
+                plt.subplot(window)
+                window += 1
+                plt.plot(np.arange(num_days), discovered[i], linestyle = 'solid')
+                plt.plot(np.arange(num_days), infected[i], linestyle = 'dashed')
+                plt.title(metagroups[i])
+
+        plt.show()
 
 def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True):
     """Plot total hospitalizations for multiple trajectories."""
