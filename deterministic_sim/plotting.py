@@ -201,7 +201,7 @@ def plot_metric_over_time(outfile: str, trajectories: List[Trajectory],
     plt.savefig(outfile, facecolor='w')
     plt.close()
 
-def plot_arrival(outfile, trajectories: List[Trajectory], num_days):
+def plot_arrival_linear(outfile, trajectories: List[Trajectory], num_days):
     for trajectory in trajectories:
         scenario = trajectory.scenario
         strategy = trajectory.strategy
@@ -216,12 +216,14 @@ def plot_arrival(outfile, trajectories: List[Trajectory], num_days):
 
         fig = matplotlib.pyplot.gcf()
         fig.set_size_inches(8.5, 11)
+        plt.suptitle('Number of Positive Arrivals per Day (non-cumulative), Linear Allocation')
         plt.rcParams.update({'font.size': 8})
 
         plt.subplot(411) # Take up the whole top row
-        plt.plot(np.arange(num_days), np.sum(discovered, axis = 0), linestyle = 'solid')
-        plt.plot(np.arange(num_days), np.sum(infected, axis = 0), linestyle = 'dashed')
+        plt.plot(np.arange(num_days), np.sum(discovered, axis = 0), linestyle = 'solid', label = 'Discovered')
+        plt.plot(np.arange(num_days), np.sum(infected, axis = 0), linestyle = 'dashed', label = 'Infected')
         plt.title('Overall')
+        plt.legend()
         window = 423 # Start in the second row
 
         # Assumes that every trajectory in [trajectories] has the same population

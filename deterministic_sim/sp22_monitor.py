@@ -39,7 +39,7 @@ def main(yaml_file='nominal.yaml', out_file='sp22_sim.png', **kwargs):
     # [Plot] Make plots
     # ==================
 
-    plotting.plot_arrival(out_file, trajectories, 7)
+    plotting.plot_arrival_linear(out_file, trajectories, 7)
 
 
 def usage():
