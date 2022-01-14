@@ -12,7 +12,7 @@ def no_testing_testing_regime(scenario: Dict):
 def ug_prof_2x_week_testing_regime(scenario: Dict):
     return TestingRegime(scenario=scenario,
                          tests_per_week={ 'UG':2, 'GR':0, 'PR':2, 'FS':0},
-                         test_delay=1)
+                         test_delay=1.5)
 
 # =========================
 # Potential sp22 strategies
