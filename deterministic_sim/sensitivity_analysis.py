@@ -24,14 +24,14 @@ nominal_scenario["meta_matrix"] = \
 # ==========================
 
 trajectories = []
-scalers = np.linspace(-0.5,0.5,20)
+scalers = np.linspace(0.0,1.0,20)
 for i in range(len(scalers)):
     scenario = transform(nominal_scenario,
-                         {"booster_effectiveness_add_linear_scale": scalers[i]})
+                         {"booster_rate/FS_multiply_linear_scale": scalers[i]})
     traj = sim_test_strategy(scenario=scenario,
                              strategy=surge_testing_strategy(scenario),
                              color="white",
-                             name=str(scenario["booster_effectiveness"]))
+                             name=str(scenario["booster_rate"]["FS"]))
     trajectories.append(traj)
 
 # ======
@@ -41,6 +41,6 @@ for i in range(len(scalers)):
 popul = population.from_scenario(nominal_scenario)
 plotting.plot_parameter_sensitivity(outfile="sensitivity_analysis.png",
                                 trajectories=trajectories,
-                                param_name="Booster Effectiveness",
-                                metric_name="Total Hospitalizations",
-                                metric=metrics.get_total_hospitalizations)
+                                param_name="Employee Booster Rate",
+                                metric_name="Total Employee Hospitalizations",
+                                metric=metrics.get_total_employee_hospitalizations)
