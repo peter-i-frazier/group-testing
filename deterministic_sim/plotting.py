@@ -220,9 +220,10 @@ def plot_arrival_linear(outfile, trajectories: List[Trajectory], num_days):
         plt.rcParams.update({'font.size': 8})
 
         plt.subplot(411) # Take up the whole top row
-        plt.plot(np.arange(num_days), np.sum(discovered, axis = 0), linestyle = 'solid', label = 'Discovered')
-        plt.plot(np.arange(num_days), np.sum(infected, axis = 0), linestyle = 'dashed', label = 'Infected')
+        plt.plot(np.arange(-num_days+1, 1), np.sum(discovered, axis = 0), linestyle = 'solid', label = 'Discovered')
+        plt.plot(np.arange(-num_days+1, 1), np.sum(infected, axis = 0), linestyle = 'dashed', label = 'Infected')
         plt.title('Overall')
+        plt.xlabel('Days until Start')
         plt.legend()
         window = 423 # Start in the second row
 
@@ -235,11 +236,14 @@ def plot_arrival_linear(outfile, trajectories: List[Trajectory], num_days):
             for i in range(len(metagroups)):
                 plt.subplot(window)
                 window += 1
-                plt.plot(np.arange(num_days), discovered[i], linestyle = 'solid')
-                plt.plot(np.arange(num_days), infected[i], linestyle = 'dashed')
+                plt.plot(np.arange(-num_days+1, 1), discovered[i], linestyle = 'solid')
+                plt.plot(np.arange(-num_days+1, 1), infected[i], linestyle = 'dashed')
                 plt.title(metagroups[i])
+        plt.tight_layout(pad=1)
 
-        plt.show()
+        plt.savefig(outfile, facecolor='w')
+        plt.close()
+
 
 def plot_hospitalization(outfile, trajectories: List[Trajectory], legend = True):
     """Plot total hospitalizations for multiple trajectories."""

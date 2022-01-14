@@ -9,7 +9,7 @@ from sp22_strategies import (no_testing_strategy, arrival_testing_strategy,
 import plotting
 
 
-def main(yaml_file='nominal.yaml', out_file='sp22_sim.png', **kwargs):
+def main(yaml_file='nominal.yaml', out_file='sp22_monitor.png', **kwargs):
 
     # =======================
     # [Initialize Parameters]
