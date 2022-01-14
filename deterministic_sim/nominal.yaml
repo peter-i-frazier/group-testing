@@ -106,6 +106,12 @@ no_surveillance_test_rate: 0.01 # percent of the population tested in a generati
                                 # (under no surveillance)
 booster_effectiveness: 0.5      # reduction in transmission from boosters
 
+booster_rate:                   # rate of booster vaccination
+  UG: 1.00
+  GR: 1.00
+  PR: 1.00
+  FS: 1.00
+
 generation_time: 4              # generation time (days)
 
 # Define the isolation policy in use.

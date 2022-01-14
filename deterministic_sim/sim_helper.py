@@ -23,18 +23,24 @@ def sim_test_strategy(scenario: Dict, strategy: Strategy,
     T = scenario['T']
     GENERATION_TIME = scenario['generation_time']
     BOOSTER_EFFECTIVENESS = scenario['booster_effectiveness']
+    BOOSTER_RATE = np.array(list(scenario['booster_rate'].values()))
     INFECTIONS_PER_DAY_PER_CONTACT_UNIT = \
-        np.array(list(scenario['infections_per_day_per_contact_unit'].values()))
+        BOOSTER_EFFECTIVENESS * \
+            np.multiply(
+                BOOSTER_RATE,
+                np.array(list(scenario['infections_per_day_per_contact_unit'].values()))) + \
+            np.multiply(
+                (np.ones(len(BOOSTER_RATE)) - BOOSTER_RATE),
+                np.array(list(scenario['infections_per_day_per_contact_unit'].values())))
 
     popul = population.from_scenario(scenario)
 
     for i in range(strategy.periods):
         regime = strategy.testing_regimes[i]
-        infections_per_contact_unit = BOOSTER_EFFECTIVENESS * \
-                                        np.multiply(strategy.transmission_multipliers[i], \
-                                                    np.multiply(
-                                                        INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
-                                                        regime.get_days_infectious()))
+        infections_per_contact_unit = np.multiply(strategy.transmission_multipliers[i], \
+                                            np.multiply(
+                                                INFECTIONS_PER_DAY_PER_CONTACT_UNIT, \
+                                                regime.get_days_infectious()))
         infection_rate = popul.infection_matrix(infections_per_contact_unit)
         infection_discovery_frac = popul.metagroup2group(regime.get_infection_discovery_frac())
         recovered_discovery_frac = popul.metagroup2group(regime.get_recovered_discovery_frac())
