@@ -91,7 +91,7 @@ def get_cumulative_hospitalizations(trajectory: Trajectory):
 def get_total_hospitalizations(trajectory: Trajectory):
     """Return the total number of hospitalizations over the semester."""
     cumulative_hospitalizations = get_cumulative_hospitalizations(trajectory)
-    return int(np.ceil(cumulative_hospitalizations[-1]))
+    return cumulative_hospitalizations[-1]
 
 
 def get_cumulative_infections(trajectory: Trajectory):
