@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 TOTAL_POP = 10000       # total fac/staff population
 K = 11                  # number of distinct contact groups
-T = 19                   # num generations
+T = 6                   # num generations
 INITIAL_GROUP = 10      # index of group containing initial infections
 INITIAL = 1             # number of initial infections
 SYMPTOMATIC_RATE = .3   # fraction of new infections will be discovered
@@ -20,7 +20,7 @@ SYMPTOMATIC_RATE = .3   # fraction of new infections will be discovered
 # This is the parameter we aim to calibrate.  An employee in a group with a given number of contacts units
 # generates dec_fs_infected_per_day_unit * contact_units infections per day generated during study week in the December
 # Omicron surge
-dec_fs_infected_per_day_unit = 0.005
+dec_fs_infected_per_day_unit = 0.03
 
 generation_time = 4     # generation time (days)
 
@@ -52,7 +52,7 @@ def main():
     I0 = np.zeros(K)
     I0[INITIAL_GROUP] = INITIAL
     S0 = np.maximum(pop - R0 - I0, 0)
-    outside_rates = 2.27
+    outside_rates = 21.54
     # outside_rates = params['outside_rates']
     outside_rate = np.zeros(K)
     for i in range(K):
@@ -69,7 +69,7 @@ def main():
     infections_per_contact = dec_fs_infected_per_day_unit * micro.days_infectious(14,1)
     infection_rate = meta_group("FS", pop, MARGINAL_CONTACTS).infection_matrix(infections_per_contact)
     s = sim(T, S0, I0, R0, infection_rate=infection_rate, generation_time=generation_time, outside_rate = outside_rate)
-    s.step(18)
+    s.step(5)
 
     # ==================================================
     # [Plot] Actual Infections vs. Simulation Infections
@@ -79,9 +79,10 @@ def main():
     plt.plot(np.arange(T)*generation_time, I, label="simulated")
 
     # plot actual counts
-    fall_daily_positives = list(pd.read_csv("data/fall_infections_fs.csv")['positives'])
+    fall_daily_positives = list(pd.read_csv("data/jan_infections_fs.csv")['positives'])
     fall_positives = np.cumsum(fall_daily_positives)
-    plt.plot(np.arange(78), fall_positives[:78], label="actual")
+    plt.plot(np.arange(13), fall_positives[:14], label="actual")
+    print(fall_daily_positives)
 
 
     plt.title(f"Actual vs. Simulated Infection Trajectories\n"
