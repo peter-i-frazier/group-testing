@@ -167,9 +167,46 @@ def plot_comprehensive_summary(outfile: str,
     plt.close()
 
 
+def plot_parameter_sensitivity(outfile: str, trajectories: List[Trajectory],
+    param_name: str, metric_name: str, metric: Callable, title: str = None):
+    """Plot a comparison of some [metric] over different values of a parameter.
+
+    The x-axis of the plot is the value of the parameter (stored in the name
+    of the trajectory) while the y-axis is the value of the metric.
+
+    Args:
+        outfile (str): String file path.
+        trajectories (List[Trajectory]): List of trajectories to compare.
+        param_name (str): Name of the parameter to be adjusted.
+        metric_name (str): Name of the metric to be plotted.
+        metric (Callable): Function to compute the metric.
+        title (str, optional): Title of the plot.
+        legend (bool, optional): Show legend if True. Defaults to True.
+    """
+    plt.rcParams["figure.figsize"] = (8,6)
+    plt.rcParams['font.size'] = 15
+    plt.rcParams['lines.linewidth'] = 6
+    plt.rcParams['legend.fontsize'] = 12
+
+    x = [float(traj.name) for traj in trajectories]
+    y = [metric(traj) for traj in trajectories]
+    plt.plot(x, y, linestyle = 'solid')
+
+    if title is None:
+        title = f"{param_name} vs. {metric_name}"
+    plt.title(title)
+    plt.xlabel(param_name)
+    plt.ylabel(metric_name)
+    plt.savefig(outfile, facecolor='w')
+    plt.close()
+
+
 def plot_metric_over_time(outfile: str, trajectories: List[Trajectory],
     metric_name: str, metric: Callable, title: str = None, legend = True) -> None:
     """Plot a comparison the [trajectories] for a given [metric] over time.
+
+    The x-axis of the plot is time while the y-axis is the value of the metric.
+    Each trajectory is shown as a different line on the plot.
 
     Args:
         outfile (str): String file path.

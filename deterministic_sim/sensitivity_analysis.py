@@ -24,14 +24,14 @@ nominal_scenario["meta_matrix"] = \
 # ==========================
 
 trajectories = []
-scalers = np.linspace(0.25,4,8)
+scalers = np.linspace(-0.5,0.5,20)
 for i in range(len(scalers)):
     scenario = transform(nominal_scenario,
-                         {"winter_break_infections_global": scalers[i]})
+                         {"booster_effectiveness_add_linear_scale": scalers[i]})
     traj = sim_test_strategy(scenario=scenario,
                              strategy=surge_testing_strategy(scenario),
-                             color=COLORS[i],
-                             name=str(scalers[i]))
+                             color="white",
+                             name=str(scenario["booster_effectiveness"]))
     trajectories.append(traj)
 
 # ======
@@ -39,7 +39,8 @@ for i in range(len(scalers)):
 # ======
 
 popul = population.from_scenario(nominal_scenario)
-plotting.plot_metric_over_time(outfile="sensitivity_analysis.png",
+plotting.plot_parameter_sensitivity(outfile="sensitivity_analysis.png",
                                 trajectories=trajectories,
-                                metric_name="Cumulative Hospitalizatins",
-                                metric=metrics.get_cumulative_hospitalizations)
+                                param_name="Booster Effectiveness",
+                                metric_name="Total Hospitalizations",
+                                metric=metrics.get_total_hospitalizations)
