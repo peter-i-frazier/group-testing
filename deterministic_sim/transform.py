@@ -67,8 +67,10 @@ def transform(scenario: Dict, transformations: Dict) -> Dict:
     transformed_parameters = {}
     for k, value in transformations.items():
         transformation = TRANSFORMATIONS[k]
+        op = transformation["op"]
+        scale = transformation["scale"]
         for affected_param, weight in transformation["affected"].items():
-            tmp = [transformation["op"], weight * value]
+            tmp = [op, scale, weight * value]
             if affected_param in transformed_parameters:
                 transformed_parameters[affected_param].append(tmp)
             else:
@@ -78,7 +80,7 @@ def transform(scenario: Dict, transformations: Dict) -> Dict:
     for k,v in transformed_parameters.items():
         # TODO (hwr26): Rule for limiting to operations on one scale?
         first_op = v[0][0]
-        for op, value in v:
+        for op, scale, value in v:
             if op == first_op:
                 if scale == Scale.LOG:
                     flattened_scenario[k] = np.log(flattened_scenario[k])
